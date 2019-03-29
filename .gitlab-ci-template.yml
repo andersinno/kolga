@@ -186,7 +186,7 @@ staging:
 
   function test() {
     registry_login
-    apk add --no-cache python3 make build-base gcc
+    apk add --no-cache python3 make build-base gcc python-dev
     pip3 install docker-compose
 
     docker pull $DOCKER_IMAGE_TAG
