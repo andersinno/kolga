@@ -192,7 +192,7 @@ staging:
     docker pull $DOCKER_IMAGE_TAG
     export DOCKER_HOST='tcp://localhost:2375'
     export DOCKER_APP_IMAGE=$DOCKER_IMAGE_TAG
-    export DOCKER_APP_COMMAND="sh -c './wait-for db:5432 -- make test-setup && make test'"
+    export DOCKER_APP_COMMAND="make test-setup && make test'"
     make ci-command
   }
 
