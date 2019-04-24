@@ -365,6 +365,9 @@ staging:
   }
 
   function build() {
+    git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
+    git submodule sync && git submodule update --init
+
     registry_login
     if ! docker pull ${CI_REGISTRY_IMAGE}:master > /dev/null; then
       echo "Pulling latest master image for the project failed, running without cache"
@@ -390,4 +393,3 @@ staging:
 
 before_script:
   - *auto_devops
-
