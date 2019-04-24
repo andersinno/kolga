@@ -39,7 +39,7 @@ variables:
   KUBERNETES_VERSION: 1.11.6
 
 build:
-  image: docker:stable-git
+  image: docker.anders.fi/anders/ci-runner-images/ci-runner-docker:latest
   services:
     - docker:stable-dind
   stage: build
@@ -49,7 +49,7 @@ build:
     - branches
 
 test:
-  image: docker:stable-git
+  image: docker.anders.fi/anders/ci-runner-images/ci-runner-docker:latest
   services:
     - docker:stable-dind
   stage: test
@@ -188,8 +188,6 @@ staging:
   function test() {
     fetch_submodules
     registry_login
-    apk add --no-cache python3 make build-base gcc python3-dev libffi-dev openssl-dev
-    pip3 install docker-compose
 
     docker pull $DOCKER_IMAGE_TAG
     export DOCKER_HOST='tcp://localhost:2375'
