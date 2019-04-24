@@ -166,6 +166,11 @@ staging:
     fi
   }
 
+  function fetch_submodules() {
+    git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
+    git submodule sync && git submodule update --init
+  }
+
   function deploy_name() {
     name="$CI_ENVIRONMENT_SLUG"
     track="${1-stable}"
@@ -185,6 +190,7 @@ staging:
   }
 
   function test() {
+    fetch_submodules
     registry_login
     apk add --no-cache python3 make build-base gcc python3-dev libffi-dev openssl-dev
     pip3 install docker-compose
@@ -347,14 +353,6 @@ staging:
     kubectl version --client
   }
 
-  function setup_docker() {
-    if ! docker info &>/dev/null; then
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
-    fi
-  }
-
   function setup_test_db() {
     if [ -z ${KUBERNETES_PORT+x} ]; then
       DB_HOST=postgres
@@ -365,8 +363,7 @@ staging:
   }
 
   function build() {
-    git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
-    git submodule sync && git submodule update --init
+    fetch_submodules
 
     registry_login
     if ! docker pull ${CI_REGISTRY_IMAGE}:master > /dev/null; then
