@@ -1,4 +1,4 @@
-image: alpine:latest
+image: docker.anders.fi/anders/ci-runner-images/ci-runner:latest
 
 stages:
   - build
@@ -63,7 +63,6 @@ review:
   stage: review
   script:
     - export
-    - install_dependencies
     - kube_auth qa
     - ensure_namespace
     - deploy
@@ -87,7 +86,6 @@ review:
 cleanup_review:
   stage: cleanup_review
   script:
-    - install_dependencies
     - kube_auth qa
     - delete
   when: on_failure
@@ -109,7 +107,6 @@ stop_review:
     action: stop
   stage: stop_review
   script:
-    - install_dependencies
     - kube_auth qa
     - delete
   when: manual
@@ -127,7 +124,6 @@ stop_review:
 staging:
   stage: staging
   script:
-    - install_dependencies
     - kube_auth qa
     - ensure_namespace
     - deploy
@@ -330,27 +326,6 @@ staging:
 
     kubectl apply --recursive -f ./manifests/anders-deploy-app/templates
     kubectl wait --for=condition=available --timeout=600s deployments/${CI_ENVIRONMENT_SLUG}
-  }
-
-  function install_dependencies() {
-    apk add -U openssl curl tar gzip bash ca-certificates git
-    echo "APT PACKAGES INSTALLED"
-    curl -L -o /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
-    echo "ADDED sgerrand.rsa.pub"
-    curl -L -O https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.28-r0/glibc-2.28-r0.apk
-    echo "DOWNLOADED GLIBC"
-    apk add glibc-2.28-r0.apk
-    echo "INSTALLED GLIBC"
-    rm glibc-2.28-r0.apk
-    echo "REMOVED APK"
-
-    curl "https://kubernetes-helm.storage.googleapis.com/helm-v${HELM_VERSION}-linux-amd64.tar.gz" | tar zx
-    mv linux-amd64/helm /usr/bin/
-    helm version --client
-
-    curl -L -o /usr/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl"
-    chmod +x /usr/bin/kubectl
-    kubectl version --client
   }
 
   function setup_test_db() {
