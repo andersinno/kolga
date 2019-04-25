@@ -198,7 +198,7 @@ function build() {
   else
     echo "Downloaded docker build cache from latest master image"
   fi
-  if ! docker pull ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} > /dev/null; then
+  if ! docker pull ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME} > /dev/null; then
     echo "Pulling branch specific docker cache failed, building without"
   else
     echo "Downloaded docker build cache from latest branch specific image"
