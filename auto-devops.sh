@@ -205,7 +205,7 @@ function build() {
     --cache-from ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME} \
     -t ${DOCKER_IMAGE_TAG} \
     -t ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME} \
-    -f Dockerfile .
+    -f ${DOCKER_BUILD_SOURCE} .
 
   echo "Pushing to GitLab Container Registry..."
   docker push ${DOCKER_IMAGE_TAG}
