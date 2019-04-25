@@ -342,8 +342,16 @@ staging:
     if ! docker pull ${CI_REGISTRY_IMAGE}:master > /dev/null; then
       echo "Pulling latest master image for the project failed, running without cache"
     fi
+    if ! docker pull ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} > /dev/null; then
+      echo "Pulling branch specific docker cache failed, building without"
+    fi
 
-    docker build --cache-from ${CI_REGISTRY_IMAGE}:master -t ${DOCKER_IMAGE_TAG} -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} -f Dockerfile .
+    docker build \
+      --cache-from ${CI_REGISTRY_IMAGE}:master \
+      --cache-from ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} \
+      -t ${DOCKER_IMAGE_TAG} \
+      -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} \
+      -f Dockerfile .
 
     echo "Pushing to GitLab Container Registry..."
     docker push ${DOCKER_IMAGE_TAG}
@@ -355,7 +363,11 @@ staging:
     track="${1-stable}"
     name=$(deploy_name "$track")
 
-    kubectl delete pods,services,jobs,deployments,statefulsets,configmap,serviceaccount,rolebinding,role -l release="$name" -n "$KUBE_NAMESPACE" --include-uninitialized
+    kubectl delete \
+      pods,services,jobs,deployments,statefulsets,configmap,serviceaccount,rolebinding,role \
+      -l release="$name" \
+      -n "$KUBE_NAMESPACE" \
+      --include-uninitialized
 
     secret_name=$(application_secret_name "$track")
     kubectl delete secret --ignore-not-found -n "$KUBE_NAMESPACE" "$secret_name"
