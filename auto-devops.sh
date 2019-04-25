@@ -7,7 +7,7 @@ auto_database_url=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${CI_ENVIRONM
 export DATABASE_URL=${DATABASE_URL-$auto_database_url}
 
 export DOCKER_IMAGE_TAG_BASE=${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}
-export DOCKER_IMAGE_TAG=:${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_SHA}
+export DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_SHA}
 
 function registry_login() {
   if [[ -n "$CI_REGISTRY_USER" ]]; then
