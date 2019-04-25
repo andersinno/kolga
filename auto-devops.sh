@@ -6,10 +6,8 @@
 auto_database_url=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${CI_ENVIRONMENT_SLUG}-postgres:5432/${POSTGRES_DB}
 export DATABASE_URL=${DATABASE_URL-$auto_database_url}
 
-# Docker
-export CI_APPLICATION_REPOSITORY=$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG
-export CI_APPLICATION_TAG=$CI_COMMIT_SHA
-export CI_CONTAINER_NAME=ci_job_build_${CI_JOB_ID}
+export DOCKER_IMAGE_TAG_BASE=${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}
+export DOCKER_IMAGE_TAG=:${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_SHA}
 
 function registry_login() {
   if [[ -n "$CI_REGISTRY_USER" ]]; then
@@ -195,7 +193,7 @@ function build() {
   fetch_submodules
 
   registry_login
-  if ! docker pull ${CI_REGISTRY_IMAGE}:master > /dev/null; then
+  if ! docker pull ${DOCKER_IMAGE_TAG_BASE}:master > /dev/null; then
     echo "Pulling latest master image for the project failed, running without cache"
   fi
   if ! docker pull ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} > /dev/null; then
@@ -203,15 +201,15 @@ function build() {
   fi
 
   docker build \
-    --cache-from ${CI_REGISTRY_IMAGE}:master \
-    --cache-from ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} \
+    --cache-from ${DOCKER_IMAGE_TAG_BASE}:master \
+    --cache-from ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME} \
     -t ${DOCKER_IMAGE_TAG} \
-    -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} \
+    -t ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME} \
     -f Dockerfile .
 
   echo "Pushing to GitLab Container Registry..."
   docker push ${DOCKER_IMAGE_TAG}
-  docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}
+  docker push ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}
   echo ""
 }
 

@@ -9,8 +9,7 @@ stages:
   - stop_review
 
 variables:
-  CI_APPLICATION_REPOSITORY: "$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG"
-  DOCKER_IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+  DOCKER_IMAGE_NAME: "$CI_PROJECT_NAME"
 
   # Docker by default users `vfs` which is not suitable for
   # production use. overlay2 is the preferred driver by Docker.
@@ -32,23 +31,19 @@ variables:
   # Default name for the Postgres database
   POSTGRES_DB: "$CI_ENVIRONMENT_SLUG"
 
-  # Versions of Helm and Kubernetes CLI tools that should be installed
-  # Note that these should correspond version that are compatible with
-  # the version of the Kubernetes clusters
-  HELM_VERSION: 2.12.3
-  KUBERNETES_VERSION: 1.11.6
-
-build:
+.build:
   image: docker.anders.fi/anders/ci-runner-images/ci-runner-docker:latest
   services:
     - docker:stable-dind
+  variables:
+    DOCKER_BUILD_SOURCE: Dockerfile
   stage: build
   script:
     - build
   only:
     - branches
 
-test:
+.test:
   image: docker.anders.fi/anders/ci-runner-images/ci-runner-docker:latest
   services:
     - docker:stable-dind
