@@ -195,9 +195,13 @@ function build() {
   registry_login
   if ! docker pull ${DOCKER_IMAGE_TAG_BASE}:master > /dev/null; then
     echo "Pulling latest master image for the project failed, running without cache"
+  else
+    echo "Downloaded docker build cache from latest master image"
   fi
   if ! docker pull ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME} > /dev/null; then
     echo "Pulling branch specific docker cache failed, building without"
+  else
+    echo "Downloaded docker build cache from latest branch specific image"
   fi
 
   docker build \
