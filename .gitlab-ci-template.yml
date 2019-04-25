@@ -30,6 +30,7 @@ variables:
 
   # Default name for the Postgres database
   POSTGRES_DB: "$CI_ENVIRONMENT_SLUG"
+  STAGING_DISABLED: True
 
 .build:
   image: docker.anders.fi/anders/ci-runner-images/ci-runner-docker:latest
@@ -42,6 +43,9 @@ variables:
     - build
   only:
     - branches
+  except:
+    variables:
+      - $BUILD_DISABLED
 
 .test:
   image: docker.anders.fi/anders/ci-runner-images/ci-runner-docker:latest
@@ -76,7 +80,6 @@ review:
       - master
     variables:
       - $REVIEW_DISABLED
-
 
 cleanup_review:
   stage: cleanup_review
@@ -131,8 +134,9 @@ staging:
     refs:
       - master
     kubernetes: active
+  except:
     variables:
-      - $STAGING_ENABLED
+      - $STAGING_DISABLED
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
