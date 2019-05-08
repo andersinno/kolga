@@ -41,8 +41,6 @@ variables:
   stage: build
   script:
     - build
-  only:
-    - branches
   except:
     variables:
       - $BUILD_DISABLED
