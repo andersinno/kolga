@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "trackableappname" . }}
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app: {{ template "appname" . }}
+    release: "{{ .Release.Name }}"
+    track: "{{ .Values.application.track }}"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "appname" . }}
+  template:
+    metadata:
+      labels:
+        track: "{{ .Values.application.track }}"
+        release: "{{ .Release.Name }}"
+        app: {{ template "appname" . }}
+    spec:
+      containers:
+        - name: "{{ .Chart.Name }}"
+          image: "{{ .Values.image }}"
+          imagePullPolicy: {{ .Values.app_image.pullPolicy }}
+          {{- if .Values.application.secretName }}
+          envFrom:
+          - secretRef:
+                name: {{ .Values.application.secretName }}
+          {{- end }}
+          env:
+            - name: DATABASE_URL
+              value: {{ .Values.application.database_url | quote }}
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: APPLICATION_URL
+              value: {{ template "hostname" .Values.service.url }}
+          ports:
+            - name: http
+              containerPort: 8088
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8088
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 8088
+      imagePullSecrets:
+        - name: regcred

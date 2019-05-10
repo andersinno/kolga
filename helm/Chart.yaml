@@ -1,0 +1,4 @@
+apiVersion: v1
+description: "Anders Auto-deploy Helm Chart"
+name: anders-deploy-app
+version: 0.0.1

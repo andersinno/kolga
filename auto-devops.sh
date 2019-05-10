@@ -42,7 +42,7 @@ function test() {
   docker pull $DOCKER_IMAGE_TAG
   export DOCKER_HOST='tcp://localhost:2375'
   export DOCKER_APP_IMAGE=$DOCKER_IMAGE_TAG
-  export DOCKER_APP_COMMAND="make test-setup && make test'"
+  export DOCKER_APP_COMMAND="make test-setup && make test"
   make ci-command
 }
 
@@ -114,9 +114,9 @@ function initialize_database() {
     export DATABASE_URL=${DATABASE_URL-$auto_database_url}
 
     echo "Settings up database"
-    helm fetch stable/postgresql --version 3.10.1 --untar --untardir ./database/helm
-    mkdir -p ./database/manifests
-    helm template database/helm/postgresql \
+    helm fetch stable/postgresql --version 3.10.1 --untar --untardir /tmp/devops/ci-configuration/database/helm
+    mkdir -p /tmp/devops/ci-configuration/database/manifests
+    helm template /tmp/devops/ci-configuration/database/helm/postgresql \
       --name "$name" \
       --namespace "$KUBE_NAMESPACE" \
       --set image.tag="$POSTGRES_VERSION_TAG" \
@@ -124,11 +124,11 @@ function initialize_database() {
       --set postgresqlPassword="$POSTGRES_PASSWORD" \
       --set postgresqlDatabase="$POSTGRES_DB" \
       --set nameOverride="postgres" \
-      --output-dir ./database/manifests
+      --output-dir /tmp/devops/ci-configuration/database/manifests
 
     # --force is a destructive and disruptive action and will cause the service to be recreated and
     #         and will cause downtime. We don't mind in this case we do _want_ to recreate everything.
-    kubectl replace --recursive -f ./database/manifests/postgresql --force
+    kubectl replace --recursive -f /tmp/devops/ci-configuration/database/manifests/postgresql --force
     sleep 5
     kubectl wait pod --for=condition=ready --timeout=600s -l app=postgres,release=${CI_ENVIRONMENT_SLUG}
   fi
@@ -142,8 +142,14 @@ function deploy() {
 
   create_application_secret
 
+  # Copy default helm chart if one isn't present in the repo
+  if [[ ! -d "./helm" ]]; then
+    mkdir ./helm
+    cp -r /tmp/devops/ci-configuration/helm/* ./helm/.
+  fi
+
   initialize_database "$track"
-  mkdir ./manifests
+  mkdir /tmp/devops/manifests
   helm template ./helm \
     --name "$name" \
     --set namespace="$KUBE_NAMESPACE" \
@@ -155,7 +161,7 @@ function deploy() {
     --set application.initializeCommand="$DB_INITIALIZE" \
     --set application.migrateCommand="$DB_MIGRATE" \
     --set service.url="$CI_ENVIRONMENT_URL" \
-    --output-dir ./manifests
+    --output-dir /tmp/devops/manifests
 
   # [Re-] Running jobs by first removing them and then applying them again
   if [[ -n "$DB_INITIALIZE" ]]; then
@@ -164,19 +170,19 @@ function deploy() {
     kubectl apply -f ./manifests/anders-deploy-app/templates/00-init-job.yaml
     kubectl wait --for=condition=complete --timeout=600s jobs/${CI_ENVIRONMENT_SLUG}-initialize
 
-    rm ./manifests/anders-deploy-app/templates/00-init-job.yaml
+    rm /tmp/devops/manifests/anders-deploy-app/templates/00-init-job.yaml
   fi
 
   if [[ -n "$DB_MIGRATE" ]]; then
     echo "Applying migration command..."
     kubectl delete --ignore-not-found jobs/${CI_ENVIRONMENT_SLUG}-migrate
-    kubectl apply -f ./manifests/anders-deploy-app/templates/01-migrate-job.yaml
+    kubectl apply -f /tmp/devops/manifests/anders-deploy-app/templates/01-migrate-job.yaml
     kubectl wait --for=condition=complete --timeout=600s jobs/${CI_ENVIRONMENT_SLUG}-migrate
 
-    rm ./manifests/anders-deploy-app/templates/01-migrate-job.yaml
+    rm /tmp/devops/manifests/anders-deploy-app/templates/01-migrate-job.yaml
   fi
 
-  kubectl apply --recursive -f ./manifests/anders-deploy-app/templates
+  kubectl apply --recursive -f /tmp/devops/manifests/anders-deploy-app/templates
   kubectl wait --for=condition=available --timeout=600s deployments/${CI_ENVIRONMENT_SLUG}
 }
 
