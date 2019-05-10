@@ -221,11 +221,13 @@ function delete() {
   track="${1-stable}"
   name=$(deploy_name "$track")
 
-  kubectl delete \
-    pods,services,jobs,deployments,statefulsets,configmap,serviceaccount,rolebinding,role \
-    -l release="$name" \
-    -n "$KUBE_NAMESPACE" \
-    --include-uninitialized
+  # kubectl delete \
+  #   pods,services,jobs,deployments,statefulsets,configmap,serviceaccount,rolebinding,role \
+  #   -l release="$name" \
+  #   -n "$KUBE_NAMESPACE" \
+  #   --include-uninitialized
+  kubectl delete pods,services,jobs,deployments,statefulsets,configmap,serviceaccount,rolebinding,role -l release="$name" -n "$KUBE_NAMESPACE" --include-uninitialized
+
 
   secret_name=$(application_secret_name "$track")
   kubectl delete secret --ignore-not-found -n "$KUBE_NAMESPACE" "$secret_name"
