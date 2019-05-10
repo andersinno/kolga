@@ -2,10 +2,6 @@
 # Auto DevOps variables and functions
 [[ "$TRACE" ]] && set -x
 
-# Database
-auto_database_url=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${CI_ENVIRONMENT_SLUG}-postgres:5432/${POSTGRES_DB}
-export DATABASE_URL=${DATABASE_URL-$auto_database_url}
-
 export DOCKER_IMAGE_TAG_BASE=${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}
 export DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_SHA}
 
@@ -113,6 +109,10 @@ function initialize_database() {
   name=$(deploy_name "$track")
 
   if [[ "$POSTGRES_ENABLED" -eq 1 ]]; then
+    # Database
+    auto_database_url=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${CI_ENVIRONMENT_SLUG}-postgres:5432/${POSTGRES_DB}
+    export DATABASE_URL=${DATABASE_URL-$auto_database_url}
+
     echo "Settings up database"
     helm fetch stable/postgresql --version 3.10.1 --untar --untardir ./database/helm
     mkdir -p ./database/manifests
@@ -180,15 +180,6 @@ function deploy() {
   kubectl wait --for=condition=available --timeout=600s deployments/${CI_ENVIRONMENT_SLUG}
 }
 
-function setup_test_db() {
-  if [ -z ${KUBERNETES_PORT+x} ]; then
-    DB_HOST=postgres
-  else
-    DB_HOST=localhost
-  fi
-  export DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:5432/${POSTGRES_DB}"
-}
-
 function build() {
   fetch_submodules
 
@@ -226,6 +217,7 @@ function delete() {
   #   -l release="$name" \
   #   -n "$KUBE_NAMESPACE" \
   #   --include-uninitialized
+  # TODO: Split to multiple lines. For some reason the solution above breaks if doing so
   kubectl delete pods,services,jobs,deployments,statefulsets,configmap,serviceaccount,rolebinding,role -l release="$name" -n "$KUBE_NAMESPACE" --include-uninitialized
 
 
