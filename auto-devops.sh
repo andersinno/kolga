@@ -220,22 +220,20 @@ function build_stage() {
     echo "Downloaded docker build cache from latest branch specific image"
   fi
 
+  export CACHE_FROM="${CACHE_FROM} --cache-from ${DOCKER_IMAGE_TAG_BASE}:master${tag_suffix}"
+  export CACHE_FROM="${CACHE_FROM} --cache-from ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix}"
+
+  build_cmd="docker build"
+  build_cmd="${build_cmd} ${CACHE_FROM}"
+  build_cmd="${build_cmd} -t ${DOCKER_IMAGE_TAG}${tag_suffix}"
+  build_cmd="${build_cmd} -t ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix}"
+  build_cmd="${build_cmd} -f ${DOCKER_BUILD_SOURCE} ."
+
   if [[ ! -z "$tag_suffix" ]] ; then
-    docker build \
-      --cache-from ${DOCKER_IMAGE_TAG_BASE}:master${tag_suffix} \
-      --cache-from ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix} \
-      --target $1 \
-      -t ${DOCKER_IMAGE_TAG}${tag_suffix} \
-      -t ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix} \
-      -f ${DOCKER_BUILD_SOURCE} .
-  else
-    docker build \
-      --cache-from ${DOCKER_IMAGE_TAG_BASE}:master${tag_suffix} \
-      --cache-from ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix} \
-      -t ${DOCKER_IMAGE_TAG}${tag_suffix} \
-      -t ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix} \
-      -f ${DOCKER_BUILD_SOURCE} .
+    build_cmd="${build_cmd} --target $1"
   fi
+
+  eval $build_cmd
 
   echo "Pushing to GitLab Container Registry..."
   docker push ${DOCKER_IMAGE_TAG}${tag_suffix}
