@@ -1,0 +1,12 @@
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 80
+
+app_image:
+  pullPolicy: IfNotPresent
+
+ingress:
+  secretName: ai-qa-cert
+  path: /

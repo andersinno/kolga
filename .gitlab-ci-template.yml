@@ -138,5 +138,5 @@ staging:
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
-  - git clone --single-branch --branch v0 git@git.anders.fi:anders/ci-configuration.git /tmp/ci-configuration
-  - source /tmp/ci-configuration/auto-devops.sh
+  - git clone --single-branch --branch v0 git@git.anders.fi:anders/ci-configuration.git /tmp/devops/ci-configuration
+  - source /tmp/devops/ci-configuration/auto-devops.sh

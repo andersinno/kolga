@@ -1,0 +1,24 @@
+{{- $ingressPath := .Values.ingress.path -}}
+{{- $ingressName := .Chart.Name -}}
+{{- $secretName := .Chart.Name -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "appname" . }}-ingress
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "appname" . }}
+    release: {{ .Release.Name }}
+spec:
+  tls:
+    - hosts:
+      - {{ template "hostname" .Values.service.url }}
+      secretName: {{ .Values.ingress.secretName }}
+  rules:
+    - host: {{ template "hostname" .Values.service.url }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.path }}
+            backend:
+              serviceName: {{ template "appname" . }}-service
+              servicePort: 80

@@ -4,6 +4,7 @@ include:
 variables:
   DB_MIGRATE: python manage.py migrate && python manage.py init_bootstrap
   CI_DEBUG_TRACE: 0
+  DOCKER_IMAGE_NAME: "ci-configuration-test"
 
 build:
   extends: .build
@@ -13,6 +14,7 @@ test:
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
-  - source ./auto-devops.sh
-  - git clone --single-branch --branch master git@git.anders.fi:anders/ci-setup-test.git /tmp/ci-setup-test
-  - cp -rf /tmp/ci-setup-test/* ./.
+  - mkdir -p /tmp/devops/ci-configuration && cp -rf ./* /tmp/devops/ci-configuration/.
+  - git clone --single-branch --branch master git@git.anders.fi:anders/ci-configuration-test.git /tmp/devops/ci-configuration-test
+  - cd /tmp/devops/ci-configuration-test/
+  - source /tmp/devops/ci-configuration/auto-devops.sh
