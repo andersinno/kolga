@@ -221,6 +221,7 @@ function build_stage() {
   fi
 
   export CACHE_FROM="${CACHE_FROM} --cache-from ${DOCKER_IMAGE_TAG_BASE}:master${tag_suffix}"
+  export CACHE_FROM="${CACHE_FROM} --cache-from ${DOCKER_IMAGE_TAG}${tag_suffix}"
   export CACHE_FROM="${CACHE_FROM} --cache-from ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix}"
 
   build_cmd="docker build"
