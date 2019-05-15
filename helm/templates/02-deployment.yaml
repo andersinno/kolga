@@ -43,15 +43,15 @@ spec:
               value: {{ template "hostname" .Values.service.url }}
           ports:
             - name: http
-              containerPort: 8088
+              containerPort: 8000
               protocol: TCP
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 8088
+              port: 8000
           readinessProbe:
             httpGet:
               path: /readiness
-              port: 8088
+              port: 8000
       imagePullSecrets:
         - name: regcred
