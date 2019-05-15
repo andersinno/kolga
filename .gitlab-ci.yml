@@ -9,6 +9,12 @@ variables:
 build:
   extends: .build
 
+build-singlestage:
+  extends: .build
+  variables:
+    DOCKER_BUILD_SOURCE: "Singlestage-Dockerfile"
+    DOCKER_IMAGE_NAME: "ci-configuration-test-singlestage"
+
 test:
   extends: .test
 

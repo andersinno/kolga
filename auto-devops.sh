@@ -188,14 +188,18 @@ function deploy() {
 
 function build() {
   fetch_submodules
-
   registry_login
 
   # Pull, build, tag, and push every named stage from the Dockerfile for effective caching
-  grep -i "^FROM .* as .*$" ${DOCKER_BUILD_SOURCE} | sed -E 's/^FROM .* AS (.*)$/\1/I' | while read -r stage ; do
-    echo "Building stage: $stage"
-    build_stage $stage
+  set +e
+  grep -i "^FROM .* as .*$" ${DOCKER_BUILD_SOURCE} | while read -r match ; do
+    stage=$(echo "$match" | sed -E 's/^FROM .* AS (.*)$/\1/I')
+    if [[ ! -z "$stage" ]] ; then
+      echo "Building stage: $stage"
+      build_stage $stage
+    fi
   done
+  set -e
 
   # Finally build the entire image
   echo "Building full image"
