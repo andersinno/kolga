@@ -224,9 +224,11 @@ function build_stage() {
     echo "Downloaded docker build cache from latest branch specific image"
   fi
 
+  export CACHE_FROM="$(cat /tmp/devops/build-cache 2>/dev/null)"
   export CACHE_FROM="${CACHE_FROM} --cache-from ${DOCKER_IMAGE_TAG_BASE}:master${tag_suffix}"
   export CACHE_FROM="${CACHE_FROM} --cache-from ${DOCKER_IMAGE_TAG}${tag_suffix}"
   export CACHE_FROM="${CACHE_FROM} --cache-from ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix}"
+  echo $CACHE_FROM > /tmp/devops/build-cache
 
   build_cmd="docker build"
   build_cmd="${build_cmd} ${CACHE_FROM}"
