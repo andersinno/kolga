@@ -233,6 +233,7 @@ function build_stage() {
     build_cmd="${build_cmd} --target $1"
   fi
 
+  echo $build_cmd
   eval $build_cmd
 
   echo "Pushing to GitLab Container Registry..."
