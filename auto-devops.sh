@@ -190,27 +190,54 @@ function build() {
   fetch_submodules
 
   registry_login
-  if ! docker pull ${DOCKER_IMAGE_TAG_BASE}:master > /dev/null; then
+
+  # Pull, build, tag, and push every named stage from the Dockerfile for effective caching
+  grep -i "^FROM .* as .*$" ${DOCKER_BUILD_SOURCE} | sed -E 's/^FROM .* AS (.*)$/\1/I' | while read -r stage ; do
+    echo "Building stage: $stage"
+    build_stage $stage
+  done
+
+  # Finally build the entire image
+  echo "Building full image"
+  build_stage
+}
+
+function build_stage() {
+  if [[ ! -z "$1" ]] ; then
+    tag_suffix="-$1"
+  else
+    tag_suffix=""
+  fi
+
+  if ! docker pull ${DOCKER_IMAGE_TAG_BASE}:master${tag_suffix} > /dev/null; then
     echo "Pulling latest master image for the project failed, running without cache"
   else
     echo "Downloaded docker build cache from latest master image"
   fi
-  if ! docker pull ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME} > /dev/null; then
+  if ! docker pull ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix} > /dev/null; then
     echo "Pulling branch specific docker cache failed, building without"
   else
     echo "Downloaded docker build cache from latest branch specific image"
   fi
 
-  docker build \
-    --cache-from ${DOCKER_IMAGE_TAG_BASE}:master \
-    --cache-from ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME} \
-    -t ${DOCKER_IMAGE_TAG} \
-    -t ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME} \
-    -f ${DOCKER_BUILD_SOURCE} .
+  export CACHE_FROM="${CACHE_FROM} --cache-from ${DOCKER_IMAGE_TAG_BASE}:master${tag_suffix}"
+  export CACHE_FROM="${CACHE_FROM} --cache-from ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix}"
+
+  build_cmd="docker build"
+  build_cmd="${build_cmd} ${CACHE_FROM}"
+  build_cmd="${build_cmd} -t ${DOCKER_IMAGE_TAG}${tag_suffix}"
+  build_cmd="${build_cmd} -t ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix}"
+  build_cmd="${build_cmd} -f ${DOCKER_BUILD_SOURCE} ."
+
+  if [[ ! -z "$tag_suffix" ]] ; then
+    build_cmd="${build_cmd} --target $1"
+  fi
+
+  eval $build_cmd
 
   echo "Pushing to GitLab Container Registry..."
-  docker push ${DOCKER_IMAGE_TAG}
-  docker push ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}
+  docker push ${DOCKER_IMAGE_TAG}${tag_suffix}
+  docker push ${DOCKER_IMAGE_TAG_BASE}:${CI_COMMIT_REF_NAME}${tag_suffix}
   echo ""
 }
 
