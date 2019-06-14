@@ -82,6 +82,10 @@ function kube_auth() {
     k8s_cluster="$K8S_QA_CLUSTER_NAME"
     k8s_token="$K8S_QA_TOKEN"
     k8s_api_url="$K8S_QA_API_URL"
+  elif [ "$cluster" = "production" ]; then
+    k8s_cluster="$K8S_CLUSTER_NAME"
+    k8s_token="$K8S_TOKEN"
+    k8s_api_url="$K8S_API_URL"
   fi
 
   echo "$K8S_QA_CERTIFICATE" > ca.crt
