@@ -152,6 +152,8 @@ function deploy() {
     cp -r /tmp/devops/ci-configuration/helm/* ./helm/.
   fi
 
+   service_port=${SERVICE_PORT-8000}
+
   initialize_database "$track"
   mkdir /tmp/devops/manifests
   helm template ./helm \
@@ -165,6 +167,7 @@ function deploy() {
     --set application.initializeCommand="$DB_INITIALIZE" \
     --set application.migrateCommand="$DB_MIGRATE" \
     --set service.url="$CI_ENVIRONMENT_URL" \
+    --set service.targetPort=${SERVICE_PORT-8000} \
     --output-dir /tmp/devops/manifests
 
   # [Re-] Running jobs by first removing them and then applying them again
