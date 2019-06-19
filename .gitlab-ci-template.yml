@@ -71,7 +71,7 @@ review:
     POSTGRES_ENABLED: 1
   only:
     refs:
-      - branches
+      - merge_requests
     kubernetes: active
   except:
     refs:
@@ -87,7 +87,7 @@ cleanup_review:
   when: on_failure
   only:
     refs:
-      - branches
+      - merge_requests
     kubernetes: active
   except:
     refs:
@@ -109,7 +109,7 @@ stop_review:
   allow_failure: true
   only:
     refs:
-      - branches
+      - merge_requests
     kubernetes: active
   except:
     refs:
