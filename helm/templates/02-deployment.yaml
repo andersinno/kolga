@@ -31,6 +31,8 @@ spec:
           env:
             - name: DATABASE_URL
               value: {{ .Values.application.database_url | quote }}
+            - name: DATABASE_HOST
+              value: {{ .Values.application.database_host | quote }}
             - name: POD_IP
               valueFrom:
                 fieldRef:

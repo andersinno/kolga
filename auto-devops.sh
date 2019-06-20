@@ -114,7 +114,8 @@ function initialize_database() {
 
   if [[ "$POSTGRES_ENABLED" -eq 1 ]]; then
     # Database
-    auto_database_url=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${CI_ENVIRONMENT_SLUG}-postgres:5432/${POSTGRES_DB}
+    export DATABASE_HOST=${CI_ENVIRONMENT_SLUG}-postgres
+    auto_database_url=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}-postgres:5432/${POSTGRES_DB}
     export DATABASE_URL=${DATABASE_URL-$auto_database_url}
 
     echo "Settings up database"
@@ -163,6 +164,7 @@ function deploy() {
     --set appName="$CI_ENVIRONMENT_SLUG" \
     --set application.track="$track" \
     --set application.database_url="$DATABASE_URL" \
+    --set application.database_host="$DATABASE_HOST" \
     --set application.secretName="$APPLICATION_SECRET_NAME" \
     --set application.initializeCommand="$DB_INITIALIZE" \
     --set application.migrateCommand="$DB_MIGRATE" \
