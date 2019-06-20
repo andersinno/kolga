@@ -115,7 +115,7 @@ function initialize_database() {
   if [[ "$POSTGRES_ENABLED" -eq 1 ]]; then
     # Database
     export DATABASE_HOST=${CI_ENVIRONMENT_SLUG}-postgres
-    auto_database_url=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}-postgres:5432/${POSTGRES_DB}
+    auto_database_url=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}:5432/${POSTGRES_DB}
     export DATABASE_URL=${DATABASE_URL-$auto_database_url}
 
     echo "Settings up database"
