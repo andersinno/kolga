@@ -61,6 +61,8 @@ review:
     - export
     - kube_auth qa
     - ensure_namespace
+    - setup_helm
+    - create_application_secret
     - deploy
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
