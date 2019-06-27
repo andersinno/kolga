@@ -121,6 +121,8 @@ staging:
   script:
     - kube_auth qa
     - ensure_namespace
+    - setup_helm
+    - create_application_secret
     - deploy
   environment:
     name: qa/staging

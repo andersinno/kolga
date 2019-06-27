@@ -143,10 +143,6 @@ function deploy() {
   track="${1-stable}"
   name=$(deploy_name "$track")
 
-  setup_helm
-
-  create_application_secret
-
   # Copy default helm chart if one isn't present in the repo
   if [[ ! -d "./helm" ]]; then
     mkdir ./helm
