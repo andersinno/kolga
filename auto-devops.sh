@@ -157,7 +157,8 @@ function deploy() {
     --name "$name" \
     --set namespace="$KUBE_NAMESPACE" \
     --set image="$DOCKER_IMAGE_TAG" \
-    --set appName="$CI_ENVIRONMENT_SLUG" \
+    --set gitlab.app="$CI_PROJECT_PATH_SLUG" \
+    --set gitlab.env="$CI_ENVIRONMENT_SLUG" \
     --set application.track="$track" \
     --set application.database_url="$DATABASE_URL" \
     --set application.database_host="$DATABASE_HOST" \

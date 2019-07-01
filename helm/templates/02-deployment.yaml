@@ -18,6 +18,8 @@ spec:
         track: "{{ .Values.application.track }}"
         release: "{{ .Release.Name }}"
         app: {{ template "appname" . }}
+        app.gitlab.org/app: "{{ .Values.gitlab.app }}"
+        app.gitlab.org/env: "{{ .Values.gitlab.env }}"
     spec:
       containers:
         - name: "{{ .Chart.Name }}"
