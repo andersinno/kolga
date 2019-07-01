@@ -206,8 +206,9 @@ function deploy() {
   echo "Track: ${track}"
   echo "Image: ${DOCKER_IMAGE_TAG}"
   kubectl apply --recursive -f /tmp/devops/manifests/anders-deploy-app/templates
-  kubectl wait --for=condition=available --timeout=600s deployments/${CI_ENVIRONMENT_SLUG}
+
   echo "Waiting for deployment to be available"
+  kubectl wait --for=condition=available --timeout=600s deployments/${name}
 }
 
 function build() {
