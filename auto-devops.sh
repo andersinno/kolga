@@ -172,6 +172,7 @@ function deploy() {
     --set image="$DOCKER_IMAGE_TAG" \
     --set gitlab.app="$CI_PROJECT_PATH_SLUG" \
     --set gitlab.env="$CI_ENVIRONMENT_SLUG" \
+    --set releaseOverride="$CI_ENVIRONMENT_SLUG" \
     --set application.track="$track" \
     --set application.database_url="$DATABASE_URL" \
     --set application.database_host="$DATABASE_HOST" \
