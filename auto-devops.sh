@@ -107,6 +107,18 @@ function setup_helm() {
   helm repo update
 }
 
+function set_database_url() {
+  track="${1-stable}"
+
+  # Make the track uppercase (Note: only A-Z support)
+  uppercase_track=$(echo ${track} | tr a-z A-Z)
+
+  # Create environment variable name
+  database_var=K8S_${uppercase_track}_DATABASE_URL
+
+  # Set database url
+  eval "export DATABASE_URL=\${$database_var}"
+}
 # Deploys a database for the application
 function initialize_database() {
   track="${1-stable}"
@@ -151,6 +163,7 @@ function deploy() {
 
    service_port=${SERVICE_PORT-8000}
 
+  set_database_url "$track"
   initialize_database "$track"
   mkdir /tmp/devops/manifests
   helm template ./helm \

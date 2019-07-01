@@ -62,8 +62,8 @@ review:
     - kube_auth qa
     - ensure_namespace
     - setup_helm
-    - create_application_secret
-    - deploy
+    - create_application_secret review
+    - deploy review
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     url: http://$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG.$K8S_QA_INGRESS_DOMAIN
@@ -84,7 +84,7 @@ cleanup_review:
   stage: cleanup_review
   script:
     - kube_auth qa
-    - delete
+    - delete review
   when: on_failure
   only:
     refs:
@@ -105,7 +105,7 @@ stop_review:
   stage: stop_review
   script:
     - kube_auth qa
-    - delete
+    - delete review
   when: manual
   allow_failure: true
   only:
@@ -124,8 +124,8 @@ staging:
     - kube_auth qa
     - ensure_namespace
     - setup_helm
-    - create_application_secret
-    - deploy
+    - create_application_secret staging
+    - deploy staging
   environment:
     name: qa/staging
     url: http://$CI_PROJECT_PATH_SLUG-qa.$K8S_QA_INGRESS_DOMAIN
