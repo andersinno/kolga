@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: {{ template "trackableappname" . }}
   namespace: "{{ .Values.namespace }}"
+  annotations:
+    app.gitlab.org/app: "{{ .Values.gitlab.app }}"
+    app.gitlab.org/env: "{{ .Values.gitlab.env }}"
   labels:
     app: {{ template "appname" . }}
     release: "{{ .Release.Name }}"
@@ -14,12 +17,13 @@ spec:
       app: {{ template "appname" . }}
   template:
     metadata:
+      annotations:
+        app.gitlab.org/app: "{{ .Values.gitlab.app }}"
+        app.gitlab.org/env: "{{ .Values.gitlab.env }}"
       labels:
         track: "{{ .Values.application.track }}"
         release: "{{ .Release.Name }}"
         app: {{ template "appname" . }}
-        app.gitlab.org/app: "{{ .Values.gitlab.app }}"
-        app.gitlab.org/env: "{{ .Values.gitlab.env }}"
     spec:
       containers:
         - name: "{{ .Chart.Name }}"
