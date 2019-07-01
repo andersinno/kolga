@@ -201,8 +201,13 @@ function deploy() {
     rm /tmp/devops/manifests/anders-deploy-app/templates/01-migrate-job.yaml
   fi
 
+  echo "Deploying application"
+  echo "Namespace: ${KUBE_NAMESPACE}"
+  echo "Track: ${track}"
+  echo "Image: ${DOCKER_IMAGE_TAG}"
   kubectl apply --recursive -f /tmp/devops/manifests/anders-deploy-app/templates
   kubectl wait --for=condition=available --timeout=600s deployments/${CI_ENVIRONMENT_SLUG}
+  echo "Waiting for deployment to be available"
 }
 
 function build() {
