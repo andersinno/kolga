@@ -130,7 +130,7 @@ staging:
     name: qa/staging
     url: http://$CI_PROJECT_PATH_SLUG-qa.$K8S_QA_INGRESS_DOMAIN
   variables:
-    POSTGRES_ENABLED: 1
+    POSTGRES_ENABLED: 0
   only:
     refs:
       - master
