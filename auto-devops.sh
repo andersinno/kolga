@@ -126,7 +126,7 @@ function initialize_database() {
 
   if [[ "$POSTGRES_ENABLED" -eq 1 ]]; then
     # Database
-    export DATABASE_HOST=${CI_ENVIRONMENT_SLUG}-postgres
+    export DATABASE_HOST=${name}-postgres
     auto_database_url=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}:5432/${POSTGRES_DB}
     export DATABASE_URL=${DATABASE_URL-$auto_database_url}
 
@@ -147,7 +147,7 @@ function initialize_database() {
     #         and will cause downtime. We don't mind in this case we do _want_ to recreate everything.
     kubectl replace --recursive -f /tmp/devops/ci-configuration/database/manifests/postgresql --force
     sleep 5
-    kubectl wait pod --for=condition=ready --timeout=600s -l app=postgres,release=${CI_ENVIRONMENT_SLUG}
+    kubectl wait pod --for=condition=ready --timeout=600s -l app=postgres,release=${name}
   fi
 }
 
@@ -186,18 +186,18 @@ function deploy() {
   # [Re-] Running jobs by first removing them and then applying them again
   if [[ -n "$DB_INITIALIZE" ]]; then
     echo "Applying initialization command..."
-    kubectl delete --ignore-not-found jobs/${CI_ENVIRONMENT_SLUG}-initialize
+    kubectl delete --ignore-not-found jobs/${name}-initialize
     kubectl apply -f ./manifests/anders-deploy-app/templates/00-init-job.yaml
-    kubectl wait --for=condition=complete --timeout=600s jobs/${CI_ENVIRONMENT_SLUG}-initialize
+    kubectl wait --for=condition=complete --timeout=600s jobs/${name}-initialize
 
     rm /tmp/devops/manifests/anders-deploy-app/templates/00-init-job.yaml
   fi
 
   if [[ -n "$DB_MIGRATE" ]]; then
     echo "Applying migration command..."
-    kubectl delete --ignore-not-found jobs/${CI_ENVIRONMENT_SLUG}-migrate
+    kubectl delete --ignore-not-found jobs/${name}-migrate
     kubectl apply -f /tmp/devops/manifests/anders-deploy-app/templates/01-migrate-job.yaml
-    kubectl wait --for=condition=complete --timeout=600s jobs/${CI_ENVIRONMENT_SLUG}-migrate
+    kubectl wait --for=condition=complete --timeout=600s jobs/${name}-migrate
 
     rm /tmp/devops/manifests/anders-deploy-app/templates/01-migrate-job.yaml
   fi
