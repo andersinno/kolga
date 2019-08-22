@@ -40,6 +40,10 @@ variables:
   stage: build
   script:
     - build
+  only:
+    - merge_requests
+    - master
+    - qa
   except:
     variables:
       - $BUILD_DISABLED
@@ -51,6 +55,10 @@ variables:
   stage: test
   script:
     - test
+  only:
+    - merge_requests
+    - master
+    - qa
   except:
     variables:
       - $TEST_DISABLED
