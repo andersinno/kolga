@@ -138,8 +138,7 @@ function initialize_postgres() {
 
   # Database
   export DATABASE_HOST=${name}-postgres
-  auto_database_url=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:5432/${DATABASE_DB}
-  export DATABASE_URL=${DATABASE_URL-$auto_database_url}
+  export DATABASE_URL=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:5432/${DATABASE_DB}
 
   echo "Settings up Postgresql database"
   helm fetch stable/postgresql --version 3.10.1 --untar --untardir /tmp/devops/ci-configuration/database/helm
@@ -168,8 +167,7 @@ function initialize_mysql() {
 
   # Database
   export DATABASE_HOST=${name}-mysql
-  auto_database_url=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:3306/${DATABASE_DB}
-  export DATABASE_URL=${DATABASE_URL-$auto_database_url}
+  export DATABASE_URL=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:3306/${DATABASE_DB}
 
   echo "Settings up MySQL database"
   helm fetch stable/mysql --untar --untardir /tmp/devops/ci-configuration/database/helm
