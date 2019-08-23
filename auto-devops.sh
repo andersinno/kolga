@@ -119,36 +119,76 @@ function set_database_url() {
   # Set database url
   eval "export DATABASE_URL=\${$database_var}"
 }
-# Deploys a database for the application
+
 function initialize_database() {
   track="${1-stable}"
   name=$(deploy_name "$track")
 
-  if [[ "$POSTGRES_ENABLED" -eq 1 ]]; then
-    # Database
-    export DATABASE_HOST=${name}-postgres
-    auto_database_url=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}:5432/${POSTGRES_DB}
-    export DATABASE_URL=${DATABASE_URL-$auto_database_url}
-
-    echo "Settings up database"
-    helm fetch stable/postgresql --version 3.10.1 --untar --untardir /tmp/devops/ci-configuration/database/helm
-    mkdir -p /tmp/devops/ci-configuration/database/manifests
-    helm template /tmp/devops/ci-configuration/database/helm/postgresql \
-      --name "$name" \
-      --namespace "$KUBE_NAMESPACE" \
-      --set image.tag="$POSTGRES_VERSION_TAG" \
-      --set postgresqlUsername="$POSTGRES_USER" \
-      --set postgresqlPassword="$POSTGRES_PASSWORD" \
-      --set postgresqlDatabase="$POSTGRES_DB" \
-      --set nameOverride="postgres" \
-      --output-dir /tmp/devops/ci-configuration/database/manifests
-
-    # --force is a destructive and disruptive action and will cause the service to be recreated and
-    #         and will cause downtime. We don't mind in this case we do _want_ to recreate everything.
-    kubectl replace --recursive -f /tmp/devops/ci-configuration/database/manifests/postgresql --force
-    sleep 5
-    kubectl wait pod --for=condition=ready --timeout=600s -l app=postgres,release=${name}
+  if [[ ! -z "$MYSQL_ENABLED" ]] && [[ "$POSTGRES_ENABLED" -eq 1 ]]; then
+    initialize_postgres "$track"
+  elif [[ "$MYSQL_ENABLED" -eq 1 ]]; then
+    initialize_mysql "$track"
   fi
+}
+
+# Deploys a database for the application
+function initialize_postgres() {
+  track="${1-stable}"
+  name=$(deploy_name "$track")
+
+  # Database
+  export DATABASE_HOST=${name}-postgres
+  auto_database_url=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:5432/${DATABASE_DB}
+  export DATABASE_URL=${DATABASE_URL-$auto_database_url}
+
+  echo "Settings up Postgresql database"
+  helm fetch stable/postgresql --version 3.10.1 --untar --untardir /tmp/devops/ci-configuration/database/helm
+  mkdir -p /tmp/devops/ci-configuration/database/manifests
+  helm template /tmp/devops/ci-configuration/database/helm/postgresql \
+    --name "$name" \
+    --namespace "$KUBE_NAMESPACE" \
+    --set image.tag="$POSTGRES_VERSION_TAG" \
+    --set postgresqlUsername="$DATABASE_USER" \
+    --set postgresqlPassword="$DATABASE_PASSWORD" \
+    --set postgresqlDatabase="$DATABASE_DB" \
+    --set nameOverride="postgres" \
+    --output-dir /tmp/devops/ci-configuration/database/manifests
+
+  # --force is a destructive and disruptive action and will cause the service to be recreated and
+  #         and will cause downtime. We don't mind in this case we do _want_ to recreate everything.
+  kubectl replace --recursive -f /tmp/devops/ci-configuration/database/manifests/postgresql --force
+  sleep 5
+  kubectl wait pod --for=condition=ready --timeout=600s -l app=postgres,release=${name}
+}
+
+# Deploys a MySQL database for the application
+function initialize_mysql() {
+  track="${1-stable}"
+  name=$(deploy_name "$track")
+
+  # Database
+  export DATABASE_HOST=${name}-mysql
+  auto_database_url=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:5432/${DATABASE_DB}
+  export DATABASE_URL=${DATABASE_URL-$auto_database_url}
+
+  echo "Settings up MySQL database"
+  helm fetch stable/mysql --untar --untardir /tmp/devops/ci-configuration/database/helm
+  mkdir -p /tmp/devops/ci-configuration/database/manifests
+  helm template /tmp/devops/ci-configuration/database/helm/mysql \
+    --name "$name" \
+    --namespace "$KUBE_NAMESPACE" \
+    --set imageTag="$MYSQL_VERSION_TAG" \
+    --set mysqlUser="$DATABASE_USER" \
+    --set mysqlPassword="$DATABASE_PASSWORD" \
+    --set mysqlRootPassword="$DATABASE_PASSWORD" \
+    --set mysqlDatabase="$DATABASE_DB" \
+    --output-dir /tmp/devops/ci-configuration/database/manifests
+
+  # --force is a destructive and disruptive action and will cause the service to be recreated and
+  #         and will cause downtime. We don't mind in this case we do _want_ to recreate everything.
+  kubectl replace --recursive -f /tmp/devops/ci-configuration/database/manifests/mysql --force
+  sleep 5
+  kubectl wait pod --for=condition=ready --timeout=600s -l app=mysql,release=${name}
 }
 
 function deploy() {

@@ -21,15 +21,18 @@ variables:
 
   # Default usernames and passwords for postgres setups
   # Note: These are the credentials that will be used for testing
-  POSTGRES_USER: user
-  POSTGRES_PASSWORD: testing-password
+  DATABASE_USER: user
+  DATABASE_PASSWORD: testing-password
 
   # Which version of Postgres that will be installed for testing
   # and for preview environments
   POSTGRES_VERSION_TAG: "9.6"
 
+  # Which version of MySQL should be used if enabled
+  MYSQL_VERSION_TAG: "5.7"
+
   # Default name for the Postgres database
-  POSTGRES_DB: "$CI_ENVIRONMENT_SLUG"
+  DATABASE_DB: "$CI_ENVIRONMENT_SLUG"
 
 .build:
   image: docker.anders.fi/anders/ci-runner-images/ci-runner-docker:latest
