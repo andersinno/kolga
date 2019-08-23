@@ -124,7 +124,7 @@ function initialize_database() {
   track="${1-stable}"
   name=$(deploy_name "$track")
 
-  if [[ ! -z "$MYSQL_ENABLED" ]] && [[ "$POSTGRES_ENABLED" -eq 1 ]]; then
+  if [[ -z "$MYSQL_ENABLED" ]] && [[ "$POSTGRES_ENABLED" -eq 1 ]]; then
     initialize_postgres "$track"
   elif [[ "$MYSQL_ENABLED" -eq 1 ]]; then
     initialize_mysql "$track"
