@@ -201,7 +201,7 @@ function deploy() {
     cp -r /tmp/devops/ci-configuration/helm/* ./helm/.
   fi
 
-   service_port=${SERVICE_PORT-8000}
+  service_port=${SERVICE_PORT-8000}
 
   set_database_url "$track"
   initialize_database "$track"
