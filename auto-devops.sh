@@ -168,7 +168,7 @@ function initialize_mysql() {
 
   # Database
   export DATABASE_HOST=${name}-mysql
-  auto_database_url=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:5432/${DATABASE_DB}
+  auto_database_url=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:3306/${DATABASE_DB}
   export DATABASE_URL=${DATABASE_URL-$auto_database_url}
 
   echo "Settings up MySQL database"
