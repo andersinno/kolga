@@ -188,7 +188,7 @@ function initialize_mysql() {
   #         and will cause downtime. We don't mind in this case we do _want_ to recreate everything.
   kubectl replace --recursive -f /tmp/devops/ci-configuration/database/manifests/mysql --force
   sleep 5
-  kubectl wait pod --for=condition=ready --timeout=600s -l app=mysql,release=${name}
+  kubectl wait pod --for=condition=ready --timeout=600s -l app=${name}-mysql,release=${name}
 }
 
 function deploy() {
