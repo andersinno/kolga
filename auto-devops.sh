@@ -157,9 +157,10 @@ function initialize_postgres() {
   #         and will cause downtime. We don't mind in this case we do _want_ to recreate everything.
   kubectl replace --recursive -f /tmp/devops/ci-configuration/database/manifests/postgresql --force
   sleep 5
-  kubectl wait pod --for=condition=ready --timeout=600s -l app=postgres,release=${name}
   echo "Waiting for Postgres database to be available"
   echo "Matching pod & deployment with labels app=postgres,release=${name}"
+  kubectl wait deployment --for=condition=available --timeout=300s -l app=postgres,release=${name}
+  kubectl wait pod --for=condition=ready --timeout=300s -l app=postgres,release=${name}
 }
 
 # Deploys a MySQL database for the application
