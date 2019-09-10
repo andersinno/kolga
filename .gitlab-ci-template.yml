@@ -6,7 +6,6 @@ stages:
   - review
   - staging
   - cleanup_review
-  - stop_review
 
 variables:
   DOCKER_IMAGE_NAME: "$CI_PROJECT_NAME"
@@ -92,6 +91,11 @@ review:
       - $REVIEW_DISABLED
 
 cleanup_review:
+  variables:
+    git_strategy: none
+  environment:
+    name: qa/r/${CI_COMMIT_REF_SLUG}
+    action: stop
   stage: cleanup_review
   script:
     - kube_auth qa
@@ -113,7 +117,7 @@ stop_review:
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     action: stop
-  stage: stop_review
+  stage: cleanup_review
   script:
     - kube_auth qa
     - delete review
