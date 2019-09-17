@@ -96,7 +96,7 @@ function kube_auth() {
 }
 
 function ensure_namespace() {
-  kubectl describe namespace "$KUBE_NAMESPACE" || (kubectl create namespace "$KUBE_NAMESPACE" && kubectl label namespace $KUBE_NAMESPACE app=kubed)
+  kubectl describe namespace "$KUBE_NAMESPACE" || kubectl create namespace "$KUBE_NAMESPACE"
   kubectl label namespace $KUBE_NAMESPACE app=kubed --overwrite
 }
 
