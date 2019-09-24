@@ -270,9 +270,17 @@ function build() {
   done
   set -e
 
-  # Finally build the entire image
-  echo "Building full image"
-  build_stage
+  last_stage=$(sed -ne '/^FROM /x; ${ x; s/^FROM .* [Aa][Ss] \(.*\)$/\1/p };' "${DOCKER_BUILD_SOURCE}")
+  if [[ -z "$last_stage" ]]; then
+    # Build the entire image
+    echo "Building full image"
+    build_stage
+  else
+    # Tag the last stage as the "full" image
+    echo "Tagging ${DOCKER_IMAGE_TAG}-${last_stage} as ${DOCKER_IMAGE_TAG}"
+    docker tag "${DOCKER_IMAGE_TAG}-${last_stage}" "${DOCKER_IMAGE_TAG}"
+    docker push "${DOCKER_IMAGE_TAG}"
+  fi
 }
 
 function build_stage() {
