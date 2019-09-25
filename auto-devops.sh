@@ -270,7 +270,12 @@ function build() {
   done
   set -e
 
+  # Find the last `FROM` statement and output the stage name if any.
   last_stage=$(sed -ne '/^FROM /x; ${ x; s/^FROM .* [Aa][Ss] \(.*\)$/\1/p };' "${DOCKER_BUILD_SOURCE}")
+
+  # If the last `FROM` statement is a named stage we already built that
+  # in the previous step and can just tag that image as the "full" image.
+  # Otherwise we build the entire image.
   if [[ -z "$last_stage" ]]; then
     # Build the entire image
     echo "Building full image"
