@@ -90,7 +90,7 @@ review:
     variables:
       - $REVIEW_DISABLED
 
-cleanup_review:
+.review-cleanup:
   variables:
     git_strategy: none
   environment:
@@ -100,7 +100,6 @@ cleanup_review:
   script:
     - kube_auth qa
     - delete review
-  when: on_failure
   only:
     refs:
       - merge_requests
@@ -111,27 +110,15 @@ cleanup_review:
     variables:
       - $REVIEW_DISABLED
 
+cleanup_review:
+  extends: .review-cleanup
+  allow_failure: false
+  when: on_failure
+
 stop_review:
-  variables:
-    git_strategy: none
-  environment:
-    name: qa/r/${CI_COMMIT_REF_SLUG}
-    action: stop
-  stage: cleanup_review
-  script:
-    - kube_auth qa
-    - delete review
-  when: manual
+  extends: .review-cleanup
   allow_failure: true
-  only:
-    refs:
-      - merge_requests
-    kubernetes: active
-  except:
-    refs:
-      - master
-    variables:
-      - $REVIEW_DISABLED
+  when: manual
 
 staging:
   stage: staging
