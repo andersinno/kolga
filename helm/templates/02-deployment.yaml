@@ -4,8 +4,8 @@ metadata:
   name: {{ template "trackableappname" . }}
   namespace: "{{ .Values.namespace }}"
   annotations:
-    app.gitlab.org/app: "{{ .Values.gitlab.app }}"
-    app.gitlab.org/env: "{{ .Values.gitlab.env }}"
+    app.gitlab.com/app: "{{ .Values.gitlab.app }}"
+    app.gitlab.com/env: "{{ .Values.gitlab.env }}"
   labels:
     app: {{ template "appname" . }}
     release: "{{ .Release.Name }}"
@@ -18,8 +18,8 @@ spec:
   template:
     metadata:
       annotations:
-        app.gitlab.org/app: "{{ .Values.gitlab.app }}"
-        app.gitlab.org/env: "{{ .Values.gitlab.env }}"
+        app.gitlab.com/app: "{{ .Values.gitlab.app }}"
+        app.gitlab.com/env: "{{ .Values.gitlab.env }}"
       labels:
         track: "{{ .Values.application.track }}"
         release: "{{ .Release.Name }}"
