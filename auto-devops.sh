@@ -159,7 +159,6 @@ function initialize_postgres() {
   sleep 5
   echo "Waiting for Postgres database to be available"
   echo "Matching pod & deployment with labels app=postgres,release=${name}"
-  kubectl wait deployment --for=condition=available --timeout=300s -l app=postgres,release=${name}
   kubectl wait pod --for=condition=ready --timeout=300s -l app=postgres,release=${name}
 }
 
@@ -318,7 +317,7 @@ function build_stage() {
   build_cmd="${build_cmd} ${CACHE_FROM}"
   build_cmd="${build_cmd} -t ${DOCKER_IMAGE_TAG}${tag_suffix}"
   build_cmd="${build_cmd} -t ${DOCKER_IMAGE_TAG_BASE}:${commit_ref}${tag_suffix}"
-  build_cmd="${build_cmd} -f ${DOCKER_BUILD_SOURCE} ."
+  build_cmd="${build_cmd} -f ${DOCKER_BUILD_SOURCE} \"${DOCKER_BUILD_CONTEXT}\""
 
   if [[ ! -z "$tag_suffix" ]] ; then
     build_cmd="${build_cmd} --target $1"
