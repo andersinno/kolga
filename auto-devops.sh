@@ -159,7 +159,6 @@ function initialize_postgres() {
   sleep 5
   echo "Waiting for Postgres database to be available"
   echo "Matching pod & deployment with labels app=postgres,release=${name}"
-  kubectl wait deployment --for=condition=available --timeout=300s -l app=postgres,release=${name}
   kubectl wait pod --for=condition=ready --timeout=300s -l app=postgres,release=${name}
 }
 
