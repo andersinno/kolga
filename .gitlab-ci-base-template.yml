@@ -66,7 +66,7 @@ variables:
     variables:
       - $TEST_DISABLED
 
-review:
+.review:
   stage: review
   script:
     - export
@@ -111,17 +111,17 @@ review:
     variables:
       - $REVIEW_DISABLED
 
-cleanup_review:
+.cleanup_review:
   extends: .review-cleanup
   allow_failure: false
   when: on_failure
 
-stop_review:
+.stop_review:
   extends: .review-cleanup
   allow_failure: true
   when: manual
 
-staging:
+.staging:
   stage: staging
   script:
     - kube_auth qa

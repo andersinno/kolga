@@ -1,0 +1,14 @@
+include:
+  - local: '.gitlab-ci-base-template.yml'
+
+review:
+  extends: .review
+
+cleanup_review:
+  extends: .cleanup_review
+
+stop_review:
+  extends: .stop_review
+
+staging:
+  extends: .staging
