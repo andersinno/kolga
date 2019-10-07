@@ -318,7 +318,7 @@ function build_stage() {
   build_cmd="${build_cmd} ${CACHE_FROM}"
   build_cmd="${build_cmd} -t ${DOCKER_IMAGE_TAG}${tag_suffix}"
   build_cmd="${build_cmd} -t ${DOCKER_IMAGE_TAG_BASE}:${commit_ref}${tag_suffix}"
-  build_cmd="${build_cmd} -f ${DOCKER_BUILD_SOURCE} ."
+  build_cmd="${build_cmd} -f ${DOCKER_BUILD_SOURCE} \"${DOCKER_BUILD_CONTEXT}\""
 
   if [[ ! -z "$tag_suffix" ]] ; then
     build_cmd="${build_cmd} --target $1"
