@@ -7,6 +7,8 @@ metadata:
   labels:
     release: {{ .Release.Name }}
     app: {{ template "appname" . }}
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "1"
 spec:
   backoffLimit: 1
   template:

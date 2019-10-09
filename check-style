@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+flake8
+isort -c
+black . --check

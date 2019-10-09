@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+import argparse
+import sys
+
+
+class Devops:
+    def __init__(self) -> None:
+        self.parser = argparse.ArgumentParser(
+            description="Anders Devops",
+            usage="""devops.py <command> [<args>]
+
+Commands:
+   create_image         Builds Docker images from a local Dockerfile
+   create_review        Create a review environment from the local Dockerfile
+   review_cleanup       Cleans up the current namespace
+   docker_image         Prints the tag of final docker image
+   test_setup           Sets up an environment for running tests on built Docker image
+        """,
+        )
+        self.parser.add_argument("command", help="Subcommand to run")
+
+    def run_command(self) -> None:
+        # parse_args defaults to [1:] for args, but you need to
+        # exclude the rest of the args too, or validation will fail
+        args = self.parser.parse_args(sys.argv[1:2])
+        if not hasattr(self, args.command):
+            print("Unrecognized command")
+            self.parser.print_help()
+            exit(1)
+        # use dispatch pattern to invoke method with same name
+        getattr(self, args.command)()
+
+    def create_images(self) -> None:
+        from scripts.libs.git import Git
+        from scripts.libs.docker import Docker
+
+        g = Git()
+        g.update_submodules()
+
+        d = Docker()
+        d.login()
+        images = d.build_stages()
+        d.push_images(images)
+
+    def deploy_application(self) -> None:
+        from scripts.libs.kubernetes import Kubernetes
+        from scripts.libs.docker import Docker
+
+        parser = argparse.ArgumentParser(
+            description="Deploy an application based on the current Docker image",
+            usage="""devops.py deploy_application -t TRACK""",
+        )
+        parser.add_argument("-t", "--track", dest="track", default="stable")
+        args = parser.parse_args(sys.argv[2:])
+
+        d = Docker()
+
+        k = Kubernetes()
+        k.setup_helm()
+        k.create_namespace()
+        secret_name = k.create_secrets_from_environment(track=args.track)
+        k.create_database_deployment(track=args.track)
+        k.create_application_deployment(
+            docker_image=d.image_tag, secret_name=secret_name, track=args.track
+        )
+
+    def review_cleanup(self) -> None:
+        from scripts.libs.kubernetes import Kubernetes
+
+        k = Kubernetes()
+        k.delete_namespace()
+
+    def test_setup(self) -> None:
+        from scripts.libs.docker import Docker
+        from scripts.libs.git import Git
+
+        g = Git()
+        g.update_submodules()
+
+        d = Docker()
+        d.login()
+        d.pull_image(d.test_image_tag())
+
+    def docker_test_image(self) -> None:
+        from scripts.libs.docker import Docker
+
+        d = Docker()
+        print(d.test_image_tag())
+
+    def logo(self) -> None:
+        logo = """
+      ___            _                ______           _____           
+     / _ \\          | |               |  _  \\         |  _  |          
+    / /_\\ \\_ __   __| | ___ _ __ ___  | | | |_____   _| | | |_ __  ___ 
+    |  _  | '_ \\ / _` |/ _ \\ '__/ __| | | | / _ \\ \\ / / | | | '_ \\/ __|
+    | | | | | | | (_| |  __/ |  \\__ \\ | |/ /  __/\\ V /\\ \\_/ / |_) \\__ \\
+    \\_| |_/_| |_|\\__,_|\\___|_|  |___/ |___/ \\___| \\_/  \\___/| .__/|___/
+                                                            | |        
+                                                            |_|        
+        """  # noqa: W291
+        print(logo)
+
+
+if __name__ == "__main__":
+    do = Devops()
+    do.run_command()

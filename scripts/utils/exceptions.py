@@ -1,0 +1,2 @@
+class NoDatabaseConfigError(Exception):
+    pass
