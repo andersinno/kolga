@@ -177,6 +177,7 @@ function initialize_mysql() {
   helm template /tmp/devops/ci-configuration/database/helm/mysql \
     --name "$name" \
     --namespace "$KUBE_NAMESPACE" \
+    --set testFramework.enabled="False" \
     --set imageTag="$MYSQL_VERSION_TAG" \
     --set mysqlUser="$DATABASE_USER" \
     --set mysqlPassword="$DATABASE_PASSWORD" \
