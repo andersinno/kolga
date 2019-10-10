@@ -158,7 +158,7 @@ function initialize_postgres() {
   kubectl replace --recursive -f /tmp/devops/ci-configuration/database/manifests/postgresql --force
   sleep 5
   echo "Waiting for Postgres database to be available"
-  echo "Matching pod & deployment with labels app=postgres,release=${name}"
+  echo "Matching pod with labels app=postgres,release=${name}"
   kubectl wait pod --for=condition=ready --timeout=300s -l app=postgres,release=${name}
 }
 
@@ -190,7 +190,7 @@ function initialize_mysql() {
   sleep 5
   echo "Waiting for MySQL database to be available"
   echo "Matching pod with labels app=${name}-mysql,release=${name}"
-  kubectl wait pod --for=condition=ready --timeout=600s -l app=${name}-mysql,release=${name}
+  kubectl wait pod --for=condition=ready --timeout=300s -l app=${name}-mysql,release=${name}
 }
 
 function deploy() {
