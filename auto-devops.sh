@@ -222,6 +222,7 @@ function deploy() {
     --set application.secretName="$APPLICATION_SECRET_NAME" \
     --set application.initializeCommand="$DB_INITIALIZE" \
     --set application.migrateCommand="$DB_MIGRATE" \
+    --set application.temporaryStoragePath="$TEMPORARY_STORAGE_PATH" \
     --set service.url="$CI_ENVIRONMENT_URL" \
     --set service.targetPort=${SERVICE_PORT-8000} \
     --output-dir /tmp/devops/manifests
