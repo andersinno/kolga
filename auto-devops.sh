@@ -344,7 +344,7 @@ function delete() {
   #   -n "$KUBE_NAMESPACE" \
   #   --include-uninitialized
   # TODO: Split to multiple lines. For some reason the solution above breaks if doing so
-  kubectl delete pods,services,jobs,deployments,statefulsets,configmap,serviceaccount,rolebinding,role -l release="$name" -n "$KUBE_NAMESPACE" --include-uninitialized
+  kubectl delete all,ingress,storageClasses,volumeattachments,persistentvolumeclaims,persistentvolumes,configmaps,rolebinding,role -l release="$name" -n "$KUBE_NAMESPACE" --include-uninitialized
 
 
   secret_name=$(application_secret_name "$track")
