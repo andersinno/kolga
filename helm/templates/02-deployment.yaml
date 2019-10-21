@@ -65,11 +65,11 @@ spec:
           volumeMounts:
             - mountPath: {{ .Values.application.temporaryStoragePath }}
               name: non-persistent-writable-volume
-          {{- endif }}
+          {{- end }}
       imagePullSecrets:
         - name: regcred
       {{- if .Values.application.temporaryStoragePath }}
       volumes:
         - name: non-persistent-writable-volume
           emptyDir: {}
-      {{- endif }}
+      {{- end }}
