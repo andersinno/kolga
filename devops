@@ -5,30 +5,63 @@ import sys
 
 class Devops:
     def __init__(self) -> None:
-        self.parser = argparse.ArgumentParser(
-            description="Anders Devops",
-            usage="""devops.py <command> [<args>]
-
-Commands:
-   create_image         Builds Docker images from a local Dockerfile
-   create_review        Create a review environment from the local Dockerfile
-   review_cleanup       Cleans up the current namespace
-   docker_image         Prints the tag of final docker image
-   test_setup           Sets up an environment for running tests on built Docker image
-        """,
+        self.parser = argparse.ArgumentParser(description="Anders Devops")
+        subparsers = self.parser.add_subparsers(
+            dest="command",
+            metavar="<command>",
         )
-        self.parser.add_argument("command", help="Subcommand to run")
+
+        subparsers.add_parser(
+            "create_image",
+            help="Builds Docker images from a local Dockerfile",
+        )
+
+        subparsers.add_parser(
+            "create_review",
+            help="Creates a review environment from the local Dockerfile",
+        )
+
+        deploy_application_parser = subparsers.add_parser(
+            "deploy_application",
+            help="Deploy an application based on the current Docker image",
+        )
+        deploy_application_parser.add_argument(
+            "-t", "--track", dest="track", default="stable"
+        )
+
+        subparsers.add_parser(
+            "docker_image",
+            help="Prints the tag of final docker image",
+        )
+
+        subparsers.add_parser("docker_test_image")
+
+        subparsers.add_parser(
+            "help",
+            help="Prints this help message",
+        )
+
+        subparsers.add_parser(
+            "logo",
+            help="Prints the magnificent Anders DevOps logo",
+        )
+
+        subparsers.add_parser(
+            "review_cleanup",
+            help="Cleans up the current namespace",
+        )
+
+        subparsers.add_parser(
+            "test_setup",
+            help="Sets up an environment for running tests on built Docker image",
+        )
 
     def run_command(self) -> None:
-        # parse_args defaults to [1:] for args, but you need to
-        # exclude the rest of the args too, or validation will fail
-        args = self.parser.parse_args(sys.argv[1:2])
-        if not hasattr(self, args.command):
-            print("Unrecognized command")
-            self.parser.print_help()
-            exit(1)
+        args = vars(self.parser.parse_args())
+        command = args.pop("command")
+
         # use dispatch pattern to invoke method with same name
-        getattr(self, args.command)()
+        getattr(self, command)(**args)
 
     def create_images(self) -> None:
         from scripts.libs.git import Git
@@ -42,27 +75,23 @@ Commands:
         images = d.build_stages()
         d.push_images(images)
 
-    def deploy_application(self) -> None:
+    def deploy_application(self, track: str) -> None:
         from scripts.libs.kubernetes import Kubernetes
         from scripts.libs.docker import Docker
-
-        parser = argparse.ArgumentParser(
-            description="Deploy an application based on the current Docker image",
-            usage="""devops.py deploy_application -t TRACK""",
-        )
-        parser.add_argument("-t", "--track", dest="track", default="stable")
-        args = parser.parse_args(sys.argv[2:])
 
         d = Docker()
 
         k = Kubernetes()
         k.setup_helm()
         k.create_namespace()
-        secret_name = k.create_secrets_from_environment(track=args.track)
-        k.create_database_deployment(track=args.track)
+        secret_name = k.create_secrets_from_environment(track=track)
+        k.create_database_deployment(track=track)
         k.create_application_deployment(
-            docker_image=d.image_tag, secret_name=secret_name, track=args.track
+            docker_image=d.image_tag, secret_name=secret_name, track=track
         )
+
+    def help(self) -> None:
+        self.parser.print_help()
 
     def review_cleanup(self) -> None:
         from scripts.libs.kubernetes import Kubernetes
