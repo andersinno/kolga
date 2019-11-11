@@ -77,7 +77,7 @@ class Kubernetes:
 
     @staticmethod
     def _is_client_error(status: Any) -> bool:
-        return str(status).startswith("4")
+        return status is not None and 400 <= int(status) < 500
 
     @staticmethod
     def labels_to_string(labels: Dict[str, str]) -> str:
