@@ -83,20 +83,24 @@ class Kubernetes:
         return ",".join([f"{key}={value}" for (key, value) in labels.items()])
 
     @staticmethod
-    def _handle_api_error(e: ApiException, raise_client_exception: bool = False) -> Any:
-        error_body = loads_json(e.body)
+    def _handle_api_error(
+        error: ApiException, raise_client_exception: bool = False
+    ) -> Any:
+        error_body = loads_json(error.body)
         if not error_body:
             error_body = {"message": "An unknown error occurred"}
-        if Kubernetes._is_client_error(e.status):
+        if Kubernetes._is_client_error(error.status):
             reason = camel_case_split(str(error_body.get("reason", "Unknown")))
             print(
                 f"{cf.yellow}{cf.bold}{reason}{cf.reset}"
-                f" ({e.status} {cf.italic}{error_body['message'].capitalize()}{cf.reset})"
+                f" ({error.status} {cf.italic}{error_body['message'].capitalize()}{cf.reset})"
             )
             if raise_client_exception:
-                raise e
+                raise error
         else:
-            logger.error("Could not create namespace", error=e, raise_exception=True)
+            logger.error(
+                "Could not create namespace", error=error, raise_exception=True
+            )
         return error_body
 
     @staticmethod
