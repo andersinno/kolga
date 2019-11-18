@@ -13,6 +13,8 @@ stages:
 
 .code-tests:
   image: ${DEVELOPMENT_IMAGE}
+  tags:
+    - light
   only:
     - merge_requests
     - master
