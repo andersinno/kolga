@@ -21,6 +21,8 @@ class Docker:
         self.dockerfile = Path(dockerfile)
 
         self.image_repo = f"{settings.CONTAINER_REGISTRY_REPO}"
+        if settings.DOCKER_IMAGE_NAME:
+            self.image_repo = f"{self.image_repo}/{settings.DOCKER_IMAGE_NAME}"
         self.image_tag = f"{self.image_repo}:{settings.GIT_COMMIT_SHA}"
 
         self.image_cache: Set[str] = set()

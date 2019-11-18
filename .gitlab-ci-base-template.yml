@@ -8,7 +8,6 @@ stages:
   - cleanup_review
 
 variables:
-  DOCKER_IMAGE_NAME: "$CI_PROJECT_NAME"
   DOCKER_BUILD_CONTEXT: "."
 
   # Docker by default users `vfs` which is not suitable for
