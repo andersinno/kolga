@@ -45,6 +45,15 @@ DEFAULT_TRACK = "stable"
 
 
 class Kubernetes:
+    """
+    A wrapper class around various Kubernetes tools and functions
+
+    The class works as a one-stop-shop for handling resources in
+    Kubernetes. It does so by utilizing not only `kubectl` but also
+    Kubernets own API through the `kubernetes` Python package
+    and Helm through the Python `helm` package.
+    """
+
     ICON = "☸️"
     HELM_ICON = "⎈"
 
@@ -76,16 +85,48 @@ class Kubernetes:
 
     @staticmethod
     def _is_client_error(status: Any) -> bool:
+        """
+        Checks if a value is a client HTTP error
+
+        Args:
+            status: None or a integer castable value
+
+        Returns:
+            True of the value is a client error, else False
+        """
         return status is not None and 400 <= int(status) < 500
 
     @staticmethod
     def labels_to_string(labels: Dict[str, str]) -> str:
+        """
+        Creates a string representation of a dict that can
+        be used when passing values to Kubernetes.
+
+        Args:
+            labels: Testing
+
+        Returns:
+            A comma separated string of style ``key=value,key2=value2``
+        """
         return ",".join([f"{key}={value}" for (key, value) in labels.items()])
 
     @staticmethod
     def _handle_api_error(
         error: ApiException, raise_client_exception: bool = False
     ) -> Any:
+        """
+        Handle a ApiException from the Kubernetes client
+
+        Args:
+            error: ApiException to handle
+            raise_client_exception: Should the method raise an error on client errors
+
+        Returns:
+            The the stringified version of the errors JSON body
+
+        Raises:
+            ApiException: If the ``raise_client_exception`` argument is set to ``True``
+        """
         error_body = loads_json(error.body)
         if not error_body:
             error_body = {"message": "An unknown error occurred"}
@@ -105,6 +146,19 @@ class Kubernetes:
 
     @staticmethod
     def _encode_secret(data: Dict[str, str]) -> Dict[str, str]:
+        """
+        Base64 values of a dict
+
+        Kubernetes requires base64 encoded values to be sent instead
+        of plain text when creating secrets or config maps. This method
+        takes care of base64 encoding values of a dict using UTF-8 encoding.
+
+        Args:
+            data: dict to be encoded
+
+        Returns:
+            Dict with base64 encoded values
+        """
         encoded_dict = {}
         for k, v in data.items():
             encoded_dict[k] = b64encode(v.encode("UTF-8")).decode("UTF-8")
@@ -114,6 +168,19 @@ class Kubernetes:
     def get_environments_secrets_by_prefix(
         prefix: str = settings.K8S_SECRET_PREFIX,
     ) -> Dict[str, Any]:
+        """
+        Extract all environment variables with a prefix
+
+        Environment variables strting with the `prefix` attribute are
+        extracted and put into a dict.
+
+        Args:
+            prefix: Prefix to environment key that should be extracted
+
+        Returns:
+            A dict of keys stripped of the prefix and the value as given
+            in the environment variable.
+        """
         return {
             key.replace(prefix, ""): value
             for key, value in os.environ.items()
@@ -121,6 +188,20 @@ class Kubernetes:
         }
 
     def create_namespace(self, namespace: str = settings.K8S_NAMESPACE) -> str:
+        """
+        Create a Kubernetes namespace
+
+        Args:
+            namespace: Name of the namespace to create
+
+        Returns:
+            On success, returns the name of the namespace
+
+        Raises:
+            ApiException: If the namespace creation fails by other means than a
+                          namespace conflict, something that happens if the
+                          namespace already exists.
+        """
         v1 = k8s_client.CoreV1Api(self.client)
         v1_metadata = k8s_client.V1ObjectMeta(name=namespace, labels={"app": "kubed"})
         v1_namespace = k8s_client.V1Namespace(metadata=v1_metadata)

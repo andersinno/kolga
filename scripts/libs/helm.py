@@ -12,9 +12,19 @@ BASE_UNTAR_DIR = Path("/tmp/devops/helm")
 
 
 class Helm:
+    """
+    A wrapper class around various Helm tools
+    """
+
     ICON = "⎈"
 
     def setup_helm(self) -> None:
+        """
+        Makes sure that Helm is ready to use
+
+        Returns:
+            None
+        """
         logger.info(icon=f"{self.ICON}  🚀", title="Initializing Helm")
 
         # TODO: Remove once this is added by default and Helm 3 is stable

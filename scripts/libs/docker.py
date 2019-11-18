@@ -11,6 +11,10 @@ from ..settings import settings
 
 
 class Docker:
+    """
+    A wrapper class around various Docker tools
+    """
+
     STAGE_REGEX = re.compile(
         r"^FROM .*?(?: +AS +(?P<stage>.*))?$", re.IGNORECASE | re.MULTILINE
     )

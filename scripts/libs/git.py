@@ -4,6 +4,10 @@ from scripts.utils.logger import logger
 
 
 class Git:
+    """
+    A wrapper class around various Git tools
+    """
+
     ICON = "🐙"
 
     def __init__(self, repo_path: str = "") -> None:
@@ -11,6 +15,12 @@ class Git:
         self.repo = _git.Repo(repo_path)
 
     def update_submodules(self) -> None:
+        """
+        Update all submodules (git submodules update --init)
+
+        Returns:
+            None
+        """
         logger.info(icon=f"{self.ICON} 🌱", title="Updating submodules: ", end="")
         if not self.repo.submodules:
             logger.success("No submodules found")
