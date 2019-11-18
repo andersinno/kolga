@@ -50,7 +50,7 @@ class Settings:
     K8S_API_CA_PEM_FILE: str = env.str("K8S_API_CA_PEM_FILE", "")
     K8S_API_URL: str = env.str("K8S_API_URL", "")
     K8S_INGRESS_BASE_DOMAIN: str = env.str("K8S_INGRESS_BASE_DOMAIN", "")
-    K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET")
+    K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET_")
     K8S_NAMESPACE: str = env.str("K8S_NAMESPACE", "")
     KUBECONFIG: str = env.str("KUBECONFIG", "")
 

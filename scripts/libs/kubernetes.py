@@ -112,7 +112,9 @@ class Kubernetes:
         prefix: str = settings.K8S_SECRET_PREFIX,
     ) -> Dict[str, Any]:
         return {
-            key: value for key, value in os.environ.items() if key.startswith(prefix)
+            key.replace(prefix, ""): value
+            for key, value in os.environ.items()
+            if key.startswith(prefix)
         }
 
     def create_namespace(self, namespace: str = settings.K8S_NAMESPACE) -> str:

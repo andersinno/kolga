@@ -47,11 +47,12 @@ def test__encode_secret() -> None:
 
 
 def test_get_environments_secrets_by_prefix() -> None:
-    prefix = f"TEST_{str(uuid4())}_SECRET"
+    prefix = f"TEST_{str(uuid4())}_SECRET_"
 
-    secrets = {f"{prefix}_PASSWORD": "pass", f"{prefix}_LIZARD": "-1"}
+    env_vars = {f"{prefix}PASSWORD": "pass", f"{prefix}LIZARD": "-1"}
+    secrets = {f"PASSWORD": "pass", f"LIZARD": "-1"}
 
-    for key, secret in secrets.items():
+    for key, secret in env_vars.items():
         os.environ[key] = secret
 
     assert Kubernetes.get_environments_secrets_by_prefix(prefix) == secrets
