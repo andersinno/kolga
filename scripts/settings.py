@@ -40,7 +40,7 @@ class Settings:
     POSTGRES_VERSION_TAG: str = env.str("POSTGRES_VERSION_TAG", "9.6")
     MYSQL_VERSION_TAG: str = env.str("MYSQL_VERSION_TAG", "5.7")
     MYSQL_ENABLED: bool = env.bool("MYSQL_ENABLED", False)
-    POSTGRES_ENABLED: bool = env.bool("POSTGRES_ENABLED", True)
+    POSTGRES_ENABLED: bool = env.bool("POSTGRES_ENABLED", False)
     APP_INITIALIZE_COMMAND: str = env.str("APP_INITIALIZE_COMMAND", "")
     APP_MIGRATE_COMMAND: str = env.str("APP_MIGRATE_COMMAND", "")
 
