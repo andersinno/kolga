@@ -9,7 +9,7 @@ style-tests:
 typing-tests:
 	./check-typing
 
-typing-tests:
+package-tests:
 	./check-packages
 
 docs:

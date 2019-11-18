@@ -46,7 +46,7 @@ test-typing:
 test-packages:
   extends: .code-tests
   script:
-    - make packages-tests
+    - make package-tests
 
 test-docs:
   extends: .code-tests
