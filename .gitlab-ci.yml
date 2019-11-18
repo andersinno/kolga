@@ -18,15 +18,8 @@ stages:
     - master
     - qa
 
-build-image:
+build:
   extends: .build
-  script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - set +e && docker pull "${FINAL_IMAGE}" 2>/dev/null && set -e
-    - docker build -t "${SHA_IMAGE}" .
-    - docker build --target development -t "${DEVELOPMENT_IMAGE}" .
-    - docker push "${SHA_IMAGE}"
-    - docker push "${DEVELOPMENT_IMAGE}"
 
 release:
   stage: release
