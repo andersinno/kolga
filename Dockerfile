@@ -45,7 +45,7 @@ FROM build-base AS poetry
 ARG POETRY_CHECKSUM=3e569de8856be25f4a06bd43c72d3a876a8e3f148f088b151b5770ddeaae611e
 ARG POETRY_TARGET=/tmp/get-poetry.py
 
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py -o "$POETRY_TARGET"
+RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/1.0.0b5/get-poetry.py -o "$POETRY_TARGET"
 RUN sha256sum "$POETRY_TARGET"
 RUN echo "$POETRY_CHECKSUM *$POETRY_TARGET" | sha256sum -c -
 RUN python /tmp/get-poetry.py
