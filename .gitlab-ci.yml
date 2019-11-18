@@ -48,6 +48,15 @@ test-packages:
   script:
     - make packages-tests
 
+test-docs:
+  extends: .code-tests
+  script:
+    - make docs
+  artifacts:
+    paths:
+      - docs/_build
+    expire_in: 1 week
+
 test:
   extends: .test
 

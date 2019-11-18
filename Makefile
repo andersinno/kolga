@@ -12,4 +12,7 @@ typing-tests:
 typing-tests:
 	./check-packages
 
-.PHONY: test, style-tests, typing-tests, packages-tests
+docs:
+	cd docs && $(MAKE) clean && $(MAKE) html
+
+.PHONY: test, style-tests, typing-tests, packages-tests, docs
