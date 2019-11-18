@@ -12,13 +12,8 @@ class Devops:
         )
 
         subparsers.add_parser(
-            "create_image",
+            "create_images",
             help="Builds Docker images from a local Dockerfile",
-        )
-
-        subparsers.add_parser(
-            "create_review",
-            help="Creates a review environment from the local Dockerfile",
         )
 
         deploy_application_parser = subparsers.add_parser(
@@ -30,11 +25,9 @@ class Devops:
         )
 
         subparsers.add_parser(
-            "docker_image",
-            help="Prints the tag of final docker image",
+            "docker_test_image",
+            help="Print image tag",
         )
-
-        subparsers.add_parser("docker_test_image")
 
         subparsers.add_parser(
             "help",
