@@ -116,7 +116,7 @@ def get_environment_vars_by_prefix(prefix: str) -> Dict[str, str]:
         in the environment variable.
     """
     return {
-        key[len(prefix):]: value
+        key[len(prefix) :]: value
         for key, value in os.environ.items()
         if key.startswith(prefix)
     }
