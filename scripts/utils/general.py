@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import subprocess
 from typing import Any, Dict, List, Optional
@@ -98,6 +99,27 @@ def get_database_url(track: str) -> URL:
     )
 
     return make_url(database_url)
+
+
+def get_environment_vars_by_prefix(prefix: str) -> Dict[str, str]:
+    """
+    Extract all environment variables with a prefix
+
+    Environment variables strting with the `prefix` attribute are
+    extracted and put into a dict with the `prefix` removed.
+
+    Args:
+        prefix: Prefix to environment key that should be extracted
+
+    Returns:
+        A dict of keys stripped of the prefix and the value as given
+        in the environment variable.
+    """
+    return {
+        key[len(prefix):]: value
+        for key, value in os.environ.items()
+        if key.startswith(prefix)
+    }
 
 
 def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessResult:
