@@ -70,11 +70,16 @@ class Devops:
 
         k = Kubernetes()
         k.setup_helm()
-        k.create_namespace()
-        secret_name = k.create_secrets_from_environment(track=track)
-        k.create_database_deployment(track=track)
+        namespace = k.create_namespace()
+        secret_name = k.create_secrets_from_environment(
+            namespace=namespace, track=track,
+        )
+        k.create_database_deployment(namespace=namespace, track=track)
         k.create_application_deployment(
-            docker_image=d.image_tag, secret_name=secret_name, track=track
+            docker_image=d.image_tag,
+            namespace=namespace,
+            secret_name=secret_name,
+            track=track,
         )
 
     def help(self) -> None:

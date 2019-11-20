@@ -134,10 +134,10 @@ def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
 def test_create_postgres_database(
     kubernetes: Kubernetes, test_namespace: str, helm: Helm
 ) -> None:
-    kubernetes.create_postgres_database()
+    kubernetes.create_postgres_database(namespace=test_namespace)
 
 
 def test_create_mysql_database(
     kubernetes: Kubernetes, test_namespace: str, helm: Helm
 ) -> None:
-    kubernetes.create_mysql_database()
+    kubernetes.create_mysql_database(namespace=test_namespace)
