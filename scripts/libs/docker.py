@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 import docker.errors
 
@@ -8,6 +8,7 @@ from scripts.utils.logger import logger
 from scripts.utils.models import DockerImage
 
 from ..settings import settings
+from ..utils.general import get_environment_vars_by_prefix
 
 
 class Docker:
@@ -74,6 +75,17 @@ class Docker:
         :return:
         """
         return git_commit_ref.translate(str.maketrans("_/", "--"))
+
+    @staticmethod
+    def get_build_arguments() -> Dict[str, str]:
+        """
+        Get build arguments from environment
+
+        Returns:
+            Dict of build arguments
+        """
+
+        return get_environment_vars_by_prefix(settings.DOCKER_BUILD_ARG_PREFIX)
 
     def get_stages(self, announce: bool = True) -> List[str]:
         stages = []
@@ -174,9 +186,10 @@ class Docker:
         logger.info(icon=f"{self.ICON} 🔨", title=f"Building stage '{stage}': ", end="")
         try:
             image_obj, build_log = self.client.images.build(
-                path=path,
-                dockerfile=settings.DOCKER_BUILD_SOURCE,
+                buildargs=self.get_build_arguments(),
                 cache_from=list(self.image_cache),
+                dockerfile=settings.DOCKER_BUILD_SOURCE,
+                path=path,
                 target=stage,
             )
             image = DockerImage(image_obj, self.image_repo)

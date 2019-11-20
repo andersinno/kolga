@@ -19,8 +19,11 @@ class Settings:
     CONTAINER_REGISTRY: str = env.str("CONTAINER_REGISTRY", "docker.anders.fi")
     CONTAINER_REGISTRY_REPO: str = env.str("CONTAINER_REGISTRY_REPO", "")
     DOCKER_IMAGE_NAME: str = env.str("DOCKER_IMAGE_NAME", "")
-    DOCKER_BUILD_SOURCE: str = env.str("DOCKER_BUILD_SOURCE", "Dockerfile")
+    DOCKER_BUILD_ARG_PREFIX: str = env.str(
+        "DOCKER_BUILD_ARG_PREFIX", "DOCKER_BUILD_ARG_",
+    )
     DOCKER_BUILD_CONTEXT: str = env.str("DOCKER_BUILD_CONTEXT", ".")
+    DOCKER_BUILD_SOURCE: str = env.str("DOCKER_BUILD_SOURCE", "Dockerfile")
     DOCKER_HOST: str = env.str("DOCKER_HOST", "unix:///var/run/docker.sock")
     DOCKER_TEST_IMAGE_STAGE: str = env.str("DOCKER_TEST_IMAGE_STAGE", "development")
 

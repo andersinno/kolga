@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 flake8
 isort -c
 black . --check

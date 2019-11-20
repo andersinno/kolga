@@ -1,4 +1,3 @@
-import os
 import shutil
 from base64 import b64encode
 from pathlib import Path
@@ -21,6 +20,7 @@ from ..utils.general import (
     get_database_type,
     get_database_url,
     get_deploy_name,
+    get_environment_vars_by_prefix,
     get_secret_name,
     loads_json,
     run_os_command,
@@ -181,11 +181,7 @@ class Kubernetes:
             A dict of keys stripped of the prefix and the value as given
             in the environment variable.
         """
-        return {
-            key.replace(prefix, ""): value
-            for key, value in os.environ.items()
-            if key.startswith(prefix)
-        }
+        return get_environment_vars_by_prefix(prefix)
 
     def create_namespace(self, namespace: str = settings.K8S_NAMESPACE) -> str:
         """
