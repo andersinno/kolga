@@ -340,7 +340,7 @@ class Kubernetes:
             resource,
             "--include-uninitialized",
             "--ignore-not-found",
-            f'--namespace="{namespace}"',
+            f"--namespace={namespace}",
         ]
 
         logger.info(icon=f"{self.ICON}  🗑️ ", title=f"Removing {resource}", end="")
@@ -388,7 +388,7 @@ class Kubernetes:
         namespace: str = settings.K8S_NAMESPACE,
         raise_exception: bool = True,
     ) -> SubprocessResult:
-        os_command = ["kubectl", "get", resource, f'--namespace="{namespace}"']
+        os_command = ["kubectl", "get", resource, f"--namespace={namespace}"]
 
         logger.info(icon=f"{self.ICON}  🗑️ ", title=f"Getting {resource}", end="")
         if labels:
