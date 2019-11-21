@@ -128,8 +128,8 @@ class Docker:
             logger.warning("Not found")
             if error_on_not_found:
                 raise e
-        except Exception:
-            logger.error(raise_exception=raise_exception)
+        except Exception as e:
+            logger.error(error=e, raise_exception=raise_exception)
         else:
             logger.success()
             return True
