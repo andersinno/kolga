@@ -1,3 +1,6 @@
+[tool.black]
+include = '\.pyi?$|^/devops$'
+
 [tool.poetry]
 name = "ci-configuration"
 version = "3.0.0"
