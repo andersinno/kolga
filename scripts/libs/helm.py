@@ -8,8 +8,6 @@ from scripts.utils.logger import logger
 from ..settings import settings
 from ..utils.general import run_os_command
 
-BASE_UNTAR_DIR = Path("/tmp/devops/helm")
-
 
 class Helm:
     """

@@ -16,11 +16,6 @@ env = environs.Env()
 
 CAMEL_SPLIT_REGEX = re.compile(r"[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))")
 
-# Taken directly from Kubernetes error output
-DNS_SUBDOMAIN_REGEX = re.compile(
-    r"[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
-)
-
 MYSQL = "mysql"
 POSTGRES = "postgres"
 
