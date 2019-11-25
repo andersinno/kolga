@@ -139,9 +139,7 @@ class Kubernetes:
             if raise_client_exception:
                 raise error
         else:
-            logger.error(
-                "Could not create namespace", error=error, raise_exception=True
-            )
+            logger.error(error=error, raise_exception=True)
         return error_body
 
     @staticmethod
