@@ -1,4 +1,4 @@
-image: docker.anders.fi/anders/ci-configuration:9dc3f999692d16fdee1924db5dfe32642856d8cf
+image: docker.anders.fi/anders/ci-configuration:python-refactor-build-image
 
 stages:
   - build
