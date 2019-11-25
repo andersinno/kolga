@@ -14,8 +14,6 @@ from .url import URL, make_url  # type: ignore
 
 env = environs.Env()
 
-CAMEL_SPLIT_REGEX = re.compile(r"[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))")
-
 MYSQL = "mysql"
 POSTGRES = "postgres"
 
