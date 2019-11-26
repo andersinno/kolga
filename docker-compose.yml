@@ -1,0 +1,87 @@
+version: '3.7'
+services:
+  kubernetes-master:
+    image: rancher/k3s:v0.10.0
+    command: server --disable-agent
+    environment:
+    - K3S_CLUSTER_SECRET=k3stestclustersecret
+    - K3S_KUBECONFIG_OUTPUT=/config/kubeconfig.yaml
+    - K3S_KUBECONFIG_MODE=666
+    - CONTAINERD_LOG_LEVEL=error
+    volumes:
+    - k3s-server:/var/lib/rancher/k3s
+    # This is just so that we get the kubeconfig file out
+    - k3s-config:/config
+    ports:
+    - 6443:6443
+    logging:
+      driver: none
+    container_name: kubernetes
+
+  kubernetes-node:
+    image: rancher/k3s:v0.10.0
+    tmpfs:
+      - /run
+      - /var/run
+    privileged: true
+    environment:
+      - K3S_URL=https://kubernetes:6443
+      - K3S_CLUSTER_SECRET=k3stestclustersecret
+    logging:
+      driver: none
+
+  helm-registry:
+    image: chartmuseum/chartmuseum:latest
+    environment:
+      - DEBUG=0
+      - STORAGE=local
+      - STORAGE_LOCAL_ROOTDIR=/charts
+    volumes:
+      - ./tests/charts:/charts
+    ports:
+      - 8080:8080
+    logging:
+      driver: none
+
+  docker-registry:
+    image: registry:2
+    environment:
+      - REGISTRY_HTTP_ADDR=docker-registry:5000
+      - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/docker_registry.crt
+      - REGISTRY_HTTP_TLS_KEY=/certs/docker_registry.key
+      - REGISTRY_AUTH=htpasswd
+      - REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd
+      - REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm
+    volumes:
+      - ./tests/registry/certs:/certs
+      - ./tests/registry/auth:/auth
+    ports:
+      - 5000:5000
+    logging:
+      driver: none
+
+  client:
+    image: ${BUILT_DOCKER_TEST_IMAGE:-none}
+    build:
+      context: .
+      target: development
+    privileged: true
+    environment:
+    - K3S_URL=https://server:6443
+    - K3S_CLUSTER_SECRET=k3stestclustersecret
+    - KUBECONFIG=/config/kubeconfig.yaml
+    - CONTAINER_REGISTRY=docker-registry:5000
+    - CONTAINER_REGISTRY_REPO=docker-registry:5000/test
+    - TEST_HELM_REGISTRY=http://helm-registry:8080
+    volumes:
+      - k3s-config:/config
+      - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - type: bind
+        source: ./tests/registry/certs/docker_registry.crt
+        target: /etc/docker/certs.d/docker-registry:5000/ca.crt
+    command: ${CLIENT_COMMAND}
+
+volumes:
+  k3s-server:
+  k3s-config:

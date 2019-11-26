@@ -1,31 +1,66 @@
 include:
-  - local: '.gitlab-ci-template.yml'
+  - local: '.gitlab-ci-base-template.yml'
 
 variables:
-  DB_MIGRATE: python manage.py migrate && python manage.py init_bootstrap
-  CI_DEBUG_TRACE: 0
-  DOCKER_IMAGE_NAME: "ci-configuration-test"
+  SHA_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
+  DEVELOPMENT_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}-development
+  FINAL_IMAGE: ${CI_REGISTRY_IMAGE}:latest
+
+stages:
+  - build
+  - test
+  - release
+
+.code-tests:
+  image: ${DEVELOPMENT_IMAGE}
+  tags:
+    - light
+  only:
+    - merge_requests
+    - master
+    - qa
 
 build:
   extends: .build
 
-build-singlestage:
-  extends: .build
-  variables:
-    DOCKER_BUILD_SOURCE: "Singlestage-Dockerfile"
-    DOCKER_IMAGE_NAME: "ci-configuration-test-singlestage"
+release:
+  stage: release
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker pull "${SHA_IMAGE}"
+    - docker tag ${SHA_IMAGE} ${FINAL_IMAGE}
+    - docker push ${FINAL_IMAGE}
+  only:
+    - master
 
-review-mysql:
-  extends: review
-  variables:
-    MYSQL_ENABLED: 1
+test-style:
+  extends: .code-tests
+  script:
+    - make style-tests
+
+test-typing:
+  extends: .code-tests
+  script:
+    - make typing-tests
+
+test-packages:
+  extends: .code-tests
+  script:
+    - make package-tests
+
+test-docs:
+  extends: .code-tests
+  script:
+    - make docs
+  artifacts:
+    paths:
+      - docs/_build
+    expire_in: 1 week
 
 test:
   extends: .test
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
-  - mkdir -p /tmp/devops/ci-configuration && cp -rf ./* /tmp/devops/ci-configuration/.
-  - git clone --single-branch --branch master git@git.anders.fi:anders/ci-configuration-test.git /tmp/devops/ci-configuration-test
-  - cd /tmp/devops/ci-configuration-test/
-  - source /tmp/devops/ci-configuration/auto-devops.sh
+  - export PATH="$PATH:$PWD"
+  - source utils/set_env_from_devops.sh

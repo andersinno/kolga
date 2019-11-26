@@ -1,4 +1,4 @@
-image: docker.anders.fi/anders/ci-runner-images/ci-runner:latest
+image: docker.anders.fi/anders/ci-configuration:python-refactor-build-image
 
 stages:
   - build
@@ -8,7 +8,6 @@ stages:
   - cleanup_review
 
 variables:
-  DOCKER_IMAGE_NAME: "$CI_PROJECT_NAME"
   DOCKER_BUILD_CONTEXT: "."
 
   # Docker by default users `vfs` which is not suitable for
@@ -31,18 +30,17 @@ variables:
   # Which version of MySQL should be used if enabled
   MYSQL_VERSION_TAG: "5.7"
 
-  # Default name for the Postgres database
+  # Default name for the database
   DATABASE_DB: "$CI_ENVIRONMENT_SLUG"
 
 .build:
-  image: docker.anders.fi/anders/ci-runner-images/ci-runner-docker:latest
   services:
     - docker:stable-dind
   variables:
     DOCKER_BUILD_SOURCE: Dockerfile
   stage: build
   script:
-    - build
+    - devops create_images
   only:
     - merge_requests
     - master
@@ -52,12 +50,13 @@ variables:
       - $BUILD_DISABLED
 
 .test:
-  image: docker.anders.fi/anders/ci-runner-images/ci-runner-docker:latest
   services:
     - docker:stable-dind
   stage: test
   script:
-    - test
+    - set_env_from_devops docker_test_image BUILT_DOCKER_TEST_IMAGE
+    - devops test_setup
+    - make test
   only:
     - merge_requests
     - master
@@ -69,12 +68,7 @@ variables:
 .review:
   stage: review
   script:
-    - export
-    - kube_auth qa
-    - ensure_namespace
-    - setup_helm
-    - create_application_secret review
-    - deploy review
+    - devops deploy_application --track review
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     url: http://$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG.$K8S_QA_INGRESS_DOMAIN
@@ -99,8 +93,7 @@ variables:
     action: stop
   stage: cleanup_review
   script:
-    - kube_auth qa
-    - delete review
+    - devops review_cleanup
   only:
     refs:
       - merge_requests
@@ -124,11 +117,7 @@ variables:
 .staging:
   stage: staging
   script:
-    - kube_auth qa
-    - ensure_namespace
-    - setup_helm
-    - create_application_secret staging
-    - deploy staging
+    - devops deploy_application --track staging
   environment:
     name: qa/staging
     url: http://$CI_PROJECT_PATH_SLUG-qa.$K8S_QA_INGRESS_DOMAIN
@@ -144,5 +133,6 @@ variables:
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
-  - git clone --single-branch --branch v1 git@git.anders.fi:anders/ci-configuration.git /tmp/devops/ci-configuration
-  - source /tmp/devops/ci-configuration/auto-devops.sh
+  - git clone --single-branch --branch v2-testing git@git.anders.fi:anders/ci-configuration.git /tmp/devops/ci-configuration
+  - export PATH="$PATH:/tmp/devops/ci-configuration"
+  - source /tmp/devops/ci-configuration/utils/set_env_from_devops.sh
