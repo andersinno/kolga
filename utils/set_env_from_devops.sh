@@ -6,6 +6,6 @@ function set_env_from_devops() {
         exit 1
     fi
 
-    exported_value=$2="$(./devops "$1")"
+    exported_value=$2="$(devops "$1")"
     export "$exported_value"
 }
