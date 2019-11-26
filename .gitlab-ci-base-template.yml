@@ -1,4 +1,4 @@
-image: docker.anders.fi/anders/ci-configuration:python-refactor-build-image
+image: docker.anders.fi/anders/ci-configuration:v2-latest
 
 stages:
   - build
