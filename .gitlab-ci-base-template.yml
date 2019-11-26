@@ -65,6 +65,18 @@ variables:
     variables:
       - $TEST_DISABLED
 
+.light-test:
+  stage: test
+  tags:
+    - light
+  only:
+    - merge_requests
+    - master
+    - qa
+  except:
+    variables:
+      - $TEST_DISABLED
+
 .review:
   stage: review
   script:
