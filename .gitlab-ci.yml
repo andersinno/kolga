@@ -31,7 +31,7 @@ release:
     - docker tag ${SHA_IMAGE} ${FINAL_IMAGE}
     - docker push ${FINAL_IMAGE}
   only:
-    - master
+    - v2
 
 test-style:
   extends: .code-tests
