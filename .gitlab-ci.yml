@@ -2,9 +2,7 @@ include:
   - local: '.gitlab-ci-base-template.yml'
 
 variables:
-  SHA_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
   DEVELOPMENT_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}-development
-  FINAL_IMAGE: ${CI_REGISTRY_IMAGE}:v2-latest
 
 stages:
   - build
@@ -24,14 +22,7 @@ build:
   extends: .build
 
 release:
-  services:
-    - docker:stable-dind
-  stage: release
-  script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - docker pull "${SHA_IMAGE}"
-    - docker tag ${SHA_IMAGE} ${FINAL_IMAGE}
-    - docker push ${FINAL_IMAGE}
+  extends: .build
   only:
     - v2
 
