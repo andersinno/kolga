@@ -270,7 +270,7 @@ class Kubernetes:
 
     def create_postgres_database(self, track: str = DEFAULT_TRACK) -> None:
         helm_chart = "stable/postgresql"
-        deploy_name = f"{get_deploy_name(track=track)}-postgres"
+        deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
             "image.tag": settings.POSTGRES_VERSION_TAG,
             "postgresqlUsername": settings.DATABASE_USER,
