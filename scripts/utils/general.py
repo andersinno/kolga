@@ -82,7 +82,7 @@ def get_database_url(track: str) -> URL:
 
     deploy_name = get_deploy_name()
     database_port = database_default_port_mapping[database_type]
-    database_host = f"{deploy_name}-{database_type}"
+    database_host = f"{deploy_name}-db-{database_type}"
 
     database_url = (
         f""
