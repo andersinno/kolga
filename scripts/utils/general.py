@@ -80,7 +80,7 @@ def get_database_url(track: str) -> URL:
             "No predefined database URL nor database type defined"
         )
 
-    deploy_name = get_deploy_name()
+    deploy_name = get_deploy_name(track)
     database_port = database_default_port_mapping[database_type]
     database_host = f"{deploy_name}-db-{database_type}"
 
