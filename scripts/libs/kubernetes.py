@@ -270,19 +270,18 @@ class Kubernetes:
 
     def create_postgres_database(self, track: str = DEFAULT_TRACK) -> None:
         helm_chart = "stable/postgresql"
-        deploy_name = get_deploy_name(track=track)
+        deploy_name = f"{get_deploy_name(track=track)}-postgres"
         values = {
             "image.tag": settings.POSTGRES_VERSION_TAG,
             "postgresqlUsername": settings.DATABASE_USER,
             "postgresqlPassword": settings.DATABASE_PASSWORD,
             "postgresqlDatabase": settings.DATABASE_DB,
-            "nameOverride": "postgres",
         }
         self.helm.upgrade_chart(chart=helm_chart, name=deploy_name, values=values)
 
     def create_mysql_database(self, track: str = DEFAULT_TRACK) -> None:
         helm_chart = "stable/mysql"
-        deploy_name = get_deploy_name(track=track)
+        deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
             "imageTag": settings.MYSQL_VERSION_TAG,
             "mysqlUser": settings.DATABASE_USER,
