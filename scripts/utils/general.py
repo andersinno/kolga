@@ -15,7 +15,7 @@ from .url import URL, make_url  # type: ignore
 env = environs.Env()
 
 MYSQL = "mysql"
-POSTGRES = "postgres"
+POSTGRES = "postgresql"
 
 
 def camel_case_split(camel_case_string: str) -> str:
