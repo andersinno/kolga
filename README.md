@@ -27,7 +27,7 @@ creation.
 ```yaml
 include:
   - project: 'anders/ci-configuration'
-    ref: v2-testing
+    ref: v2
     file: '/.gitlab-ci-template.yml'
 ```
 
