@@ -8,6 +8,7 @@ from scripts.libs.helm import Helm
 from scripts.libs.kubernetes import Kubernetes
 from scripts.utils.general import get_deploy_name, get_secret_name
 
+DEFAULT_TRACK = os.environ.get("DEFAULT_TRACK", "stable")
 K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "testing")
 
 
@@ -78,7 +79,7 @@ def test_create_namespace_named(kubernetes: Kubernetes) -> None:
 
 
 def test_create_secret_stable(kubernetes: Kubernetes, test_namespace: str) -> None:
-    track = "stable"
+    track = DEFAULT_TRACK
     expected_secret_name = get_secret_name(track)
     data = {"test_secret": "1234"}
     secret_result = kubernetes.create_secret(
@@ -122,8 +123,9 @@ def test_delete_namespace(kubernetes: Kubernetes, test_namespace: str) -> None:
 
 
 def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
-    deploy_name = get_deploy_name()
-    kubernetes.create_secrets_from_environment(namespace=test_namespace)
+    track = DEFAULT_TRACK
+    deploy_name = get_deploy_name(track=track)
+    kubernetes.create_secrets_from_environment(namespace=test_namespace, track=track)
 
     kubernetes.delete_all(namespace=test_namespace, labels={"release": deploy_name})
 
@@ -134,10 +136,12 @@ def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
 def test_create_postgres_database(
     kubernetes: Kubernetes, test_namespace: str, helm: Helm
 ) -> None:
-    kubernetes.create_postgres_database(namespace=test_namespace)
+    track = DEFAULT_TRACK
+    kubernetes.create_postgres_database(namespace=test_namespace, track=track)
 
 
 def test_create_mysql_database(
     kubernetes: Kubernetes, test_namespace: str, helm: Helm
 ) -> None:
-    kubernetes.create_mysql_database(namespace=test_namespace)
+    track = DEFAULT_TRACK
+    kubernetes.create_mysql_database(namespace=test_namespace, track=track)

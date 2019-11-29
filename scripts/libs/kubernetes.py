@@ -41,9 +41,6 @@ class KubernetesConfig(k8s_client.Configuration):  # type: ignore
         )
 
 
-DEFAULT_TRACK = "stable"
-
-
 class Kubernetes:
     """
     A wrapper class around various Kubernetes tools and functions
@@ -212,9 +209,7 @@ class Kubernetes:
         logger.success()
         return namespace
 
-    def create_secret(
-        self, data: Dict[str, str], namespace: str, track: str = DEFAULT_TRACK,
-    ) -> str:
+    def create_secret(self, data: Dict[str, str], namespace: str, track: str) -> str:
         deploy_name = get_deploy_name(track=track)
         secret_name = get_secret_name(track=track)
         v1 = k8s_client.CoreV1Api(self.client)
@@ -243,9 +238,7 @@ class Kubernetes:
         logger.success()
         return secret_name
 
-    def create_secrets_from_environment(
-        self, namespace: str, track: str = DEFAULT_TRACK
-    ) -> str:
+    def create_secrets_from_environment(self, namespace: str, track: str) -> str:
         secrets = self.get_environments_secrets_by_prefix()
         return self.create_secret(data=secrets, namespace=namespace, track=track)
 
@@ -253,10 +246,7 @@ class Kubernetes:
         self.helm.setup_helm()
 
     def create_database_deployment(
-        self,
-        namespace: str,
-        database_type: Optional[str] = None,
-        track: str = DEFAULT_TRACK,
+        self, namespace: str, track: str, database_type: Optional[str] = None,
     ) -> None:
         if not database_type:
             database_type = get_database_type()
@@ -268,9 +258,7 @@ class Kubernetes:
         elif database_type == MYSQL:
             self.create_mysql_database(namespace=namespace, track=track)
 
-    def create_postgres_database(
-        self, namespace: str, track: str = DEFAULT_TRACK,
-    ) -> None:
+    def create_postgres_database(self, namespace: str, track: str) -> None:
         helm_chart = "stable/postgresql"
         deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
@@ -283,9 +271,7 @@ class Kubernetes:
             chart=helm_chart, name=deploy_name, namespace=namespace, values=values,
         )
 
-    def create_mysql_database(
-        self, namespace: str, track: str = DEFAULT_TRACK,
-    ) -> None:
+    def create_mysql_database(self, namespace: str, track: str) -> None:
         helm_chart = "stable/mysql"
         deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
@@ -301,11 +287,7 @@ class Kubernetes:
         )
 
     def create_application_deployment(
-        self,
-        docker_image: str,
-        secret_name: str,
-        namespace: str,
-        track: str = DEFAULT_TRACK,
+        self, docker_image: str, secret_name: str, namespace: str, track: str,
     ) -> None:
         deploy_name = get_deploy_name(track=track)
         application_path = Path(settings.PROJECT_DIR)

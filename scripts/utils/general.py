@@ -40,7 +40,7 @@ def loads_json(string: str) -> Dict[str, Any]:
 
 
 def get_deploy_name(track: Optional[str] = None) -> str:
-    track_postfix = f"-{track}" if track and track != "stable" else ""
+    track_postfix = f"-{track}" if track and track != settings.DEFAULT_TRACK else ""
     deploy_name = f"{settings.ENVIRONMENT_SLUG}{track_postfix}"
     return deploy_name
 

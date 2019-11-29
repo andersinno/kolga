@@ -19,7 +19,7 @@ class Devops:
             help="Deploy an application based on the current Docker image",
         )
         deploy_application_parser.add_argument(
-            "-t", "--track", dest="track", default="stable"
+            "-t", "--track", dest="track", default=None,
         )
 
         subparsers.add_parser(
@@ -65,6 +65,10 @@ class Devops:
     def deploy_application(self, track: str) -> None:
         from scripts.libs.kubernetes import Kubernetes
         from scripts.libs.docker import Docker
+        from scripts.settings import settings
+
+        if track is None:
+            track = settings.DEFAULT_TRACK
 
         d = Docker()
 
