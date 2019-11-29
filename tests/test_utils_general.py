@@ -53,9 +53,9 @@ def test_get_secret_name(track: str, expected: str) -> None:
 
 def test_get_database_url_stable() -> None:
     url = get_database_url(DEFAULT_TRACK)
-    assert url.drivername == "postgres"
+    assert url.drivername == "postgresql"
     assert url.username == "testuser"
     assert url.password == "testpass"
-    assert url.host == "testing-postgres"
+    assert url.host == "testing-db-postgresql"
     assert url.port == 5432
     assert url.database == "testdb"
