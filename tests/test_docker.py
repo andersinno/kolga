@@ -154,6 +154,8 @@ def test_incorrect_login() -> None:
 
 def test_build_push_delete_pull_images() -> None:
     d = Docker()
+    d.login()
+
     images = d.build_stages()
     d.push_images(images)
 

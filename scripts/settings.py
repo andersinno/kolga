@@ -28,6 +28,7 @@ class Settings:
     DOCKER_TEST_IMAGE_STAGE: str = env.str("DOCKER_TEST_IMAGE_STAGE", "development")
 
     # ENVIRONMENT
+    DEFAULT_TRACK: str = env.str("DEFAULT_TRACK", "stable")
     ENVIRONMENT_SLUG: str = env.str("ENVIRONMENT_SLUG", "")
     ENVIRONMENT_URL: str = env.str("ENVIRONMENT_URL", "")
     SERVICE_PORT: str = env.str("SERVICE_PORT", "8000")

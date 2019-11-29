@@ -5,7 +5,6 @@ from typing import Dict, List, Optional
 
 from scripts.utils.logger import logger
 
-from ..settings import settings
 from ..utils.general import run_os_command
 
 
@@ -83,9 +82,9 @@ class Helm:
         self,
         name: str,
         values: Dict[str, str],
+        namespace: str,
         chart: str = "",
         chart_path: Optional[Path] = None,
-        namespace: str = settings.K8S_NAMESPACE,
         install: bool = True,
     ) -> None:
         if chart_path and not chart_path.exists():

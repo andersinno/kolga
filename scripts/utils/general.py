@@ -2,6 +2,7 @@ import json
 import os
 import re
 import subprocess
+from shlex import quote
 from typing import Any, Dict, List, Optional
 
 import environs
@@ -39,7 +40,7 @@ def loads_json(string: str) -> Dict[str, Any]:
 
 
 def get_deploy_name(track: Optional[str] = None) -> str:
-    track_postfix = f"-{track}" if track and track != "stable" else ""
+    track_postfix = f"-{track}" if track and track != settings.DEFAULT_TRACK else ""
     deploy_name = f"{settings.ENVIRONMENT_SLUG}{track_postfix}"
     return deploy_name
 
@@ -117,7 +118,7 @@ def get_environment_vars_by_prefix(prefix: str) -> Dict[str, str]:
 
 def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessResult:
 
-    command = command_list if not shell else " ".join(command_list)
+    command = command_list if not shell else " ".join(map(quote, command_list))
 
     result = subprocess.run(command, encoding="UTF-8", capture_output=True, shell=shell)
 

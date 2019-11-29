@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from scripts.utils.general import (
@@ -6,6 +8,8 @@ from scripts.utils.general import (
     get_deploy_name,
     get_secret_name,
 )
+
+DEFAULT_TRACK = os.environ.get("DEFAULT_TRACK", "stable")
 
 
 @pytest.mark.parametrize(  # type: ignore
@@ -24,7 +28,7 @@ def test_camel_case_split(value: str, expected: str) -> None:
 @pytest.mark.parametrize(  # type: ignore
     "track, expected",
     [
-        ("stable", "testing"),  # Stable is a special case
+        (DEFAULT_TRACK, "testing"),  # DEFAULT_TRACK is a special case
         ("qa", "testing-qa"),
         ("lizard", "testing-lizard"),
         ("1", "testing-1"),
@@ -37,7 +41,7 @@ def test_get_deploy_name(track: str, expected: str) -> None:
 @pytest.mark.parametrize(  # type: ignore
     "track, expected",
     [
-        ("stable", "testing-secret"),  # Stable is a special case
+        (DEFAULT_TRACK, "testing-secret"),  # DEFAULT_TRACK is a special case
         ("qa", "testing-qa-secret"),
         ("lizard", "testing-lizard-secret"),
         ("1", "testing-1-secret"),
@@ -48,10 +52,10 @@ def test_get_secret_name(track: str, expected: str) -> None:
 
 
 def test_get_database_url_stable() -> None:
-    url = get_database_url("stable")
-    assert url.drivername == "postgres"
+    url = get_database_url(DEFAULT_TRACK)
+    assert url.drivername == "postgresql"
     assert url.username == "testuser"
     assert url.password == "testpass"
-    assert url.host == "testing-postgres"
+    assert url.host == "testing-db-postgresql"
     assert url.port == 5432
     assert url.database == "testdb"
