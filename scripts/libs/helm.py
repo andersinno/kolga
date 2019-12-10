@@ -27,12 +27,7 @@ class Helm:
         # TODO: Remove once this is added by default and Helm 3 is stable
         self.add_repo("stable", "https://kubernetes-charts.storage.googleapis.com/")
 
-        logger.info(icon=f"{self.ICON}  🔄", title="Updating Helm repos: ", end="")
-        result = run_os_command(["helm", "repo", "update"])
-        if not result.return_code:
-            logger.success()
-        else:
-            logger.std(result, raise_exception=True)
+        self.update_repos()
 
     def add_repo(self, repo_name: str, repo_url: str) -> None:
         logger.info(
@@ -51,6 +46,14 @@ class Helm:
             icon=f"{self.ICON}  ➖", title=f"Removing Helm repo {repo_name}: ", end="",
         )
         result = run_os_command(["helm", "repo", "remove", repo_name])
+        if not result.return_code:
+            logger.success()
+        else:
+            logger.std(result, raise_exception=True)
+
+    def update_repos(self) -> None:
+        logger.info(icon=f"{self.ICON}  🔄", title="Updating Helm repos: ", end="")
+        result = run_os_command(["helm", "repo", "update"])
         if not result.return_code:
             logger.success()
         else:
