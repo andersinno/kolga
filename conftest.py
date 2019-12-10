@@ -15,7 +15,6 @@ def kubernetes() -> Kubernetes:
 @pytest.fixture()  # type: ignore
 def helm() -> Generator[Helm, None, None]:
     helm = Helm()
-    helm.setup_helm()
     yield helm
     helm.remove_repo("stable")
 
