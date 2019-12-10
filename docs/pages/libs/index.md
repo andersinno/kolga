@@ -7,3 +7,4 @@
 
 ## Tools
 * [General](../../utils/general.md)
+* [Logger](../../utils/logger.md)
