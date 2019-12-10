@@ -1,4 +1,5 @@
 import os
+from typing import Generator
 
 import pytest
 
@@ -12,7 +13,7 @@ def kubernetes() -> Kubernetes:
 
 
 @pytest.fixture()  # type: ignore
-def helm() -> Helm:
+def helm() -> Generator[Helm, None, None]:
     helm = Helm()
     helm.setup_helm()
     yield helm
@@ -20,7 +21,7 @@ def helm() -> Helm:
 
 
 @pytest.fixture()  # type: ignore
-def test_namespace(kubernetes: Kubernetes) -> str:
+def test_namespace(kubernetes: Kubernetes) -> Generator[str, None, None]:
     namespace = kubernetes.create_namespace()
     yield namespace
     kubernetes.delete_namespace()

@@ -13,6 +13,7 @@ from scripts.utils.models import SubprocessResult
 
 from ..libs.helm import Helm
 from ..settings import settings
+from ..utils.exceptions import NoClusterConfigError
 from ..utils.general import (
     MYSQL,
     POSTGRES,
@@ -27,20 +28,6 @@ from ..utils.general import (
 )
 
 
-class KubernetesConfig(k8s_client.Configuration):  # type: ignore
-    def __init__(self) -> None:
-        super().__init__()
-        self.host = settings.K8S_API_URL
-        self.api_key = {"authorization": f"Bearer {settings.K8S_API_KEY}"}
-        self.ssl_ca_cert = settings.K8S_API_CA_PEM_FILE
-
-    @staticmethod
-    def can_configure() -> bool:
-        return all(
-            [settings.K8S_API_URL, settings.K8S_API_KEY, settings.K8S_API_CA_PEM_FILE]
-        )
-
-
 class Kubernetes:
     """
     A wrapper class around various Kubernetes tools and functions
@@ -52,33 +39,32 @@ class Kubernetes:
     """
 
     ICON = "☸️"
-    HELM_ICON = "⎈"
 
-    def __init__(self) -> None:
-        self.client = self.create_client()
+    def __init__(self, track: str = settings.DEFAULT_TRACK) -> None:
+        self.client = self.create_client(track=track)
         self.helm = Helm()
 
-    def create_client(self) -> k8s_client.ApiClient:
-        if settings.KUBECONFIG:
-            logger.success(
+    def create_client(self, track: str) -> k8s_client.ApiClient:
+        try:
+            kubeconfig, method = settings.setup_kubeconfig(track)
+        except NoClusterConfigError as exc:
+            logger.error(
                 icon=f"{self.ICON}  🔑",
-                message=f"Using KUBECONFIG for Kubernetes auth ({settings.KUBECONFIG})",
+                message="Can't log in to Kubernetes cluster, all auth methods exhausted",
+                error=exc,
+                raise_exception=True,
             )
-            k8s_config.load_kube_config()
-            return k8s_client.ApiClient()
-        elif KubernetesConfig.can_configure():
-            logger.success(
-                icon=f"{self.ICON}  🔑", message=f"Using env vars for Kubernetes auth"
-            )
-            _config = KubernetesConfig()
-            return k8s_client.ApiClient(_config)
 
-        logger.error(
-            icon=f"{self.ICON}  🔑",
-            message="Can't log in to Kubernetes cluster, all auth methods exhausted",
-            error=Exception(),
-            raise_exception=True,
+        logger.success(
+            icon=f"{self.ICON}  🔑", message=f"Using {method} for Kubernetes auth",
         )
+
+        config = k8s_client.Configuration()
+        k8s_config.load_kube_config(
+            client_configuration=config, config_file=kubeconfig,
+        )
+
+        return k8s_client.ApiClient(configuration=config)
 
     @staticmethod
     def _is_client_error(status: Any) -> bool:

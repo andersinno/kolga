@@ -2,6 +2,8 @@
 
 import argparse
 
+from scripts.settings import settings
+
 
 class Devops:
     def __init__(self) -> None:
@@ -19,7 +21,7 @@ class Devops:
             help="Deploy an application based on the current Docker image",
         )
         deploy_application_parser.add_argument(
-            "-t", "--track", dest="track", default=None,
+            "-t", "--track", dest="track", default=settings.DEFAULT_TRACK,
         )
 
         subparsers.add_parser(
@@ -34,8 +36,11 @@ class Devops:
             "logo", help="Prints the magnificent Anders DevOps logo",
         )
 
-        subparsers.add_parser(
+        review_cleanup_parser = subparsers.add_parser(
             "review_cleanup", help="Cleans up the current namespace",
+        )
+        review_cleanup_parser.add_argument(
+            "-t", "--track", dest="track", default=settings.DEFAULT_TRACK,
         )
 
         subparsers.add_parser(
@@ -65,14 +70,10 @@ class Devops:
     def deploy_application(self, track: str) -> None:
         from scripts.libs.kubernetes import Kubernetes
         from scripts.libs.docker import Docker
-        from scripts.settings import settings
-
-        if track is None:
-            track = settings.DEFAULT_TRACK
 
         d = Docker()
 
-        k = Kubernetes()
+        k = Kubernetes(track=track)
         k.setup_helm()
         namespace = k.create_namespace()
         secret_name = k.create_secrets_from_environment(
@@ -89,10 +90,10 @@ class Devops:
     def help(self) -> None:
         self.parser.print_help()
 
-    def review_cleanup(self) -> None:
+    def review_cleanup(self, track: str) -> None:
         from scripts.libs.kubernetes import Kubernetes
 
-        k = Kubernetes()
+        k = Kubernetes(track=track)
         k.delete_namespace()
 
     def test_setup(self) -> None:

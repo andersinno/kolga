@@ -1,7 +1,10 @@
+import os
 import uuid
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 import environs
+
+from .utils.exceptions import NoClusterConfigError
 
 env = environs.Env()
 env.read_env()
@@ -51,10 +54,6 @@ class Settings:
     POSTGRES_VERSION_TAG: str = env.str("POSTGRES_VERSION_TAG", "9.6")
 
     # KUBERNETES
-    # Note: Either separate k8s config vars or KUBECONFIG needs to be present
-    K8S_API_CA_PEM_FILE: str = env.str("K8S_API_CA_PEM_FILE", "")
-    K8S_API_KEY: str = env.str("K8S_API_KEY", "")
-    K8S_API_URL: str = env.str("K8S_API_URL", "")
     K8S_INGRESS_BASE_DOMAIN: str = env.str("K8S_INGRESS_BASE_DOMAIN", "")
     K8S_NAMESPACE: str = env.str("K8S_NAMESPACE", "")
     K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET_")
@@ -81,6 +80,38 @@ class Settings:
             env_value = env.str(name_from, "")
             setattr(self, name_to, env_value)
 
+    def setup_kubeconfig(self, track: str) -> Tuple[str, str]:
+        """
+        Point KUBECONFIG environment variable to the correct kubeconfig
+
+        Uses a track-specific kubeconfig if `KUBECONFIG_{track}` is set.
+        Otherwise does a fallback to `KUBECONFIG`.
+
+        NOTE: This logic won't be needed once we can start using variables with
+        environment scope. Currenty this is blocked by missing API in GitLab.
+
+        Args:
+            track: Current deployment track
+
+        Returns:
+            A tuple of kubeconfig and the variable name that was used
+
+
+        """
+        for key in f"KUBECONFIG_{track}", "KUBECONFIG":
+            kubeconfig = os.environ.get(key, "")
+            if not kubeconfig:
+                continue
+
+            self.KUBECONFIG = kubeconfig
+
+            # Set `KUBECONFIG` environment variable for subsequent `kubectl` calls.
+            os.environ["KUBECONFIG"] = kubeconfig
+
+            return kubeconfig, key
+
+        raise NoClusterConfigError()
+
 
 class GitLabMapper:
     MAPPING = {
@@ -97,11 +128,8 @@ class GitLabMapper:
         "CI_REGISTRY_IMAGE": "CONTAINER_REGISTRY_REPO",
         "CI_REGISTRY_PASSWORD": "CONTAINER_REGISTRY_PASSWORD",
         "CI_REGISTRY_USER": "CONTAINER_REGISTRY_USER",
-        "KUBE_CA_PEM_FILE": "K8S_API_CA_PEM_FILE",
         "KUBE_INGRESS_BASE_DOMAIN": "K8S_INGRESS_BASE_DOMAIN",
         "KUBE_NAMESPACE": "K8S_NAMESPACE",
-        "KUBE_TOKEN": "K8S_API_KEY",
-        "KUBE_URL": "K8S_API_URL",
         "KUBECONFIG": "KUBECONFIG",
     }
 
