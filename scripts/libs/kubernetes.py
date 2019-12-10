@@ -244,8 +244,9 @@ class Kubernetes:
         elif database_type == MYSQL:
             self.create_mysql_database(namespace=namespace, track=track)
 
-    def create_postgres_database(self, namespace: str, track: str) -> None:
-        helm_chart = "stable/postgresql"
+    def create_postgres_database(
+        self, namespace: str, track: str, helm_chart: str = "stable/postgresql"
+    ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
             "image.tag": settings.POSTGRES_VERSION_TAG,
@@ -257,8 +258,9 @@ class Kubernetes:
             chart=helm_chart, name=deploy_name, namespace=namespace, values=values,
         )
 
-    def create_mysql_database(self, namespace: str, track: str) -> None:
-        helm_chart = "stable/mysql"
+    def create_mysql_database(
+        self, namespace: str, track: str, helm_chart: str = "stable/mysql"
+    ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
             "imageTag": settings.MYSQL_VERSION_TAG,
