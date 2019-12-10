@@ -29,7 +29,7 @@ class Helm:
 
         self.update_repos()
 
-    def add_repo(self, repo_name: str, repo_url: str) -> None:
+    def add_repo(self, repo_name: str, repo_url: str, update: bool = True) -> None:
         logger.info(
             icon=f"{self.ICON}  ➕",
             title=f"Adding Helm repo {repo_url} with name {repo_name}: ",
@@ -40,6 +40,9 @@ class Helm:
             logger.success()
         else:
             logger.std(result, raise_exception=True)
+
+        if update:
+            self.update_repos()
 
     def remove_repo(self, repo_name: str) -> None:
         logger.info(
