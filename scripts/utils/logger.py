@@ -57,7 +57,7 @@ class Logger:
         log_error: bool = True,
     ) -> None:
         if log_error:
-            logger.error(message=std.err)
+            logger.error(message=std.err, raise_exception=False)
         output_string = f"\n{cf.green}stdout:\n{cf.reset}{std.out}\n{cf.red}stderr:\n{cf.reset}{std.err}"
 
         if raise_exception:
