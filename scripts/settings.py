@@ -9,22 +9,22 @@ env.read_env()
 
 class Settings:
     # PROJECT
+    PROJECT_DIR: str = env.str("PROJECT_DIR", "")
     PROJECT_NAME: str = env.str("PROJECT_NAME", "")
     PROJECT_PATH_SLUG: str = env.str("PROJECT_PATH_SLUG", "")
-    PROJECT_DIR: str = env.str("PROJECT_DIR", "")
 
     # DOCKER
-    CONTAINER_REGISTRY_USER: str = env.str("CONTAINER_REGISTRY_USER", "")
-    CONTAINER_REGISTRY_PASSWORD: str = env.str("CONTAINER_REGISTRY_PASSWORD", "")
     CONTAINER_REGISTRY: str = env.str("CONTAINER_REGISTRY", "docker.anders.fi")
+    CONTAINER_REGISTRY_PASSWORD: str = env.str("CONTAINER_REGISTRY_PASSWORD", "")
     CONTAINER_REGISTRY_REPO: str = env.str("CONTAINER_REGISTRY_REPO", "")
-    DOCKER_IMAGE_NAME: str = env.str("DOCKER_IMAGE_NAME", "")
+    CONTAINER_REGISTRY_USER: str = env.str("CONTAINER_REGISTRY_USER", "")
     DOCKER_BUILD_ARG_PREFIX: str = env.str(
         "DOCKER_BUILD_ARG_PREFIX", "DOCKER_BUILD_ARG_",
     )
     DOCKER_BUILD_CONTEXT: str = env.str("DOCKER_BUILD_CONTEXT", ".")
     DOCKER_BUILD_SOURCE: str = env.str("DOCKER_BUILD_SOURCE", "Dockerfile")
     DOCKER_HOST: str = env.str("DOCKER_HOST", "unix:///var/run/docker.sock")
+    DOCKER_IMAGE_NAME: str = env.str("DOCKER_IMAGE_NAME", "")
     DOCKER_TEST_IMAGE_STAGE: str = env.str("DOCKER_TEST_IMAGE_STAGE", "development")
 
     # ENVIRONMENT
@@ -34,28 +34,28 @@ class Settings:
     SERVICE_PORT: str = env.str("SERVICE_PORT", "8000")
 
     # GIT
-    GIT_COMMIT_SHA: str = env.str("GIT_COMMIT_SHA", "")
     GIT_COMMIT_REF_NAME: str = env.str("GIT_COMMIT_REF_NAME", "")
+    GIT_COMMIT_SHA: str = env.str("GIT_COMMIT_SHA", "")
 
     # APPLICATION
-    DATABASE_USER: str = env.str("DATABASE_USER", "user")
-    DATABASE_PASSWORD: str = env.str("DATABASE_PASSWORD", str(uuid.uuid4()))
-    DATABASE_DB: str = env.str("DATABASE_DB", "appdb")
-    POSTGRES_VERSION_TAG: str = env.str("POSTGRES_VERSION_TAG", "9.6")
-    MYSQL_VERSION_TAG: str = env.str("MYSQL_VERSION_TAG", "5.7")
-    MYSQL_ENABLED: bool = env.bool("MYSQL_ENABLED", False)
-    POSTGRES_ENABLED: bool = env.bool("POSTGRES_ENABLED", False)
     APP_INITIALIZE_COMMAND: str = env.str("APP_INITIALIZE_COMMAND", "")
     APP_MIGRATE_COMMAND: str = env.str("APP_MIGRATE_COMMAND", "")
+    DATABASE_DB: str = env.str("DATABASE_DB", "appdb")
+    DATABASE_PASSWORD: str = env.str("DATABASE_PASSWORD", str(uuid.uuid4()))
+    DATABASE_USER: str = env.str("DATABASE_USER", "user")
+    MYSQL_ENABLED: bool = env.bool("MYSQL_ENABLED", False)
+    MYSQL_VERSION_TAG: str = env.str("MYSQL_VERSION_TAG", "5.7")
+    POSTGRES_ENABLED: bool = env.bool("POSTGRES_ENABLED", False)
+    POSTGRES_VERSION_TAG: str = env.str("POSTGRES_VERSION_TAG", "9.6")
 
     # KUBERNETES
     # Note: Either separate k8s config vars or KUBECONFIG needs to be present
-    K8S_API_KEY: str = env.str("K8S_API_KEY", "")
     K8S_API_CA_PEM_FILE: str = env.str("K8S_API_CA_PEM_FILE", "")
+    K8S_API_KEY: str = env.str("K8S_API_KEY", "")
     K8S_API_URL: str = env.str("K8S_API_URL", "")
     K8S_INGRESS_BASE_DOMAIN: str = env.str("K8S_INGRESS_BASE_DOMAIN", "")
-    K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET_")
     K8S_NAMESPACE: str = env.str("K8S_NAMESPACE", "")
+    K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET_")
     KUBECONFIG: str = env.str("KUBECONFIG", "")
 
     def __init__(self) -> None:
@@ -82,23 +82,23 @@ class Settings:
 
 class GitLabMapper:
     MAPPING = {
-        "CI_PROJECT_NAME": "PROJECT_NAME",
-        "CI_REGISTRY_USER": "CONTAINER_REGISTRY_USER",
-        "CI_REGISTRY_PASSWORD": "CONTAINER_REGISTRY_PASSWORD",
-        "CI_REGISTRY": "CONTAINER_REGISTRY",
-        "CI_REGISTRY_IMAGE": "CONTAINER_REGISTRY_REPO",
+        "CI_COMMIT_REF_NAME": "GIT_COMMIT_REF_NAME",
+        "CI_COMMIT_SHA": "GIT_COMMIT_SHA",
         "CI_ENVIRONMENT_SLUG": "ENVIRONMENT_SLUG",
         "CI_ENVIRONMENT_URL": "ENVIRONMENT_URL",
-        "CI_PROJECT_PATH_SLUG": "PROJECT_PATH_SLUG",
-        "CI_COMMIT_SHA": "GIT_COMMIT_SHA",
-        "CI_COMMIT_REF_NAME": "GIT_COMMIT_REF_NAME",
-        "KUBE_URL": "K8S_API_URL",
-        "KUBE_TOKEN": "K8S_API_KEY",
-        "KUBE_CA_PEM_FILE": "K8S_API_CA_PEM_FILE",
-        "KUBE_NAMESPACE": "K8S_NAMESPACE",
-        "KUBE_INGRESS_BASE_DOMAIN": "K8S_INGRESS_BASE_DOMAIN",
-        "KUBECONFIG": "KUBECONFIG",
         "CI_PROJECT_DIR": "PROJECT_DIR",
+        "CI_PROJECT_NAME": "PROJECT_NAME",
+        "CI_PROJECT_PATH_SLUG": "PROJECT_PATH_SLUG",
+        "CI_REGISTRY": "CONTAINER_REGISTRY",
+        "CI_REGISTRY_IMAGE": "CONTAINER_REGISTRY_REPO",
+        "CI_REGISTRY_PASSWORD": "CONTAINER_REGISTRY_PASSWORD",
+        "CI_REGISTRY_USER": "CONTAINER_REGISTRY_USER",
+        "KUBE_CA_PEM_FILE": "K8S_API_CA_PEM_FILE",
+        "KUBE_INGRESS_BASE_DOMAIN": "K8S_INGRESS_BASE_DOMAIN",
+        "KUBE_NAMESPACE": "K8S_NAMESPACE",
+        "KUBE_TOKEN": "K8S_API_KEY",
+        "KUBE_URL": "K8S_API_URL",
+        "KUBECONFIG": "KUBECONFIG",
     }
 
     def __str__(self) -> str:
