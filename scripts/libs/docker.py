@@ -140,9 +140,10 @@ class Docker:
     ) -> Set[str]:
         pulled_images = set()
         suffix = f"-{suffix}" if suffix else ""
-        master_image = f"{self.image_repo}:master{suffix}"
-        if self.pull_image(master_image):
-            pulled_images.add(master_image)
+        target_branch = settings.GIT_TARGET_BRANCH or settings.GIT_DEFAULT_TARGET_BRANCH
+        target_image = f"{self.image_repo}:{target_branch}{suffix}"
+        if self.pull_image(target_image):
+            pulled_images.add(target_image)
 
         if pull_commit_ref:
             # Translate _ and / to _ since those chars are not supported by docker images

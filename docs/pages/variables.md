@@ -37,6 +37,8 @@ supplies a predefined variables with the SHA.
 | ENVIRONMENT\_URL              | Full URL to the upcoming environment                |                              | GitLab     |
 | GIT\_COMMIT\_REF\_NAME        | The branch or tag name for which project is built   |                              | GitLab     |
 | GIT\_COMMIT\_SHA              | Current commits SHA                                 |                              | GitLab     |
+| GIT\_DEFAULT\_TARGET\_BRANCH  | Default branch that is targeted for merges          | master                       | GitLab     |
+| GIT\_TARGET\_BRANCH           | Target branch for the specific merge/pull-request   |                              | GitLab     |
 | K8S\_API\_CA\_PEM\_FILE       | Kubernetes API certificate file                     |                              | GitLab     |
 | K8S\_API\_KEY                 | Kubernetes API key                                  |                              | GitLab     |
 | K8S\_API\_URL                 | Kubernetes API URL                                  |                              | GitLab     |
