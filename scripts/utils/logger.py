@@ -24,7 +24,8 @@ class Logger:
             _message += f"{error}"
 
         print(f"{cf.red}{_message}{cf.reset}")
-        if error and raise_exception:
+        if raise_exception:
+            error = error or Exception(message_string)
             raise error
 
     def warning(self, message: str, icon: Optional[str] = None) -> None:
