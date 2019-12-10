@@ -89,6 +89,7 @@ class Helm:
         chart: str = "",
         chart_path: Optional[Path] = None,
         install: bool = True,
+        version: Optional[str] = None,
     ) -> None:
         if chart_path and not chart_path.exists():
             logger.error(
@@ -113,6 +114,9 @@ class Helm:
             "--namespace",
             f"{namespace}",
         ]
+
+        if version:
+            helm_command += ["--version", version]
 
         # Add value setter arguments
         values_params = self.get_chart_values_list(values)
