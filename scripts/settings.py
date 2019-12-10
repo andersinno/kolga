@@ -81,6 +81,23 @@ class Settings:
             setattr(self, name_to, env_value)
 
     def setup_kubeconfig(self, track: str) -> Tuple[str, str]:
+        """
+        Point KUBECONFIG environment variable to the correct kubeconfig
+
+        Uses a track-specific kubeconfig if `KUBECONFIG_{track}` is set.
+        Otherwise does a fallback to `KUBECONFIG`.
+
+        NOTE: This logic won't be needed once we can start using variables with
+        environment scope. Currenty this is blocked by missing API in GitLab.
+
+        Args:
+            track: Current deployment track
+
+        Returns:
+            A tuple of kubeconfig and the variable name that was used
+
+
+        """
         for key in f"KUBECONFIG_{track}", "KUBECONFIG":
             kubeconfig = os.environ.get(key, "")
             if not kubeconfig:
