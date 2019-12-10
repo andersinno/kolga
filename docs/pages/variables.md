@@ -21,37 +21,39 @@ supplies a predefined variables with the SHA.
 
 | Variable                      | Description                                         | Default                      | CI Support |
 |-------------------------------|-----------------------------------------------------|------------------------------|------------|
-| PROJECT\_NAME                 | The name of the project                             |                              | GitLab     |
-| PROJECT\_DIR                  | Path to where code is cloned and CI start path      |                              | GitLab     |
-| PROJECT\_PATH\_SLUG           | Slug to project path \(<org>/<repo>\)               |                              | GitLab     |
-| CONTAINER\_REGISTRY\_USER     | Username for Docker registry                        |                              | GitLab     |
-| CONTAINER\_REGISTRY\_PASSWORD | Password for Docker registry                        |                              | GitLab     |
 | CONTAINER\_REGISTRY           | Docker registry URL                                 |                              | GitLab     |
+| CONTAINER\_REGISTRY\_PASSWORD | Password for Docker registry                        |                              | GitLab     |
 | CONTAINER\_REGISTRY\_REPO     | Docker repository for project                       |                              | Gitlab     |
-| DOCKER\_IMAGE\_NAME           | Name of docker image \(without tag\)                | PROJECT\_NAME                |            |
-| DOCKER\_BUILD\_SOURCE         | Dockerfile to build from                            | Dockerfile                   |            |
+| CONTAINER\_REGISTRY\_USER     | Username for Docker registry                        |                              | GitLab     |
+| DATABASE\_DB                  | Database name for preview environment               | appdb                        |            |
+| DATABASE\_PASSWORD            | Database password for preview environment           | UUID value                   |            |
+| DATABASE\_USER                | Database user for preview environment               | user                         |            |
 | DOCKER\_BUILD\_CONTEXT        | Build context folder                                | .                            |            |
+| DOCKER\_BUILD\_SOURCE         | Dockerfile to build from                            | Dockerfile                   |            |
 | DOCKER\_HOST                  | Docker runtime                                      | unix:///var/run/docker\.sock |            |
+| DOCKER\_IMAGE\_NAME           | Name of docker image \(without tag\)                | PROJECT\_NAME                |            |
 | DOCKER\_TEST\_IMAGE\_STAGE    | Which image stage to run tests on                   | development                  |            |
 | ENVIRONMENT\_SLUG             | Slug name of CI environment                         |                              | GitLab     |
 | ENVIRONMENT\_URL              | Full URL to the upcoming environment                |                              | GitLab     |
-| SERVICE\_PORT                 | Port that application listens on                    | 8000                         |            |
-| GIT\_COMMIT\_SHA              | Current commits SHA                                 |                              | GitLab     |
 | GIT\_COMMIT\_REF\_NAME        | The branch or tag name for which project is built   |                              | GitLab     |
-| DATABASE\_USER                | Database user for preview environment               | user                         |            |
-| DATABASE\_PASSWORD            | Database password for preview environment           | UUID value                   |            |
-| DATABASE\_DB                  | Database name for preview environment               | appdb                        |            |
-| POSTGRES\_VERSION\_TAG        | Version of PostgeSQL for preview environment        | 5\.6                         |            |
-| POSTGRES\_ENABLED             | Should a PostgreSQL database be created for preview | True                         |            |
-| MYSQL\_VERSION\_TAG           | Version of MySQL for preview environment            | 9\.6                         |            |
-| MYSQL\_ENABLED                | Should a MySQL database be created for preview      | False                        |            |
-| K8S\_API\_KEY                 | Kubernetes API key                                  |                              | GitLab     |
+| GIT\_COMMIT\_SHA              | Current commits SHA                                 |                              | GitLab     |
+| GIT\_DEFAULT\_TARGET\_BRANCH  | Default branch that is targeted for merges          | master                       | GitLab     |
+| GIT\_TARGET\_BRANCH           | Target branch for the specific merge/pull-request   |                              | GitLab     |
 | K8S\_API\_CA\_PEM\_FILE       | Kubernetes API certificate file                     |                              | GitLab     |
+| K8S\_API\_KEY                 | Kubernetes API key                                  |                              | GitLab     |
 | K8S\_API\_URL                 | Kubernetes API URL                                  |                              | GitLab     |
 | K8S\_INGRESS\_BASE\_DOMAIN    | Kubernetes default base domain for preview          |                              | GitLab     |
-| K8S\_SECRET\_PREFIX           | Application environment variable prefix             |                              |            |
 | K8S\_NAMESPACE                | Kubernetes namespace to use                         |                              | GitLab     |
+| K8S\_SECRET\_PREFIX           | Application environment variable prefix             |                              |            |
 | KUBECONFIG                    | Path to Kubernetes config                           |                              |            |
+| MYSQL\_ENABLED                | Should a MySQL database be created for preview      | False                        |            |
+| MYSQL\_VERSION\_TAG           | Version of MySQL for preview environment            | 9\.6                         |            |
+| POSTGRES\_ENABLED             | Should a PostgreSQL database be created for preview | True                         |            |
+| POSTGRES\_VERSION\_TAG        | Version of PostgeSQL for preview environment        | 5\.6                         |            |
+| PROJECT\_DIR                  | Path to where code is cloned and CI start path      |                              | GitLab     |
+| PROJECT\_NAME                 | The name of the project                             |                              | GitLab     |
+| PROJECT\_PATH\_SLUG           | Slug to project path \(<org>/<repo>\)               |                              | GitLab     |
+| SERVICE\_PORT                 | Port that application listens on                    | 8000                         |            |
 
 
 ## Command variables
