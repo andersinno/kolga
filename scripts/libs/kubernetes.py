@@ -245,7 +245,11 @@ class Kubernetes:
             self.create_mysql_database(namespace=namespace, track=track)
 
     def create_postgres_database(
-        self, namespace: str, track: str, helm_chart: str = "stable/postgresql"
+        self,
+        namespace: str,
+        track: str,
+        helm_chart: str = "stable/postgresql",
+        helm_chart_version: str = "7.7.2",
     ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
@@ -255,11 +259,19 @@ class Kubernetes:
             "postgresqlDatabase": settings.DATABASE_DB,
         }
         self.helm.upgrade_chart(
-            chart=helm_chart, name=deploy_name, namespace=namespace, values=values,
+            chart=helm_chart,
+            name=deploy_name,
+            namespace=namespace,
+            values=values,
+            version=helm_chart_version,
         )
 
     def create_mysql_database(
-        self, namespace: str, track: str, helm_chart: str = "stable/mysql"
+        self,
+        namespace: str,
+        track: str,
+        helm_chart: str = "stable/mysql",
+        helm_chart_version: str = "1.6.0",
     ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
@@ -271,7 +283,11 @@ class Kubernetes:
             "testFramework.enabled": "false",
         }
         self.helm.upgrade_chart(
-            chart=helm_chart, name=deploy_name, namespace=namespace, values=values,
+            chart=helm_chart,
+            name=deploy_name,
+            namespace=namespace,
+            values=values,
+            version=helm_chart_version,
         )
 
     def create_application_deployment(
