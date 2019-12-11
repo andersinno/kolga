@@ -48,6 +48,7 @@ variables:
   except:
     variables:
       - $BUILD_DISABLED
+  interruptible: true
 
 .test:
   services:
@@ -64,6 +65,7 @@ variables:
   except:
     variables:
       - $TEST_DISABLED
+  interruptible: true
 
 .light-test:
   stage: test
@@ -76,6 +78,7 @@ variables:
   except:
     variables:
       - $TEST_DISABLED
+  interruptible: true
 
 .review:
   stage: review
@@ -96,6 +99,7 @@ variables:
       - master
     variables:
       - $REVIEW_DISABLED
+  interruptible: true
 
 .review-cleanup:
   variables:
@@ -115,6 +119,7 @@ variables:
       - master
     variables:
       - $REVIEW_DISABLED
+  interruptible: true
 
 .cleanup_review:
   extends: .review-cleanup
@@ -142,6 +147,7 @@ variables:
   except:
     variables:
       - $STAGING_DISABLED
+  interruptible: false
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
