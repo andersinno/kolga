@@ -31,7 +31,7 @@ services:
       driver: none
 
   helm-registry:
-    image: chartmuseum/chartmuseum:latest
+    image: chartmuseum/chartmuseum:v0.10.0
     environment:
       - DEBUG=0
       - STORAGE=local
@@ -67,7 +67,7 @@ services:
       target: development
     privileged: true
     environment:
-    - K3S_URL=https://server:6443
+    - K3S_URL=https://kubernetes:6443
     - K3S_CLUSTER_SECRET=k3stestclustersecret
     - KUBECONFIG=/config/kubeconfig.yaml
     - CONTAINER_REGISTRY=docker-registry:5000
