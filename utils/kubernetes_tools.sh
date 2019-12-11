@@ -12,7 +12,7 @@ function setup_kubernetes() {
     done
 
     # Give some time for the service to create the required config files
-    sleep 3
+    sleep 10
 
     # This is the same way that K3S modifies their kubeconfig
     # for e2e testing accoring to this file:
