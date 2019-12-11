@@ -158,19 +158,12 @@ class Docker:
     def build_stages(self) -> List[DockerImage]:
         """
         Build all stages of a Dockerfile and tag them
-
-        We build the images in reverse order to save time in
-        the case of an issues with the final build as well as
-        to create a complete caching structure for subsequent
-        builds.
         """
         self.pull_cache()
         built_images = []
         stages = self.get_stages()
 
-        reverse_stages = reversed(stages)
-
-        for i, stage in enumerate(reverse_stages):
+        for i, stage in enumerate(stages):
             if i > 0:
                 built_images.append(self.build_stage(stage))
             else:
