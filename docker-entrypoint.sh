@@ -3,6 +3,7 @@
 source utils/kubernetes_tools.sh
 
 if [[ ! -z "$@" ]]; then
+    echo "Running with custom command: ${@}"
     "$@"
 else
     setup_kubernetes
