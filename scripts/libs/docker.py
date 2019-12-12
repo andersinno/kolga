@@ -138,19 +138,30 @@ class Docker:
     def pull_cache(
         self, suffix: Optional[str] = None, pull_commit_ref: bool = True
     ) -> Set[str]:
+        pending_images = set()
         pulled_images = set()
         suffix = f"-{suffix}" if suffix else ""
         target_branch = settings.GIT_TARGET_BRANCH or settings.GIT_DEFAULT_TARGET_BRANCH
         target_image = f"{self.image_repo}:{target_branch}{suffix}"
-        if self.pull_image(target_image):
-            pulled_images.add(target_image)
 
+        # Add the target branches final image
+        pending_images.add(target_image)
+
+        # Get all stage images except the last as that is the final image
+        for stage in self.get_stages()[:-1]:
+            stage_image = f"{target_image}-{stage}"
+            pending_images.add(stage_image)
+
+        # Get the currently reference commits branch specific image
         if pull_commit_ref:
             # Translate _ and / to _ since those chars are not supported by docker images
             git_ref_tag = self.get_docker_git_ref_tag()
             commit_ref_image = f"{self.image_repo}:{git_ref_tag}{suffix}"
-            if self.pull_image(commit_ref_image):
-                pulled_images.add(commit_ref_image)
+            pending_images.add(commit_ref_image)
+
+        for image in pending_images:
+            if self.pull_image(image):
+                pulled_images.add(image)
 
         self.image_cache |= pulled_images
         return pulled_images
@@ -158,19 +169,12 @@ class Docker:
     def build_stages(self) -> List[DockerImage]:
         """
         Build all stages of a Dockerfile and tag them
-
-        We build the images in reverse order to save time in
-        the case of an issues with the final build as well as
-        to create a complete caching structure for subsequent
-        builds.
         """
         self.pull_cache()
         built_images = []
         stages = self.get_stages()
 
-        reverse_stages = reversed(stages)
-
-        for i, stage in enumerate(reverse_stages):
+        for i, stage in enumerate(stages):
             if i > 0:
                 built_images.append(self.build_stage(stage))
             else:
