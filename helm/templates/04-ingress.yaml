@@ -6,6 +6,9 @@ metadata:
   labels:
     app: {{ template "appname" . }}
     release: {{ .Release.Name }}
+  annotations:
+    # In GKE we need to specify ingress.class
+    kubernetes.io/ingress.class: "nginx"
 spec:
   tls:
     - hosts:
