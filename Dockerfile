@@ -16,8 +16,8 @@ RUN ln -s pip3 /usr/bin/pip
 # ===================================
 FROM build-base AS kubectl
 # ===================================
-ARG KUBECTL_VERSION=1.14.8
-ARG KUBECTL_CHECKSUM=6b8039e739ff8d83b61f49bd38465ca8eb70f0476b1dc39a54ab879acac6ca6d
+ARG KUBECTL_VERSION=1.16.4
+ARG KUBECTL_CHECKSUM=407444fcbfa6905d96e3584fd1f008d1d844108763fe45e2f30f58efea661501
 ARG SOURCE=https://dl.k8s.io/v$KUBECTL_VERSION/kubernetes-client-linux-amd64.tar.gz
 ARG TARGET=/kubernetes-client.tar.gz
 RUN curl -fLSs "$SOURCE" -o "$TARGET"
@@ -28,8 +28,8 @@ RUN tar -xvf "$TARGET" -C /
 # ===================================
 FROM build-base AS helm
 # ===================================
-ARG HELM_VERSION=3.0.0
-ARG HELM_CHECKSUM=10e1fdcca263062b1d7b2cb93a924be1ef3dd6c381263d8151dd1a20a3d8c0dc
+ARG HELM_VERSION=3.0.1
+ARG HELM_CHECKSUM=6de3337bb7683fd62f915d156cfc13c1cf73dc183bd39f2fb4644498c7595805
 ARG SOURCE=https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz
 ARG TARGET=/helm.tar.gz
 RUN curl -fLSs "$SOURCE" -o "$TARGET"
