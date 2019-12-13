@@ -175,10 +175,10 @@ class Docker:
         stages = self.get_stages()
 
         for i, stage in enumerate(stages):
-            if i > 0:
-                built_images.append(self.build_stage(stage))
-            else:
+            if i == len(stages) - 1:
                 built_images.append(self.build_stage(stage, final_image=True))
+            else:
+                built_images.append(self.build_stage(stage))
 
         return built_images
 
