@@ -300,7 +300,7 @@ class Kubernetes:
         auto_helm_path = Path("/tmp/devops/ci-configuration/helm")
         if not helm_path.exists() and auto_helm_path.exists():
             shutil.copytree(auto_helm_path, helm_path)
-        else:
+        elif not helm_path.exists():
             logger.error(
                 message="Could not find Helm chart to use",
                 error=OSError(),
