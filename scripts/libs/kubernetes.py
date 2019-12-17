@@ -244,8 +244,13 @@ class Kubernetes:
         elif database_type == MYSQL:
             self.create_mysql_database(namespace=namespace, track=track)
 
-    def create_postgres_database(self, namespace: str, track: str) -> None:
-        helm_chart = "stable/postgresql"
+    def create_postgres_database(
+        self,
+        namespace: str,
+        track: str,
+        helm_chart: str = "stable/postgresql",
+        helm_chart_version: str = "7.7.2",
+    ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
             "image.tag": settings.POSTGRES_VERSION_TAG,
@@ -254,11 +259,20 @@ class Kubernetes:
             "postgresqlDatabase": settings.DATABASE_DB,
         }
         self.helm.upgrade_chart(
-            chart=helm_chart, name=deploy_name, namespace=namespace, values=values,
+            chart=helm_chart,
+            name=deploy_name,
+            namespace=namespace,
+            values=values,
+            version=helm_chart_version,
         )
 
-    def create_mysql_database(self, namespace: str, track: str) -> None:
-        helm_chart = "stable/mysql"
+    def create_mysql_database(
+        self,
+        namespace: str,
+        track: str,
+        helm_chart: str = "stable/mysql",
+        helm_chart_version: str = "1.6.0",
+    ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
             "imageTag": settings.MYSQL_VERSION_TAG,
@@ -269,7 +283,11 @@ class Kubernetes:
             "testFramework.enabled": "false",
         }
         self.helm.upgrade_chart(
-            chart=helm_chart, name=deploy_name, namespace=namespace, values=values,
+            chart=helm_chart,
+            name=deploy_name,
+            namespace=namespace,
+            values=values,
+            version=helm_chart_version,
         )
 
     def create_application_deployment(
@@ -322,6 +340,7 @@ class Kubernetes:
             resource,
             "--include-uninitialized",
             "--ignore-not-found",
+            "--wait=true",
             f"--namespace={namespace}",
         ]
 

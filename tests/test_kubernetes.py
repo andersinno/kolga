@@ -133,15 +133,28 @@ def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
         kubernetes.get(resource="secret", name=test_namespace)
 
 
+# ======================================================================
+# KUBERNETES CLUSTER _AND_ HELM SERVER REQUIRED FROM THIS POINT FORWARD
+# ======================================================================
+
+
 def test_create_postgres_database(
     kubernetes: Kubernetes, test_namespace: str, helm: Helm
 ) -> None:
+    helm_test_repo_url = os.environ.get("TEST_HELM_REGISTRY", "http://localhost:8080")
+    helm.add_repo("testing", helm_test_repo_url)
     track = DEFAULT_TRACK
-    kubernetes.create_postgres_database(namespace=test_namespace, track=track)
+    kubernetes.create_postgres_database(
+        namespace=test_namespace, track=track, helm_chart="testing/postgresql"
+    )
 
 
 def test_create_mysql_database(
     kubernetes: Kubernetes, test_namespace: str, helm: Helm
 ) -> None:
+    helm_test_repo_url = os.environ.get("TEST_HELM_REGISTRY", "http://localhost:8080")
+    helm.add_repo("testing", helm_test_repo_url)
     track = DEFAULT_TRACK
-    kubernetes.create_mysql_database(namespace=test_namespace, track=track)
+    kubernetes.create_mysql_database(
+        namespace=test_namespace, track=track, helm_chart="testing/mysql"
+    )

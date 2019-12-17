@@ -27,14 +27,9 @@ class Helm:
         # TODO: Remove once this is added by default and Helm 3 is stable
         self.add_repo("stable", "https://kubernetes-charts.storage.googleapis.com/")
 
-        logger.info(icon=f"{self.ICON}  🔄", title="Updating Helm repos: ", end="")
-        result = run_os_command(["helm", "repo", "update"])
-        if not result.return_code:
-            logger.success()
-        else:
-            logger.std(result, raise_exception=True)
+        self.update_repos()
 
-    def add_repo(self, repo_name: str, repo_url: str) -> None:
+    def add_repo(self, repo_name: str, repo_url: str, update: bool = True) -> None:
         logger.info(
             icon=f"{self.ICON}  ➕",
             title=f"Adding Helm repo {repo_url} with name {repo_name}: ",
@@ -46,11 +41,22 @@ class Helm:
         else:
             logger.std(result, raise_exception=True)
 
+        if update:
+            self.update_repos()
+
     def remove_repo(self, repo_name: str) -> None:
         logger.info(
             icon=f"{self.ICON}  ➖", title=f"Removing Helm repo {repo_name}: ", end="",
         )
         result = run_os_command(["helm", "repo", "remove", repo_name])
+        if not result.return_code:
+            logger.success()
+        else:
+            logger.std(result, raise_exception=True)
+
+    def update_repos(self) -> None:
+        logger.info(icon=f"{self.ICON}  🔄", title="Updating Helm repos: ", end="")
+        result = run_os_command(["helm", "repo", "update"])
         if not result.return_code:
             logger.success()
         else:
@@ -86,6 +92,7 @@ class Helm:
         chart: str = "",
         chart_path: Optional[Path] = None,
         install: bool = True,
+        version: Optional[str] = None,
     ) -> None:
         if chart_path and not chart_path.exists():
             logger.error(
@@ -110,6 +117,9 @@ class Helm:
             "--namespace",
             f"{namespace}",
         ]
+
+        if version:
+            helm_command += ["--version", version]
 
         # Add value setter arguments
         values_params = self.get_chart_values_list(values)

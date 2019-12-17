@@ -31,7 +31,7 @@ services:
       driver: none
 
   helm-registry:
-    image: chartmuseum/chartmuseum:latest
+    image: chartmuseum/chartmuseum:v0.10.0
     environment:
       - DEBUG=0
       - STORAGE=local
@@ -52,6 +52,7 @@ services:
       - REGISTRY_AUTH=htpasswd
       - REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd
       - REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm
+      - REGISTRY_HTTP_SECRET=2893jrnuiafisg4aw783ih4eoiqty38h98789yrwuehrfjskd948j394
     volumes:
       - ./tests/registry/certs:/certs
       - ./tests/registry/auth:/auth
@@ -67,7 +68,7 @@ services:
       target: development
     privileged: true
     environment:
-    - K3S_URL=https://server:6443
+    - K3S_URL=https://kubernetes:6443
     - K3S_CLUSTER_SECRET=k3stestclustersecret
     - KUBECONFIG=/config/kubeconfig.yaml
     - CONTAINER_REGISTRY=docker-registry:5000
