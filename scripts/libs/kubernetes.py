@@ -324,13 +324,16 @@ class Kubernetes:
             "application.migrateCommand": settings.APP_MIGRATE_COMMAND,
             "service.url": settings.ENVIRONMENT_URL,
             "service.targetPort": settings.SERVICE_PORT,
-            "ingress.clusterIssuer": settings.K8S_CLUSTER_ISSUER,
         }
 
         if get_database_type():
             database_url = get_database_url(track=track)
             values["application.database_url"] = str(database_url)
             values["application.database_host"] = str(database_url.host)
+
+        cert_issuer = self.get_certification_issuer(track=track)
+        if cert_issuer:
+            values["ingress.clusterIssuer"] = cert_issuer
 
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
@@ -433,6 +436,33 @@ class Kubernetes:
             command_args += [name]
             logger.info(title=f" with name '{name}'", end="")
         return command_args
+
+    def get_certification_issuer(self, track: str) -> Optional[str]:
+        logger.info(
+            icon=f"{self.ICON} 🏵️️", title="Checking certification issuer", end="",
+        )
+
+        raise_exception = False
+        if settings.K8S_CLUSTER_ISSUER:
+            cert_issuer: str = settings.K8S_CLUSTER_ISSUER
+            logger.info(message=f"(settings): ")
+            raise_exception = True
+        else:
+            cert_issuer = f"certificate-letsencrypt-{track}"
+            logger.info(message=f"(track): ")
+
+        os_command = ["kubectl", "get", "clusterissuer", cert_issuer]
+        result = run_os_command(os_command, shell=True)
+        if not result.return_code:
+            logger.success(message=cert_issuer)
+            return cert_issuer
+        else:
+            error_message = f'No issuer "{cert_issuer}" found, using cluster defaults'
+            if raise_exception:
+                logger.error(message=error_message, raise_exception=True)
+            else:
+                logger.info(message=error_message)
+            return None
 
     def get(
         self,
