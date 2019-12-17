@@ -1,7 +1,7 @@
 import shutil
 from base64 import b64encode
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import colorful as cf
 from kubernetes import client as k8s_client
@@ -383,6 +383,23 @@ class Kubernetes:
     def delete_namespace(self, namespace: str = settings.K8S_NAMESPACE) -> None:
         self.delete(resource="namespace", name=namespace)
 
+    def _resource_command(
+        self,
+        resource: str,
+        name: Optional[str] = None,
+        labels: Optional[Dict[str, str]] = None,
+        namespace: str = settings.K8S_NAMESPACE,
+    ) -> List[str]:
+        command_args = [resource, f"--namespace={namespace}"]
+        if labels:
+            labels_str = self.labels_to_string(labels)
+            command_args += ["-l", labels_str]
+            logger.info(title=f" with labels {labels_str}", end="")
+        if name:
+            command_args += [name]
+            logger.info(title=f" with name '{name}'", end="")
+        return command_args
+
     def get(
         self,
         resource: str,
@@ -391,16 +408,12 @@ class Kubernetes:
         namespace: str = settings.K8S_NAMESPACE,
         raise_exception: bool = True,
     ) -> SubprocessResult:
-        os_command = ["kubectl", "get", resource, f"--namespace={namespace}"]
+        os_command = ["kubectl", "get"]
 
-        logger.info(icon=f"{self.ICON}  🗑️ ", title=f"Getting {resource}", end="")
-        if labels:
-            labels_str = self.labels_to_string(labels)
-            os_command += ["-l", labels_str]
-            logger.info(title=f" with labels {labels_str}", end="")
-        if name:
-            os_command += [name]
-            logger.info(title=f" with name '{name}'", end="")
+        logger.info(icon=f"{self.ICON}  ℹ️ ", title=f"Getting {resource}", end="")
+        os_command += self._resource_command(
+            resource=resource, name=name, labels=labels, namespace=namespace
+        )
         logger.info(": ", end="")
         result = run_os_command(os_command, shell=True)
         if not result.return_code:
