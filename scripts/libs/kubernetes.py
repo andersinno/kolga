@@ -165,6 +165,21 @@ class Kubernetes:
         """
         return get_environment_vars_by_prefix(prefix)
 
+    @staticmethod
+    def get_helm_path() -> Path:
+        application_path = Path(settings.PROJECT_DIR)
+        helm_path = application_path / "helm"
+        auto_helm_path = Path("/tmp/devops/ci-configuration/helm")
+        if not helm_path.exists() and auto_helm_path.exists():
+            shutil.copytree(auto_helm_path, helm_path)
+        elif not helm_path.exists():
+            logger.error(
+                message="Could not find Helm chart to use",
+                error=OSError(),
+                raise_exception=True,
+            )
+        return helm_path
+
     def create_namespace(self, namespace: str = settings.K8S_NAMESPACE) -> str:
         """
         Create a Kubernetes namespace
@@ -295,17 +310,7 @@ class Kubernetes:
         self, docker_image: str, secret_name: str, namespace: str, track: str,
     ) -> None:
         deploy_name = get_deploy_name(track=track)
-        application_path = Path(settings.PROJECT_DIR)
-        helm_path = application_path / "helm"
-        auto_helm_path = Path("/tmp/devops/ci-configuration/helm")
-        if not helm_path.exists() and auto_helm_path.exists():
-            shutil.copytree(auto_helm_path, helm_path)
-        elif not helm_path.exists():
-            logger.error(
-                message="Could not find Helm chart to use",
-                error=OSError(),
-                raise_exception=True,
-            )
+        helm_path = self.get_helm_path()
 
         values: Dict[str, str] = {
             "namespace": namespace,
