@@ -458,7 +458,7 @@ class Kubernetes:
         ]
 
         logger.info(
-            icon=f"{self.ICON}  📋️️ ", title=f"Getting logs for resource", end=""
+            icon=f"{self.ICON}  📋️️ ", title=f"Getting logs for resource: ", end=""
         )
 
         if labels:
