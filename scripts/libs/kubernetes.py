@@ -9,15 +9,16 @@ from kubernetes import config as k8s_config
 from kubernetes.client.rest import ApiException
 
 from scripts.utils.logger import logger
-from scripts.utils.models import SubprocessResult
+from scripts.utils.models import ReleaseStatus, SubprocessResult
 
 from ..libs.helm import Helm
 from ..settings import settings
-from ..utils.exceptions import NoClusterConfigError
+from ..utils.exceptions import DeploymentFailed, NoClusterConfigError
 from ..utils.general import (
     MYSQL,
     POSTGRES,
     camel_case_split,
+    current_rfc3339_datetime,
     get_database_type,
     get_database_url,
     get_deploy_name,
@@ -325,9 +326,27 @@ class Kubernetes:
             values["application.database_url"] = str(database_url)
             values["application.database_host"] = str(database_url.host)
 
-        self.helm.upgrade_chart(
-            chart_path=helm_path, name=deploy_name, namespace=namespace, values=values,
+        deployment_started_at = current_rfc3339_datetime()
+        result = self.helm.upgrade_chart(
+            chart_path=helm_path,
+            name=deploy_name,
+            namespace=namespace,
+            values=values,
+            raise_exception=False,
         )
+
+        if result.return_code:
+            application_labels = {"release": deploy_name}
+            status = self.status(namespace=namespace, labels=application_labels)
+            logger.info(message=str(status))
+            self.logs(
+                labels=application_labels,
+                since_time=deployment_started_at,
+                namespace=namespace,
+                raise_exception=False,
+                print_result=True,
+            )
+            raise DeploymentFailed()
 
     def delete(
         self,
@@ -421,3 +440,60 @@ class Kubernetes:
         else:
             logger.std(result, raise_exception=raise_exception)
         return result
+
+    def logs(
+        self,
+        labels: Optional[Dict[str, str]] = None,
+        since_time: Optional[str] = None,
+        namespace: str = settings.K8S_NAMESPACE,
+        print_result: bool = True,
+        raise_exception: bool = True,
+    ) -> SubprocessResult:
+        os_command = [
+            "kubectl",
+            "logs",
+            f"--namespace={namespace}",
+            "--timestamps=true",
+            "--tail=100",
+        ]
+
+        logger.info(
+            icon=f"{self.ICON}  📋️️ ", title=f"Getting logs for resource", end=""
+        )
+
+        if labels:
+            labels_str = self.labels_to_string(labels)
+            os_command += ["-l", labels_str]
+            logger.info(title=f" with labels {labels_str}", end="")
+
+        if since_time:
+            os_command += [f"--since-time={since_time}"]
+            logger.info(title=f" since {since_time}", end="")
+
+        result = run_os_command(os_command, shell=True)
+        if not result.return_code:
+            logger.success()
+            if print_result:
+                logger.std(result)
+        else:
+            logger.std(result, raise_exception=raise_exception)
+
+        return result
+
+    def status(
+        self,
+        labels: Optional[Dict[str, str]] = None,
+        namespace: str = settings.K8S_NAMESPACE,
+    ) -> ReleaseStatus:
+        deployment_status = self.get(
+            resource="deployments",
+            labels=labels,
+            namespace=namespace,
+            raise_exception=False,
+        )
+
+        pods_status = self.get(
+            resource="pods", labels=labels, namespace=namespace, raise_exception=False
+        )
+
+        return ReleaseStatus(deployment=deployment_status.out, pods=pods_status.out,)

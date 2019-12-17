@@ -2,6 +2,7 @@ import json
 import os
 import re
 import subprocess
+from datetime import datetime, timezone
 from shlex import quote
 from typing import Any, Dict, List, Optional
 
@@ -128,3 +129,8 @@ def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessRe
         return_code=result.returncode,
         child=result,
     )
+
+
+def current_rfc3339_datetime() -> str:
+    local_time = datetime.now(timezone.utc).astimezone()
+    return local_time.isoformat()

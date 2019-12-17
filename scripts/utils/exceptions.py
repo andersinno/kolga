@@ -4,3 +4,7 @@ class NoClusterConfigError(Exception):
 
 class NoDatabaseConfigError(Exception):
     pass
+
+
+class DeploymentFailed(Exception):
+    pass

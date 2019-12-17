@@ -22,3 +22,16 @@ class SubprocessResult:
     err: str
     return_code: int
     child: Any
+
+
+@dataclass
+class ReleaseStatus:
+    pods: str = ""
+    deployment: str = ""
+
+    def __str__(self) -> str:
+        result = "==== POD STATUSES ====\n"
+        result += self.pods
+        result += "==== DEPLOYMENT STATUS ====\n"
+        result += self.deployment
+        return result
