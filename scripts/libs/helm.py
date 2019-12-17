@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from scripts.utils.logger import logger
+from scripts.utils.models import SubprocessResult
 
 from ..utils.general import run_os_command
 
@@ -93,7 +94,8 @@ class Helm:
         chart_path: Optional[Path] = None,
         install: bool = True,
         version: Optional[str] = None,
-    ) -> None:
+        raise_exception: bool = True,
+    ) -> SubprocessResult:
         if chart_path and not chart_path.exists():
             logger.error(
                 message=f"Path '{str(chart_path)}' does not exist",
@@ -113,6 +115,8 @@ class Helm:
             "helm",
             "upgrade",
             "--wait",
+            "--timeout",
+            "300s",
             install_arg,
             "--namespace",
             f"{namespace}",
@@ -130,8 +134,10 @@ class Helm:
 
         result = run_os_command(os_command)
         if result.return_code:
-            logger.std(result, raise_exception=True)
+            logger.std(result, raise_exception=raise_exception)
+            return result
         logger.success()
         logger.info(f"\tName: {name}")
         logger.info(f"\tNamespace: {namespace}")
         logger.info(f"\tValues count: {int(len(values_params) / 2)}")
+        return result
