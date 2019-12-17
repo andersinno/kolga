@@ -336,6 +336,15 @@ class Kubernetes:
         )
 
         if result.return_code:
+            secret_variables = ["application.database_url"]
+            logger.info(
+                icon=f"{self.ICON} 🏷️",
+                title="Deployment values (without environment vars):",
+            )
+            for key, value in values.values():
+                if key not in secret_variables:
+                    logger.info(message=f"\t{key}: {value}")
+
             application_labels = {"release": deploy_name}
             status = self.status(namespace=namespace, labels=application_labels)
             logger.info(message=str(status))
