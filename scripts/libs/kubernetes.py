@@ -306,7 +306,6 @@ class Kubernetes:
                 raise_exception=True,
             )
 
-        database_url = get_database_url(track=track)
         values: Dict[str, str] = {
             "namespace": namespace,
             "image": docker_image,
@@ -314,14 +313,17 @@ class Kubernetes:
             "gitlab.env": settings.ENVIRONMENT_SLUG,
             "releaseOverride": settings.ENVIRONMENT_SLUG,
             "application.track": track,
-            "application.database_url": str(database_url),
-            "application.database_host": str(database_url.host),
             "application.secretName": secret_name,
             "application.initializeCommand": settings.APP_INITIALIZE_COMMAND,
             "application.migrateCommand": settings.APP_MIGRATE_COMMAND,
             "service.url": settings.ENVIRONMENT_URL,
             "service.targetPort": settings.SERVICE_PORT,
         }
+
+        if get_database_type():
+            database_url = get_database_url(track=track)
+            values["application.database_url"] = str(database_url)
+            values["application.database_host"] = str(database_url.host)
 
         self.helm.upgrade_chart(
             chart_path=helm_path, name=deploy_name, namespace=namespace, values=values,
