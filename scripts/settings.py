@@ -56,6 +56,7 @@ class Settings:
     # KUBERNETES
     K8S_INGRESS_BASE_DOMAIN: str = env.str("K8S_INGRESS_BASE_DOMAIN", "")
     K8S_NAMESPACE: str = env.str("K8S_NAMESPACE", "")
+    K8S_CLUSTER_ISSUER: str = env.str("K8S_CLUSTER_ISSUER", "")
     K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET_")
     KUBECONFIG: str = env.str("KUBECONFIG", "")
 
@@ -130,6 +131,7 @@ class GitLabMapper:
         "CI_REGISTRY_USER": "CONTAINER_REGISTRY_USER",
         "KUBE_INGRESS_BASE_DOMAIN": "K8S_INGRESS_BASE_DOMAIN",
         "KUBE_NAMESPACE": "K8S_NAMESPACE",
+        "KUBE_CLUSTER_ISSUER": "K8S_CLUSTER_ISSUER",
         "KUBECONFIG": "KUBECONFIG",
     }
 
