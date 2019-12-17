@@ -341,7 +341,7 @@ class Kubernetes:
                 icon=f"{self.ICON} 🏷️",
                 title="Deployment values (without environment vars):",
             )
-            for key, value in values.values():
+            for key, value in values.items():
                 if key not in secret_variables:
                     logger.info(message=f"\t{key}: {value}")
 
