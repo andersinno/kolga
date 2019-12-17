@@ -39,6 +39,7 @@ supplies a predefined variables with the SHA.
 | GIT\_COMMIT\_SHA              | Current commits SHA                                 |                              | GitLab     |
 | GIT\_DEFAULT\_TARGET\_BRANCH  | Default branch that is targeted for merges          | master                       | GitLab     |
 | GIT\_TARGET\_BRANCH           | Target branch for the specific merge/pull-request   |                              | GitLab     |
+| K8S\_CLUSTER\_ISSUER          | The name of the clusterIssuer to be used by ingress |                              |            |
 | K8S\_INGRESS\_BASE\_DOMAIN    | Kubernetes default base domain for preview          |                              | GitLab     |
 | K8S\_NAMESPACE                | Kubernetes namespace to use                         |                              | GitLab     |
 | K8S\_SECRET\_PREFIX           | Application environment variable prefix             |                              |            |

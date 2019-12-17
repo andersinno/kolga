@@ -7,6 +7,9 @@ metadata:
     app: {{ template "appname" . }}
     release: {{ .Release.Name }}
   annotations:
+    {{- if .Values.ingress.clusterIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer }}
+    {{- end }}
     # In GKE we need to specify ingress.class
     kubernetes.io/ingress.class: "nginx"
 spec:

@@ -321,6 +321,7 @@ class Kubernetes:
             "application.migrateCommand": settings.APP_MIGRATE_COMMAND,
             "service.url": settings.ENVIRONMENT_URL,
             "service.targetPort": settings.SERVICE_PORT,
+            "ingress.clusterIssuer": settings.K8S_CLUSTER_ISSUER,
         }
 
         self.helm.upgrade_chart(
