@@ -116,7 +116,7 @@ class Helm:
             "upgrade",
             "--wait",
             "--timeout",
-            "300s",
+            "180s",
             install_arg,
             "--namespace",
             f"{namespace}",
