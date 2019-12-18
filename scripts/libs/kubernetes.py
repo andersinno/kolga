@@ -445,11 +445,11 @@ class Kubernetes:
         raise_exception = False
         if settings.K8S_CLUSTER_ISSUER:
             cert_issuer: str = settings.K8S_CLUSTER_ISSUER
-            logger.info(message=f"(settings): ")
+            logger.info(message=f" (settings): ", end="")
             raise_exception = True
         else:
             cert_issuer = f"certificate-letsencrypt-{track}"
-            logger.info(message=f"(track): ")
+            logger.info(message=f" (track): ", end="")
 
         os_command = ["kubectl", "get", "clusterissuer", cert_issuer]
         result = run_os_command(os_command, shell=True)
