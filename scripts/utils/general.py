@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Optional
 import environs
 
 from scripts.settings import settings
-from scripts.utils.exceptions import NoDatabaseConfigError
 from scripts.utils.models import SubprocessResult
 
 from .url import URL, make_url  # type: ignore
@@ -61,7 +60,7 @@ def get_database_type() -> Optional[str]:
     return None
 
 
-def get_database_url(track: str) -> URL:
+def get_database_url(track: str) -> Optional[URL]:
     """
     Get the database URL based on the environment
 
@@ -78,9 +77,7 @@ def get_database_url(track: str) -> URL:
 
     database_type = get_database_type()
     if not database_type:
-        raise NoDatabaseConfigError(
-            "No predefined database URL nor database type defined"
-        )
+        return None
 
     deploy_name = get_deploy_name(track)
     database_port = database_default_port_mapping[database_type]

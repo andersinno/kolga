@@ -53,6 +53,7 @@ def test_get_secret_name(track: str, expected: str) -> None:
 
 def test_get_database_url_stable() -> None:
     url = get_database_url(DEFAULT_TRACK)
+    assert url
     assert url.drivername == "postgresql"
     assert url.username == "testuser"
     assert url.password == "testpass"

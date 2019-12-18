@@ -326,8 +326,8 @@ class Kubernetes:
             "service.targetPort": settings.SERVICE_PORT,
         }
 
-        if get_database_type():
-            database_url = get_database_url(track=track)
+        database_url = get_database_url(track=track)
+        if database_url:
             values["application.database_url"] = str(database_url)
             values["application.database_host"] = str(database_url.host)
 
