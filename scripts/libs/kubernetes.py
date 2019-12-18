@@ -165,6 +165,21 @@ class Kubernetes:
         """
         return get_environment_vars_by_prefix(prefix)
 
+    @staticmethod
+    def get_helm_path() -> Path:
+        application_path = Path(settings.PROJECT_DIR)
+        helm_path = application_path / "helm"
+        auto_helm_path = Path("/tmp/devops/ci-configuration/helm")
+        if not helm_path.exists() and auto_helm_path.exists():
+            shutil.copytree(auto_helm_path, helm_path)
+        elif not helm_path.exists():
+            logger.error(
+                message="Could not find Helm chart to use",
+                error=OSError(),
+                raise_exception=True,
+            )
+        return helm_path
+
     def create_namespace(self, namespace: str = settings.K8S_NAMESPACE) -> str:
         """
         Create a Kubernetes namespace
@@ -295,17 +310,7 @@ class Kubernetes:
         self, docker_image: str, secret_name: str, namespace: str, track: str,
     ) -> None:
         deploy_name = get_deploy_name(track=track)
-        application_path = Path(settings.PROJECT_DIR)
-        helm_path = application_path / "helm"
-        auto_helm_path = Path("/tmp/devops/ci-configuration/helm")
-        if not helm_path.exists() and auto_helm_path.exists():
-            shutil.copytree(auto_helm_path, helm_path)
-        elif not helm_path.exists():
-            logger.error(
-                message="Could not find Helm chart to use",
-                error=OSError(),
-                raise_exception=True,
-            )
+        helm_path = self.get_helm_path()
 
         values: Dict[str, str] = {
             "namespace": namespace,
@@ -319,13 +324,16 @@ class Kubernetes:
             "application.migrateCommand": settings.APP_MIGRATE_COMMAND,
             "service.url": settings.ENVIRONMENT_URL,
             "service.targetPort": settings.SERVICE_PORT,
-            "ingress.clusterIssuer": settings.K8S_CLUSTER_ISSUER,
         }
 
         if get_database_type():
             database_url = get_database_url(track=track)
             values["application.database_url"] = str(database_url)
             values["application.database_host"] = str(database_url.host)
+
+        cert_issuer = self.get_certification_issuer(track=track)
+        if cert_issuer:
+            values["ingress.clusterIssuer"] = cert_issuer
 
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
@@ -428,6 +436,33 @@ class Kubernetes:
             command_args += [name]
             logger.info(title=f" with name '{name}'", end="")
         return command_args
+
+    def get_certification_issuer(self, track: str) -> Optional[str]:
+        logger.info(
+            icon=f"{self.ICON} 🏵️️", title="Checking certification issuer", end="",
+        )
+
+        raise_exception = False
+        if settings.K8S_CLUSTER_ISSUER:
+            cert_issuer: str = settings.K8S_CLUSTER_ISSUER
+            logger.info(message=f"(settings): ")
+            raise_exception = True
+        else:
+            cert_issuer = f"certificate-letsencrypt-{track}"
+            logger.info(message=f"(track): ")
+
+        os_command = ["kubectl", "get", "clusterissuer", cert_issuer]
+        result = run_os_command(os_command, shell=True)
+        if not result.return_code:
+            logger.success(message=cert_issuer)
+            return cert_issuer
+        else:
+            error_message = f'No issuer "{cert_issuer}" found, using cluster defaults'
+            if raise_exception:
+                logger.error(message=error_message, raise_exception=True)
+            else:
+                logger.info(message=error_message)
+            return None
 
     def get(
         self,
