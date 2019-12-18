@@ -75,13 +75,23 @@ class Settings:
                 break
 
     def _map_ci_variables(self) -> None:
+        """
+        Map CI variables to settings
+
+        Strategy:
+        1. If a value is set in the env, use it
+        2. If a value is not set in the env and a CI value is set, use the CI value
+        3. If a value is not set in the env and not in the CI, use the default value
+        """
         if not self.active_ci:
             return None
         for name_from, name_to in self.active_ci.MAPPING.items():
-            existing_value = getattr(self, name_to, None)
+            existing_value = os.environ.get(name_to, None)
             if existing_value:
                 continue
             env_value = env.str(name_from, "")
+            if not env_value:
+                continue
             setattr(self, name_to, env_value)
 
     def setup_kubeconfig(self, track: str) -> Tuple[str, str]:
