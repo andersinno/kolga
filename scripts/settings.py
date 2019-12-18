@@ -78,6 +78,9 @@ class Settings:
         if not self.active_ci:
             return None
         for name_from, name_to in self.active_ci.MAPPING.items():
+            existing_value = getattr(self, name_to, None)
+            if existing_value:
+                continue
             env_value = env.str(name_from, "")
             setattr(self, name_to, env_value)
 
