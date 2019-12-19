@@ -42,10 +42,10 @@ RUN tar -xvf "$TARGET" -C /helm
 FROM build-base AS poetry
 # ===================================
 
-ARG POETRY_CHECKSUM=3e569de8856be25f4a06bd43c72d3a876a8e3f148f088b151b5770ddeaae611e
+ARG POETRY_CHECKSUM=89745d7cf34dc17f90b08600163b031b6fbfec5126ebce3d84444856d62a0224
 ARG POETRY_TARGET=/tmp/get-poetry.py
 
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/1.0.0b5/get-poetry.py -o "$POETRY_TARGET"
+RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/1.0.0/get-poetry.py -o "$POETRY_TARGET"
 RUN sha256sum "$POETRY_TARGET"
 RUN echo "$POETRY_CHECKSUM *$POETRY_TARGET" | sha256sum -c -
 RUN python /tmp/get-poetry.py
@@ -90,7 +90,7 @@ RUN apk add --no-cache --virtual .build-deps \
         libffi-dev \
     && ln -sf python3 /usr/bin/python \
     && ln -s pip3 /usr/bin/pip \
-    && poetry config settings.virtualenvs.create false \
+    && poetry config virtualenvs.create false \
 	&& poetry install --no-dev --no-interaction \
 	&& pip install docker-compose \
 	&& apk del .build-deps \
