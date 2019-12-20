@@ -217,9 +217,16 @@ class Kubernetes:
         logger.success()
         return namespace
 
-    def create_secret(self, data: Dict[str, str], namespace: str, track: str) -> str:
+    def create_secret(
+        self,
+        data: Dict[str, str],
+        namespace: str,
+        track: str,
+        secret_name: Optional[str] = None,
+    ) -> str:
         deploy_name = get_deploy_name(track=track)
-        secret_name = get_secret_name(track=track)
+        if not secret_name:
+            secret_name = get_secret_name(track=track)
         v1 = k8s_client.CoreV1Api(self.client)
         v1_metadata = k8s_client.V1ObjectMeta(
             name=secret_name, namespace=namespace, labels={"release": deploy_name}
