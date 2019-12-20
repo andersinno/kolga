@@ -10,6 +10,14 @@ metadata:
     {{- if .Values.ingress.clusterIssuer }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer }}
     {{- end }}
+    {{- if .Values.ingress.basicAuthSecret }}
+    # type of authentication
+    nginx.ingress.kubernetes.io/auth-type: basic
+    # name of the secret that contains the user/password definitions
+    nginx.ingress.kubernetes.io/auth-secret: {{ .Values.ingress.basicAuthSecret }}
+    # message to display with an appropriate context why the authentication is required
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
+    {{- end }}
     # In GKE we need to specify ingress.class
     kubernetes.io/ingress.class: "nginx"
 spec:
