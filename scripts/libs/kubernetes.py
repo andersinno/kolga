@@ -224,6 +224,7 @@ class Kubernetes:
         namespace: str,
         track: str,
         secret_name: Optional[str] = None,
+        encode: bool = True,
     ) -> str:
         deploy_name = get_deploy_name(track=track)
         if not secret_name:
@@ -233,7 +234,11 @@ class Kubernetes:
             name=secret_name, namespace=namespace, labels={"release": deploy_name}
         )
 
-        encoded_data = self._encode_secret(data)
+        if encode:
+            encoded_data = self._encode_secret(data)
+        else:
+            encoded_data = data
+
         body = k8s_client.V1Secret(
             data=encoded_data, metadata=v1_metadata, type="generic"
         )
