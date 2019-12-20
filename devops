@@ -79,11 +79,15 @@ class Devops:
         secret_name = k.create_secrets_from_environment(
             namespace=namespace, track=track,
         )
+        basic_auth_secret_name = k.create_basic_auth_secret(
+            namespace=namespace, track=track
+        )
         k.create_database_deployment(namespace=namespace, track=track)
         k.create_application_deployment(
             docker_image=d.image_tag,
             namespace=namespace,
             secret_name=secret_name,
+            basic_auth_secret_name=basic_auth_secret_name,
             track=track,
         )
 

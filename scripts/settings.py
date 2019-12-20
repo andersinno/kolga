@@ -4,9 +4,13 @@ from typing import Any, List, Optional, Tuple
 
 import environs
 
+from scripts.utils.models import BasicAuthUser
+
+from .utils.environ_parsers import basicauth_parser
 from .utils.exceptions import NoClusterConfigError
 
 env = environs.Env()
+env.add_parser("basicauth", basicauth_parser)
 env.read_env()
 
 
@@ -55,6 +59,9 @@ class Settings:
 
     # KUBERNETES
     K8S_INGRESS_BASE_DOMAIN: str = env.str("K8S_INGRESS_BASE_DOMAIN", "")
+    K8S_INGESS_BASIC_AUTH: List[BasicAuthUser] = env.basicauth(
+        "K8S_INGESS_BASIC_AUTH", []
+    )
     K8S_NAMESPACE: str = env.str("K8S_NAMESPACE", "")
     K8S_CLUSTER_ISSUER: str = env.str("K8S_CLUSTER_ISSUER", "")
     K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET_")

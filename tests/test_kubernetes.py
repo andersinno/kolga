@@ -1,4 +1,7 @@
+import base64
 import os
+import tempfile
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -7,6 +10,7 @@ from kubernetes.client.rest import ApiException
 from scripts.libs.helm import Helm
 from scripts.libs.kubernetes import Kubernetes
 from scripts.utils.general import get_deploy_name, get_secret_name
+from scripts.utils.models import BasicAuthUser
 
 DEFAULT_TRACK = os.environ.get("DEFAULT_TRACK", "stable")
 K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "testing")
@@ -57,6 +61,36 @@ def test_get_environments_secrets_by_prefix() -> None:
         os.environ[key] = secret
 
     assert Kubernetes.get_environments_secrets_by_prefix(prefix) == secrets
+
+
+def test__b64_encode_file() -> None:
+    content = "test:$apr1$35522gYe$r3E.NGo0m0bbOXppHr3g0."
+    expected = "dGVzdDokYXByMSQzNTUyMmdZZSRyM0UuTkdvMG0wYmJPWHBwSHIzZzAu"
+
+    with tempfile.NamedTemporaryFile() as f:
+        encoded_string = str.encode(content, encoding="UTF-8")
+        f.write(encoded_string)
+        f.seek(0)
+        path = Path(f.name)
+        assert Kubernetes._b64_encode_file(path=path) == expected
+
+
+def test__create_basic_auth_data(kubernetes: Kubernetes) -> None:
+    basic_auth_users = [
+        BasicAuthUser(username="test", password="test"),
+        BasicAuthUser(username="user", password="pass"),
+    ]
+
+    data = kubernetes._create_basic_auth_data(basic_auth_users=basic_auth_users)
+    auth_data = data["auth"]
+
+    decoded_data = base64.b64decode(auth_data).decode("UTF-8")
+    user_split = decoded_data.split("\n")[:-1]
+
+    for i, user in enumerate(user_split):
+        username, password = user.split(":")
+        assert password
+        assert username == basic_auth_users[i].username
 
 
 # =====================================================
