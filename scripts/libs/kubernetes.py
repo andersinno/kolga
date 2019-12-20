@@ -316,7 +316,7 @@ class Kubernetes:
             return None
 
         secret_data = self._create_basic_auth_data()
-        secret_name = f"{get_secret_name()}-basicauth"
+        secret_name = f"{get_secret_name(track)}-basicauth"
         return self.create_secret(
             data=secret_data, namespace=namespace, track=track, secret_name=secret_name
         )
