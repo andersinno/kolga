@@ -43,6 +43,7 @@ supplies a predefined variables with the SHA.
 | K8S\_INGRESS\_BASE\_DOMAIN    | Kubernetes default base domain for preview          |                              | GitLab     |
 | K8S\_NAMESPACE                | Kubernetes namespace to use                         |                              | GitLab     |
 | K8S\_SECRET\_PREFIX           | Application environment variable prefix             |                              |            |
+| K8S\_INGESS\_BASIC\_AUTH      | Space delimited basic auth cred, ex. foo:bar df:aa  |                              |            |
 | KUBECONFIG                    | Path to Kubernetes config                           |                              |            |
 | MYSQL\_ENABLED                | Should a MySQL database be created for preview      | False                        |            |
 | MYSQL\_VERSION\_TAG           | Version of MySQL for preview environment            | 9\.6                         |            |

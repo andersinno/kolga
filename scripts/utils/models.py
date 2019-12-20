@@ -35,3 +35,14 @@ class ReleaseStatus:
         result += "==== DEPLOYMENT STATUS ====\n"
         result += self.deployment
         return result
+
+
+@dataclass
+class BasicAuthUser:
+    username: str
+    password: str
+
+    @classmethod
+    def from_colon_string(cls, colon_string: str) -> "BasicAuthUser":
+        username, password = colon_string.split(":")
+        return cls(username=username, password=password)
