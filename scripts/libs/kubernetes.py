@@ -406,6 +406,7 @@ class Kubernetes:
             "application.initializeCommand": settings.APP_INITIALIZE_COMMAND,
             "application.migrateCommand": settings.APP_MIGRATE_COMMAND,
             "service.url": settings.ENVIRONMENT_URL,
+            "service.urls": self.get_hostnames(),
             "service.targetPort": settings.SERVICE_PORT,
         }
 
@@ -522,6 +523,17 @@ class Kubernetes:
             command_args += [name]
             logger.info(title=f" with name '{name}'", end="")
         return command_args
+
+    def get_hostnames(
+            self,
+            hostname: str = settings.ENVIRONMENT_URL,
+            additional_urls: List[str] = settings.K8S_ADDITIONAL_HOSTNAMES,
+    ) -> str:
+        hostnames = []
+        hostnames.append(hostname)
+        hostnames.extend(additional_urls)
+
+        return f"{{{','.join(hostnames)}}}"
 
     def get_certification_issuer(self, track: str) -> Optional[str]:
         logger.info(

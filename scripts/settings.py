@@ -58,6 +58,7 @@ class Settings:
     POSTGRES_VERSION_TAG: str = env.str("POSTGRES_VERSION_TAG", "9.6")
 
     # KUBERNETES
+    K8S_ADDITIONAL_HOSTNAMES: List[str] = env.list("K8S_ADDITIONAL_HOSTNAMES", [])
     K8S_INGRESS_BASE_DOMAIN: str = env.str("K8S_INGRESS_BASE_DOMAIN", "")
     K8S_INGESS_BASIC_AUTH: List[BasicAuthUser] = env.basicauth(
         "K8S_INGESS_BASIC_AUTH", []
