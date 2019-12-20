@@ -322,7 +322,7 @@ class Kubernetes:
             namespace=namespace,
             track=track,
             secret_name=secret_name,
-            encode=True,
+            encode=False,
         )
 
     def create_database_deployment(
