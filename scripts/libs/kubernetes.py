@@ -318,7 +318,11 @@ class Kubernetes:
         secret_data = self._create_basic_auth_data()
         secret_name = f"{get_secret_name(track)}-basicauth"
         return self.create_secret(
-            data=secret_data, namespace=namespace, track=track, secret_name=secret_name
+            data=secret_data,
+            namespace=namespace,
+            track=track,
+            secret_name=secret_name,
+            encode=True,
         )
 
     def create_database_deployment(
