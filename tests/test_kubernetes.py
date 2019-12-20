@@ -1,4 +1,6 @@
 import os
+import tempfile
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -57,6 +59,18 @@ def test_get_environments_secrets_by_prefix() -> None:
         os.environ[key] = secret
 
     assert Kubernetes.get_environments_secrets_by_prefix(prefix) == secrets
+
+
+def test__b64_encode_file() -> None:
+    content = "test:$apr1$35522gYe$r3E.NGo0m0bbOXppHr3g0."
+    expected = "dGVzdDokYXByMSQzNTUyMmdZZSRyM0UuTkdvMG0wYmJPWHBwSHIzZzAu"
+
+    with tempfile.NamedTemporaryFile() as f:
+        encoded_string = str.encode(content, encoding="UTF-8")
+        f.write(encoded_string)
+        f.seek(0)
+        path = Path(f.name)
+        assert Kubernetes._b64_encode_file(path=path) == expected
 
 
 # =====================================================

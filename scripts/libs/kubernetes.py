@@ -147,6 +147,12 @@ class Kubernetes:
         return encoded_dict
 
     @staticmethod
+    def _b64_encode_file(path: Path) -> str:
+        with open(str(path), "rb") as file:
+            encoded_file = b64encode(file.read()).decode("UTF-8")
+        return encoded_file
+
+    @staticmethod
     def get_environments_secrets_by_prefix(
         prefix: str = settings.K8S_SECRET_PREFIX,
     ) -> Dict[str, Any]:
