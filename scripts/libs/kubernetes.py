@@ -1,4 +1,5 @@
 import shutil
+import tempfile
 from base64 import b64encode
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -9,7 +10,7 @@ from kubernetes import config as k8s_config
 from kubernetes.client.rest import ApiException
 
 from scripts.utils.logger import logger
-from scripts.utils.models import ReleaseStatus, SubprocessResult
+from scripts.utils.models import BasicAuthUser, ReleaseStatus, SubprocessResult
 
 from ..libs.helm import Helm
 from ..settings import settings
@@ -260,6 +261,61 @@ class Kubernetes:
     def setup_helm(self) -> None:
         self.helm.setup_helm()
 
+    def _create_basic_auth_data(
+        self, basic_auth_users: List[BasicAuthUser] = settings.K8S_INGESS_BASIC_AUTH
+    ) -> Dict[str, str]:
+        """
+        Create secret data from list of `BasicAuthUser`
+
+        The user credentials from the list of users will be encrypted and added
+        to a temporary file using the `htpasswd` tool from Apache. The file is
+        then read and base64 encoded (as required by Kubernetes secrets).
+
+        Args:
+            basic_auth_users: List of `BasicAuthUser`s
+
+        Returns:
+            A dict with the key `auth` and base64 content of a htpasswd file as value
+        """
+        logger.info(
+            icon=f"{self.ICON}  🔨", title=f"Generating basic auth data: ", end="",
+        )
+
+        if not basic_auth_users:
+            return {}
+
+        with tempfile.NamedTemporaryFile() as f:
+            passwd_path = Path(f.name)
+            for i, user in enumerate(basic_auth_users):
+                os_command = ["htpasswd", "-b"]
+                if i == 0:
+                    os_command.append("-c")
+                os_command += [str(passwd_path), user.username, user.password]
+                result = run_os_command(os_command)
+                if result.return_code:
+                    logger.error(
+                        message="The 'htpasswd' command failed to create an entry",
+                        raise_exception=True,
+                    )
+            encoded_file = self._b64_encode_file(passwd_path)
+
+        logger.success()
+        logger.info(
+            message=f"\t {len(settings.K8S_INGESS_BASIC_AUTH)} users will be added to basic auth"
+        )
+
+        return {"auth": encoded_file}
+
+    def create_basic_auth_secret(self, namespace: str, track: str) -> Optional[str]:
+        if not settings.K8S_INGESS_BASIC_AUTH:
+            return None
+
+        secret_data = self._create_basic_auth_data()
+        secret_name = f"{get_secret_name()}-basicauth"
+        return self.create_secret(
+            data=secret_data, namespace=namespace, track=track, secret_name=secret_name
+        )
+
     def create_database_deployment(
         self, namespace: str, track: str, database_type: Optional[str] = None,
     ) -> None:
@@ -320,7 +376,12 @@ class Kubernetes:
         )
 
     def create_application_deployment(
-        self, docker_image: str, secret_name: str, namespace: str, track: str,
+        self,
+        docker_image: str,
+        secret_name: str,
+        namespace: str,
+        track: str,
+        basic_auth_secret_name: Optional[str],
     ) -> None:
         deploy_name = get_deploy_name(track=track)
         helm_path = self.get_helm_path()
@@ -338,6 +399,9 @@ class Kubernetes:
             "service.url": settings.ENVIRONMENT_URL,
             "service.targetPort": settings.SERVICE_PORT,
         }
+
+        if basic_auth_secret_name:
+            values["ingress.basicAuthSecret"] = basic_auth_secret_name
 
         database_url = get_database_url(track=track)
         if database_url:

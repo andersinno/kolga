@@ -88,6 +88,7 @@ RUN apk add --no-cache --virtual .build-deps \
         make \
         openssl-dev \
         libffi-dev \
+        apache2-utils \
     && ln -sf python3 /usr/bin/python \
     && ln -s pip3 /usr/bin/pip \
     && poetry config settings.virtualenvs.create false \
