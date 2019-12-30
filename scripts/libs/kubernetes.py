@@ -525,9 +525,9 @@ class Kubernetes:
         return command_args
 
     def get_hostnames(
-            self,
-            hostname: str = settings.ENVIRONMENT_URL,
-            additional_urls: List[str] = settings.K8S_ADDITIONAL_HOSTNAMES,
+        self,
+        hostname: str = settings.ENVIRONMENT_URL,
+        additional_urls: List[str] = settings.K8S_ADDITIONAL_HOSTNAMES,
     ) -> str:
         hostnames = []
         hostnames.append(hostname)
