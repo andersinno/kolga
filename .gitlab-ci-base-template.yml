@@ -14,10 +14,6 @@ variables:
   # production use. overlay2 is the preferred driver by Docker.
   DOCKER_DRIVER: overlay2
 
-  # If the host is not set docker cli will try to use a 172.x.x.x
-  # IP when connecting to the Docker API, which will not work
-  DOCKER_HOST: "tcp://localhost:2375"
-
   # Default usernames and passwords for postgres setups
   # Note: These are the credentials that will be used for testing
   DATABASE_USER: user
@@ -153,4 +149,5 @@ before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
   - git clone --single-branch --branch v2 git@git.anders.fi:anders/ci-configuration.git /tmp/devops/ci-configuration
   - export PATH="$PATH:/tmp/devops/ci-configuration"
-  - source /tmp/devops/ci-configuration/utils/set_env_from_devops.sh
+  - source /tmp/devops/ci-configuration/utils/shell_utils.sh
+  - set_docker_host

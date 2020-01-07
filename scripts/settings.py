@@ -30,7 +30,7 @@ class Settings:
     )
     DOCKER_BUILD_CONTEXT: str = env.str("DOCKER_BUILD_CONTEXT", ".")
     DOCKER_BUILD_SOURCE: str = env.str("DOCKER_BUILD_SOURCE", "Dockerfile")
-    DOCKER_HOST: str = env.str("DOCKER_HOST", "unix:///var/run/docker.sock")
+    DOCKER_HOST: str = env.str("DOCKER_HOST", "")
     DOCKER_IMAGE_NAME: str = env.str("DOCKER_IMAGE_NAME", "")
     DOCKER_TEST_IMAGE_STAGE: str = env.str("DOCKER_TEST_IMAGE_STAGE", "development")
 
