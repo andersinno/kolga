@@ -68,11 +68,12 @@ services:
       target: development
     privileged: true
     environment:
-    - K3S_URL=https://kubernetes:6443
-    - K3S_CLUSTER_SECRET=k3stestclustersecret
-    - KUBECONFIG=/config/kubeconfig.yaml
     - CONTAINER_REGISTRY=docker-registry:5000
     - CONTAINER_REGISTRY_REPO=docker-registry:5000/test
+    - DOCKER_HOST=unix:///var/run/docker.sock
+    - K3S_CLUSTER_SECRET=k3stestclustersecret
+    - K3S_URL=https://kubernetes:6443
+    - KUBECONFIG=/config/kubeconfig.yaml
     - TEST_HELM_REGISTRY=http://helm-registry:8080
     volumes:
       - k3s-config:/config

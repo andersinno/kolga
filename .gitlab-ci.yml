@@ -56,4 +56,5 @@ test:
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
   - export PATH="$PATH:$PWD"
-  - source utils/set_env_from_devops.sh
+  - source utils/shell_utils.sh
+  - set_docker_host
