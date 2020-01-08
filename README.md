@@ -1,4 +1,4 @@
-# Anders CI-CD DevOps
+# Anders CI/CD DevOps
 
 CI/CD configuration for running a complete DevOps pipeline with all stages
 from Docker builds and testnig to review, QA/staging and production environment
@@ -13,15 +13,18 @@ creation.
 ## TL;DR
 - Write a Dockerfile for your project
 
-- Add liveness and readiness probes: /healthz and /readiness should respond with 200 OK when the application is ready to serve requests
+- Add liveness and readiness probes: `/healthz` and `/readiness` should
+  respond with `200 OK` when the application is ready to serve requests
 
-- Make sure everything that needs to be configured can be configured with a environment variable. For example:
-    - Satabase URL
-    - Media file storage, S3-combatible object storage in testing and production
+- Make sure everything that needs to be configured can be configured with a
+  environment variable. For example:
+    - Database URL
+    - Media file storage, S3-combatible object storage in testing and
+      production
 
 - Add secrets to CI/CD environment variables starting with `K8S_SECRET_`
 
-- Make sure the application listens on port 8000 or set SERVICE_PORT
+- Make sure the application listens on port 8000 or set `SERVICE_PORT`
 
 - Import the CI config for your CI/CD pipeline, for GitLab for example:
 ```yaml

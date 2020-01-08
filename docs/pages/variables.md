@@ -28,10 +28,12 @@ supplies a predefined variables with the SHA.
 | DATABASE\_DB                  | Database name for preview environment               | appdb                        |            |
 | DATABASE\_PASSWORD            | Database password for preview environment           | UUID value                   |            |
 | DATABASE\_USER                | Database user for preview environment               | user                         |            |
+| DEFAULT\_TRACK                | Track name used if not explicitly set               | stable                       |            |
+| DOCKER\_BUILD\_ARG\_PREFIX    | Docker build-arg environment variable prefix        | DOCKER\_BUILD\_ARG\_         |            |
 | DOCKER\_BUILD\_CONTEXT        | Build context folder                                | .                            |            |
 | DOCKER\_BUILD\_SOURCE         | Dockerfile to build from                            | Dockerfile                   |            |
-| DOCKER\_HOST                  | Docker runtime                                      | unix:///var/run/docker\.sock |            |
-| DOCKER\_IMAGE\_NAME           | Name of docker image \(without tag\)                | PROJECT\_NAME                |            |
+| DOCKER\_HOST                  | Docker runtime                                      |                              |            |
+| DOCKER\_IMAGE\_NAME           | Name of docker image \(without tag\)                | $PROJECT\_NAME               |            |
 | DOCKER\_TEST\_IMAGE\_STAGE    | Which image stage to run tests on                   | development                  |            |
 | ENVIRONMENT\_SLUG             | Slug name of CI environment                         |                              | GitLab     |
 | ENVIRONMENT\_URL              | Full URL to the upcoming environment                |                              | GitLab     |
@@ -41,16 +43,16 @@ supplies a predefined variables with the SHA.
 | GIT\_TARGET\_BRANCH           | Target branch for the specific merge/pull-request   |                              | GitLab     |
 | K8S\_ADDITIONAL\_HOSTNAMES    | Additional hostnames for the application            |                              |            |
 | K8S\_CLUSTER\_ISSUER          | The name of the clusterIssuer to be used by ingress |                              |            |
-| K8S\_INGRESS\_MAX\_BODY\_SIZE | Set max body size for requests to the nginx ingress | 100m                         |            |
 | K8S\_INGRESS\_BASE\_DOMAIN    | Kubernetes default base domain for preview          |                              | GitLab     |
+| K8S\_INGRESS\_BASIC\_AUTH     | Space delimited basic auth cred, ex. foo:bar df:aa  |                              |            |
+| K8S\_INGRESS\_MAX\_BODY\_SIZE | Set max body size for requests to the nginx ingress | 100m                         |            |
 | K8S\_NAMESPACE                | Kubernetes namespace to use                         |                              | GitLab     |
-| K8S\_SECRET\_PREFIX           | Application environment variable prefix             |                              |            |
-| K8S\_INGESS\_BASIC\_AUTH      | Space delimited basic auth cred, ex. foo:bar df:aa  |                              |            |
+| K8S\_SECRET\_PREFIX           | Application environment variable prefix             | K8S\_SECRET\_                |            |
 | KUBECONFIG                    | Path to Kubernetes config                           |                              |            |
 | MYSQL\_ENABLED                | Should a MySQL database be created for preview      | False                        |            |
 | MYSQL\_VERSION\_TAG           | Version of MySQL for preview environment            | 9\.6                         |            |
 | POSTGRES\_ENABLED             | Should a PostgreSQL database be created for preview | True                         |            |
-| POSTGRES\_VERSION\_TAG        | Version of PostgeSQL for preview environment        | 5\.6                         |            |
+| POSTGRES\_VERSION\_TAG        | Version of PostgeSQL for preview environment        | 5\.7                         |            |
 | PROJECT\_DIR                  | Path to where code is cloned and CI start path      |                              | GitLab     |
 | PROJECT\_NAME                 | The name of the project                             |                              | GitLab     |
 | PROJECT\_PATH\_SLUG           | Slug to project path \(<org>/<repo>\)               |                              | GitLab     |
