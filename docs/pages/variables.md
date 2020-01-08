@@ -41,6 +41,7 @@ supplies a predefined variables with the SHA.
 | GIT\_TARGET\_BRANCH           | Target branch for the specific merge/pull-request   |                              | GitLab     |
 | K8S\_ADDITIONAL\_HOSTNAMES    | Additional hostnames for the application            |                              |            |
 | K8S\_CLUSTER\_ISSUER          | The name of the clusterIssuer to be used by ingress |                              |            |
+| K8S\_INGRESS\_MAX\_BODY\_SIZE | Set max body size for requests to the nginx ingress | 100m                         |            |
 | K8S\_INGRESS\_BASE\_DOMAIN    | Kubernetes default base domain for preview          |                              | GitLab     |
 | K8S\_NAMESPACE                | Kubernetes namespace to use                         |                              | GitLab     |
 | K8S\_SECRET\_PREFIX           | Application environment variable prefix             |                              |            |

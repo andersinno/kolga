@@ -20,6 +20,8 @@ metadata:
     {{- end }}
     # In GKE we need to specify ingress.class
     kubernetes.io/ingress.class: "nginx"
+    # Set maximum allowed upload file size
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.ingress.maxBodySize }}
 spec:
   tls:
     - hosts:
