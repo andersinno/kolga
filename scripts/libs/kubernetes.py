@@ -408,6 +408,7 @@ class Kubernetes:
             "service.url": settings.ENVIRONMENT_URL,
             "service.urls": self.get_hostnames(),
             "service.targetPort": settings.SERVICE_PORT,
+            "ingress.maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE,
         }
 
         if basic_auth_secret_name:
