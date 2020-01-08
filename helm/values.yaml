@@ -11,3 +11,4 @@ app_image:
 ingress:
   secretName: ai-qa-cert
   path: /
+  certManagerAnnotationPrefix: cert-manager.io

@@ -8,7 +8,7 @@ metadata:
     release: {{ .Release.Name }}
   annotations:
     {{- if .Values.ingress.clusterIssuer }}
-    cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer }}
+    {{ .Values.ingress.certManagerAnnotationPrefix }}/cluster-issuer: {{ .Values.ingress.clusterIssuer }}
     {{- end }}
     {{- if .Values.ingress.basicAuthSecret }}
     # type of authentication
