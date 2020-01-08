@@ -61,8 +61,8 @@ class Settings:
     K8S_ADDITIONAL_HOSTNAMES: List[str] = env.list("K8S_ADDITIONAL_HOSTNAMES", [])
     K8S_CLUSTER_ISSUER: str = env.str("K8S_CLUSTER_ISSUER", "")
     K8S_INGRESS_BASE_DOMAIN: str = env.str("K8S_INGRESS_BASE_DOMAIN", "")
-    K8S_INGESS_BASIC_AUTH: List[BasicAuthUser] = env.basicauth(
-        "K8S_INGESS_BASIC_AUTH", []
+    K8S_INGRESS_BASIC_AUTH: List[BasicAuthUser] = env.basicauth(
+        "K8S_INGRESS_BASIC_AUTH", []
     )
     K8S_INGRESS_MAX_BODY_SIZE: str = env.str("K8S_INGRESS_MAX_BODY_SIZE", "100m")
     K8S_NAMESPACE: str = env.str("K8S_NAMESPACE", "")
