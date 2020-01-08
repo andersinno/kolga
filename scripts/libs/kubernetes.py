@@ -454,6 +454,11 @@ class Kubernetes:
             )
             raise DeploymentFailed()
 
+        logger.info(
+            icon=f"{self.ICON}  📄",
+            title=f"Deployment can be accessed via {settings.ENVIRONMENT_URL}",
+        )
+
     def delete(
         self,
         resource: str,
