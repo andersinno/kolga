@@ -64,6 +64,7 @@ class Settings:
     K8S_INGRESS_BASIC_AUTH: List[BasicAuthUser] = env.basicauth(
         "K8S_INGRESS_BASIC_AUTH", []
     )
+    K8S_CERTMANAGER_USE_OLD_API: bool = env.bool("K8S_CERTMANAGER_USE_OLD_API", False)
     K8S_INGRESS_MAX_BODY_SIZE: str = env.str("K8S_INGRESS_MAX_BODY_SIZE", "100m")
     K8S_NAMESPACE: str = env.str("K8S_NAMESPACE", "")
     K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET_")
