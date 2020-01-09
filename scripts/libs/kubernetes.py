@@ -267,7 +267,7 @@ class Kubernetes:
         self.helm.setup_helm()
 
     def _create_basic_auth_data(
-        self, basic_auth_users: List[BasicAuthUser] = settings.K8S_INGESS_BASIC_AUTH
+        self, basic_auth_users: List[BasicAuthUser] = settings.K8S_INGRESS_BASIC_AUTH
     ) -> Dict[str, str]:
         """
         Create secret data from list of `BasicAuthUser`
@@ -306,13 +306,13 @@ class Kubernetes:
 
         logger.success()
         logger.info(
-            message=f"\t {len(settings.K8S_INGESS_BASIC_AUTH)} users will be added to basic auth"
+            message=f"\t {len(settings.K8S_INGRESS_BASIC_AUTH)} users will be added to basic auth"
         )
 
         return {"auth": encoded_file}
 
     def create_basic_auth_secret(self, namespace: str, track: str) -> Optional[str]:
-        if not settings.K8S_INGESS_BASIC_AUTH:
+        if not settings.K8S_INGRESS_BASIC_AUTH:
             return None
 
         secret_data = self._create_basic_auth_data()
