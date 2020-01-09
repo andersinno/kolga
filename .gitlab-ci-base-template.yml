@@ -146,8 +146,8 @@ variables:
   interruptible: false
 
 before_script:
-  - git config --global "url.https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/.insteadOf" "git@${CI_SERVER_HOST}:"
-  - git clone --single-branch --branch v2 "git@${CI_SERVER_HOST}:${CI_PROJECT_PATH}.git" /tmp/devops/ci-configuration
+  - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
+  - git clone --single-branch --branch v2 git@git.anders.fi:anders/ci-configuration.git /tmp/devops/ci-configuration
   - export PATH="$PATH:/tmp/devops/ci-configuration"
   - source /tmp/devops/ci-configuration/utils/shell_utils.sh
   - set_docker_host
