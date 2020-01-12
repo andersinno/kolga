@@ -1,3 +1,0 @@
-[submodule "test"]
-	path = test
-	url = git@git.anders.fi:anders/fise-ui.git
