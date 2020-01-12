@@ -1,6 +1,16 @@
 # flake8: noqa
 # type: ignore
 
+# engine/url.py
+# Copyright (C) 2005-2011 the SQLAlchemy authors and contributors
+# Copyright (C) 2019-2020 Anders Innovations Oy
+#
+# This module is part of SQLAlchemy and is released under
+# the MIT License: http://www.opensource.org/licenses/mit-license.php
+#
+# Original source can be found at:
+# https://github.com/ContextLogic/sqlalchemy/blob/master/engine/url.py
+#
 # Almost a carbon copy of SQLAlchemy database URL parsing.
 # Dependencies on SQLAchemies internals has been stripped
 # out in favor of internal Python functions and exceptions
@@ -10,8 +20,6 @@
 # SQLAlchemy has not made changes to this functionality since 2012
 # at the time of initial introduction to this code base.
 #
-# Original source can be found at:
-# https://github.com/ContextLogic/sqlalchemy/blob/master/engine/url.py
 
 """Provides the URL class which encapsulates
 information about a database connection specification.
