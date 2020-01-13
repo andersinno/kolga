@@ -21,8 +21,20 @@ stages:
 build:
   extends: .build
 
-release:
+release-local:
+  stage: release
   extends: .build
+  only:
+    - v2
+
+release-dockerhub:
+  stage: release
+  extends: .build
+  variables:
+    CONTAINER_REGISTRY: index.docker.io
+    CONTAINER_REGISTRY_USER: ${DOCKERHUB_REGISTRY_USER}
+    CONTAINER_REGISTRY_PASSWORD: ${DOCKERHUB_REGISTRY_PASSWORD}
+    CONTAINER_REGISTRY_REPO: andersinnovations/devops
   only:
     - v2
 
