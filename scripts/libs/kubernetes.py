@@ -605,6 +605,7 @@ class Kubernetes:
             "kubectl",
             "logs",
             f"--namespace={namespace}",
+            "--prefix=true",
             "--timestamps=true",
             "--tail=100",
         ]
