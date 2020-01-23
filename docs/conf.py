@@ -8,7 +8,7 @@ import os
 import sys
 
 from recommonmark.transform import AutoStructify  # type: ignore
-from sphinx.application import Sphinx  # type: ignore
+from sphinx.application import Sphinx
 
 # -- Path setup --------------------------------------------------------------
 

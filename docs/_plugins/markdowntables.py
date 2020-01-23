@@ -1,7 +1,7 @@
 import re
 from typing import Any, Dict, List
 
-from sphinx.application import Sphinx  # type: ignore
+from sphinx.application import Sphinx
 
 
 def setup(app: Sphinx) -> Dict[str, Any]:
