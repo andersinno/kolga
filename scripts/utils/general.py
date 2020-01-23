@@ -99,6 +99,14 @@ def get_database_url(track: str) -> Optional[URL]:
     return make_url(database_url)
 
 
+def get_and_strip_prefixed_items(items: Dict[Any, Any], prefix: str) -> Dict[str, Any]:
+    return {
+        key[len(prefix) :]: value
+        for key, value in items.items()
+        if key.startswith(prefix)
+    }
+
+
 def get_environment_vars_by_prefix(prefix: str) -> Dict[str, str]:
     """
     Extract all environment variables with a prefix
@@ -113,11 +121,8 @@ def get_environment_vars_by_prefix(prefix: str) -> Dict[str, str]:
         A dict of keys stripped of the prefix and the value as given
         in the environment variable.
     """
-    return {
-        key[len(prefix) :]: value
-        for key, value in os.environ.items()
-        if key.startswith(prefix)
-    }
+    env_var = dict(os.environ)
+    return get_and_strip_prefixed_items(env_var, prefix)
 
 
 def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessResult:
