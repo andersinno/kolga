@@ -1,95 +1,181 @@
 import os
 import uuid
-from typing import Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-import environs
+from environs import Env
 
+from scripts.utils.logger import logger
 from scripts.utils.models import BasicAuthUser
 
-from .utils.environ_parsers import basicauth_parser
+from .utils.environ_parsers import basicauth_parser, list_none_parser
 from .utils.exceptions import NoClusterConfigError
 
-env = environs.Env()
+env = Env()
+
 env.add_parser("basicauth", basicauth_parser)
+env.add_parser("list_none", list_none_parser)
 env.read_env()
+
+PROJECT_NAME_VAR = "PROJECT_NAME"
+
+# TODO Investigate further if we can have only one definition
+#      list and keep type definitions.
+_VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
+    # ================================================
+    # PROJECT
+    # ================================================
+    PROJECT_NAME_VAR: [env.str, ""],
+    "PROJECT_DIR": [env.str, ""],
+    "PROJECT_PATH_SLUG": [env.str, ""],
+    # ================================================
+    # DOCKER
+    # ================================================
+    "CONTAINER_REGISTRY": [env.str, "docker.anders.fi"],
+    "CONTAINER_REGISTRY_PASSWORD": [env.str, ""],
+    "CONTAINER_REGISTRY_REPO": [env.str, ""],
+    "CONTAINER_REGISTRY_USER": [env.str, ""],
+    "DOCKER_BUILD_ARG_PREFIX": [env.str, "DOCKER_BUILD_ARG_"],
+    "DOCKER_BUILD_CONTEXT": [env.str, "."],
+    "DOCKER_BUILD_SOURCE": [env.str, "Dockerfile"],
+    "DOCKER_HOST": [env.str, ""],
+    "DOCKER_IMAGE_NAME": [env.str, ""],
+    "DOCKER_TEST_IMAGE_STAGE": [env.str, "development"],
+    # ================================================
+    # ENVIRONMENT
+    # ================================================
+    "DEFAULT_TRACK": [env.str, "stable"],
+    "ENVIRONMENT_SLUG": [env.str, ""],
+    "ENVIRONMENT_URL": [env.str, ""],
+    "SERVICE_PORT": [env.str, "8000"],
+    # ================================================
+    # GIT
+    # ================================================
+    "GIT_COMMIT_REF_NAME": [env.str, ""],
+    "GIT_COMMIT_SHA": [env.str, ""],
+    "GIT_DEFAULT_TARGET_BRANCH": [env.str, "master"],
+    "GIT_TARGET_BRANCH": [env.str, ""],
+    # ================================================
+    # APPLICATION
+    # ================================================
+    "APP_INITIALIZE_COMMAND": [env.str, ""],
+    "APP_MIGRATE_COMMAND": [env.str, ""],
+    "DATABASE_DB": [env.str, "appdb"],
+    "DATABASE_PASSWORD": [env.str, str(uuid.uuid4())],
+    "DATABASE_USER": [env.str, "user"],
+    "MYSQL_ENABLED": [env.bool, False],
+    "MYSQL_VERSION_TAG": [env.str, "5.7"],
+    "POSTGRES_ENABLED": [env.bool, False],
+    "POSTGRES_IMAGE": [env.str, "docker.io/bitnami/postgresql:9.6"],
+    # ================================================
+    # KUBERNETES
+    # ================================================
+    "K8S_ADDITIONAL_HOSTNAMES": [env.list_none, []],
+    "K8S_CLUSTER_ISSUER": [env.str, ""],
+    "K8S_INGRESS_BASE_DOMAIN": [env.str, ""],
+    "K8S_INGRESS_BASIC_AUTH": [env.basicauth, []],
+    "K8S_CERTMANAGER_USE_OLD_API": [env.bool, False],
+    "K8S_INGRESS_MAX_BODY_SIZE": [env.str, "100m"],
+    "K8S_INGRESS_PREVENT_ROBOTS": [env.bool, False],
+    "K8S_NAMESPACE": [env.str, ""],
+    "K8S_FILE_SECRET_MOUNTPATH": [env.str, "/tmp/secrets"],
+    "K8S_FILE_SECRET_PREFIX": [env.str, "K8S_FILE_SECRET_"],
+    "K8S_SECRET_PREFIX": [env.str, "K8S_SECRET_"],
+    "KUBECONFIG": [env.str, ""],
+    "DEPENDS_ON_PROJECTS": [env.str, ""],
+}
 
 
 class Settings:
-    # PROJECT
-    PROJECT_DIR: str = env.str("PROJECT_DIR", "")
-    PROJECT_NAME: str = env.str("PROJECT_NAME", "")
-    PROJECT_PATH_SLUG: str = env.str("PROJECT_PATH_SLUG", "")
-
-    # DOCKER
-    CONTAINER_REGISTRY: str = env.str("CONTAINER_REGISTRY", "docker.anders.fi")
-    CONTAINER_REGISTRY_PASSWORD: str = env.str("CONTAINER_REGISTRY_PASSWORD", "")
-    CONTAINER_REGISTRY_REPO: str = env.str("CONTAINER_REGISTRY_REPO", "")
-    CONTAINER_REGISTRY_USER: str = env.str("CONTAINER_REGISTRY_USER", "")
-    DOCKER_BUILD_ARG_PREFIX: str = env.str(
-        "DOCKER_BUILD_ARG_PREFIX", "DOCKER_BUILD_ARG_",
-    )
-    DOCKER_BUILD_CONTEXT: str = env.str("DOCKER_BUILD_CONTEXT", ".")
-    DOCKER_BUILD_SOURCE: str = env.str("DOCKER_BUILD_SOURCE", "Dockerfile")
-    DOCKER_HOST: str = env.str("DOCKER_HOST", "")
-    DOCKER_IMAGE_NAME: str = env.str("DOCKER_IMAGE_NAME", "")
-    DOCKER_TEST_IMAGE_STAGE: str = env.str("DOCKER_TEST_IMAGE_STAGE", "development")
-
-    # ENVIRONMENT
-    DEFAULT_TRACK: str = env.str("DEFAULT_TRACK", "stable")
-    ENVIRONMENT_SLUG: str = env.str("ENVIRONMENT_SLUG", "")
-    ENVIRONMENT_URL: str = env.str("ENVIRONMENT_URL", "")
-    SERVICE_PORT: str = env.str("SERVICE_PORT", "8000")
-
-    # GIT
-    GIT_COMMIT_REF_NAME: str = env.str("GIT_COMMIT_REF_NAME", "")
-    GIT_COMMIT_SHA: str = env.str("GIT_COMMIT_SHA", "")
-    GIT_DEFAULT_TARGET_BRANCH: str = env.str("GIT_DEFAULT_TARGET_BRANCH", "master")
-    GIT_TARGET_BRANCH: str = env.str("GIT_TARGET_BRANCH", "")
-
-    # APPLICATION
-    APP_INITIALIZE_COMMAND: str = env.str("APP_INITIALIZE_COMMAND", "")
-    APP_MIGRATE_COMMAND: str = env.str("APP_MIGRATE_COMMAND", "")
-    DATABASE_DB: str = env.str("DATABASE_DB", "appdb")
-    DATABASE_PASSWORD: str = env.str("DATABASE_PASSWORD", str(uuid.uuid4()))
-    DATABASE_USER: str = env.str("DATABASE_USER", "user")
-    MYSQL_ENABLED: bool = env.bool("MYSQL_ENABLED", False)
-    MYSQL_VERSION_TAG: str = env.str("MYSQL_VERSION_TAG", "5.7")
-    POSTGRES_ENABLED: bool = env.bool("POSTGRES_ENABLED", False)
-    POSTGRES_IMAGE: str = env.str(
-        "POSTGRES_IMAGE", "docker.io/andersinnovations/postgis:9.6-bitnami"
-    )
-
-    # KUBERNETES
-    K8S_ADDITIONAL_HOSTNAMES: List[str] = env.list("K8S_ADDITIONAL_HOSTNAMES", [])
-    K8S_CLUSTER_ISSUER: str = env.str("K8S_CLUSTER_ISSUER", "")
-    K8S_INGRESS_BASE_DOMAIN: str = env.str("K8S_INGRESS_BASE_DOMAIN", "")
-    K8S_INGRESS_BASIC_AUTH: List[BasicAuthUser] = env.basicauth(
-        "K8S_INGRESS_BASIC_AUTH", []
-    )
-    K8S_CERTMANAGER_USE_OLD_API: bool = env.bool("K8S_CERTMANAGER_USE_OLD_API", False)
-    K8S_INGRESS_MAX_BODY_SIZE: str = env.str("K8S_INGRESS_MAX_BODY_SIZE", "100m")
-    K8S_INGRESS_PREVENT_ROBOTS: bool = env.bool("K8S_INGRESS_PREVENT_ROBOTS", False)
-    K8S_NAMESPACE: str = env.str("K8S_NAMESPACE", "")
-    K8S_FILE_SECRET_MOUNTPATH: str = env.str(
-        "K8S_FILE_SECRET_MOUNTPATH", "/tmp/secrets"
-    )
-    K8S_FILE_SECRET_PREFIX: str = env.str("K8S_FILE_SECRET_PREFIX", "K8S_FILE_SECRET_")
-    K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET_")
-    KUBECONFIG: str = env.str("KUBECONFIG", "")
+    PROJECT_NAME: str
+    PROJECT_DIR: str
+    PROJECT_PATH_SLUG: str
+    CONTAINER_REGISTRY: str
+    CONTAINER_REGISTRY_PASSWORD: str
+    CONTAINER_REGISTRY_REPO: str
+    CONTAINER_REGISTRY_USER: str
+    DOCKER_BUILD_ARG_PREFIX: str
+    DOCKER_BUILD_CONTEXT: str
+    DOCKER_BUILD_SOURCE: str
+    DOCKER_HOST: str
+    DOCKER_IMAGE_NAME: str
+    DOCKER_TEST_IMAGE_STAGE: str
+    DEFAULT_TRACK: str
+    ENVIRONMENT_SLUG: str
+    ENVIRONMENT_URL: str
+    SERVICE_PORT: str
+    GIT_COMMIT_REF_NAME: str
+    GIT_COMMIT_SHA: str
+    GIT_DEFAULT_TARGET_BRANCH: str
+    GIT_TARGET_BRANCH: str
+    APP_INITIALIZE_COMMAND: str
+    APP_MIGRATE_COMMAND: str
+    DATABASE_DB: str
+    DATABASE_PASSWORD: str
+    DATABASE_USER: str
+    MYSQL_ENABLED: bool
+    MYSQL_VERSION_TAG: str
+    POSTGRES_ENABLED: bool
+    POSTGRES_IMAGE: str
+    K8S_ADDITIONAL_HOSTNAMES: List[str]
+    K8S_CLUSTER_ISSUER: str
+    K8S_INGRESS_BASE_DOMAIN: str
+    K8S_INGRESS_BASIC_AUTH: List[BasicAuthUser]
+    K8S_CERTMANAGER_USE_OLD_API: bool
+    K8S_INGRESS_MAX_BODY_SIZE: str
+    K8S_INGRESS_PREVENT_ROBOTS: bool
+    K8S_NAMESPACE: str
+    K8S_FILE_SECRET_MOUNTPATH: str
+    K8S_FILE_SECRET_PREFIX: str
+    K8S_SECRET_PREFIX: str
+    KUBECONFIG: str
+    DEPENDS_ON_PROJECTS: str
 
     def __init__(self) -> None:
+        missing_vars = _VARIABLE_DEFINITIONS.keys() - self.__annotations__.keys()
+        if missing_vars:
+            raise AssertionError(
+                f"Not all env variables are set class attributes ({missing_vars})"
+            )
+
         self.active_ci: Optional[Any] = None
         self.supported_cis: List[Any] = [GitLabMapper()]
-
         self._get_ci_environment()
+        setattr(self, PROJECT_NAME_VAR, self._get_project_name())
+
+        self._set_attributes()
+
         if self.active_ci:
             self._map_ci_variables()
+
+    def _set_attributes(self) -> None:
+        from .utils.general import env_var_safe_key
+
+        self.PROJECT_NAME_SAFE = env_var_safe_key(self.PROJECT_NAME)
+        for variable, (parser, default_value) in _VARIABLE_DEFINITIONS.items():
+            value = parser(variable, None)
+            if value is None:
+                project_prefixed_variable_name = f"{self.PROJECT_NAME_SAFE}_{variable}"
+                value = parser(project_prefixed_variable_name, default_value)
+            setattr(self, variable, value)
 
     def _get_ci_environment(self) -> None:
         for ci in self.supported_cis:
             if ci.is_active:
                 self.active_ci = ci
                 break
+
+    def _get_project_name(self) -> str:
+        parser, default_value = _VARIABLE_DEFINITIONS[PROJECT_NAME_VAR]
+        project_name: str = parser(PROJECT_NAME_VAR, default_value)
+
+        if not project_name and self.active_ci:
+            for (name_from, name_to) in self.active_ci.MAPPING.items():
+                if name_to == PROJECT_NAME_VAR:
+                    project_name = os.environ.get(name_from, "")
+
+        if not project_name:
+            raise AssertionError("No project name could be found!")
+        return project_name
 
     def _map_ci_variables(self) -> None:
         """
@@ -103,13 +189,27 @@ class Settings:
         if not self.active_ci:
             return None
         for name_from, name_to in self.active_ci.MAPPING.items():
-            existing_value = os.environ.get(name_to, None)
-            if existing_value:
+            if name_to not in _VARIABLE_DEFINITIONS:
+                logger.warning(
+                    message=f"CI variable mapping failed, no setting called {name_to}"
+                )
+
+            has_set_value = name_to if name_to in os.environ else None
+            if not has_set_value:
+                has_set_value = (
+                    f"{self.PROJECT_NAME_SAFE}_{name_to}"
+                    if f"{self.PROJECT_NAME_SAFE}_{name_to}" in os.environ
+                    else None
+                )
+
+            if has_set_value:
                 continue
-            env_value = env.str(name_from, "")
-            if not env_value:
+
+            parser, default_value = _VARIABLE_DEFINITIONS[name_to]
+            ci_value = parser(name_from, None)
+            if not ci_value:
                 continue
-            setattr(self, name_to, env_value)
+            setattr(self, name_to, ci_value)
 
     def setup_kubeconfig(self, track: str) -> Tuple[str, str]:
         """
