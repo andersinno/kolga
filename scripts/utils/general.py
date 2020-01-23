@@ -107,6 +107,15 @@ def get_and_strip_prefixed_items(items: Dict[Any, Any], prefix: str) -> Dict[str
     }
 
 
+def get_environment_vars_by_prefixes(prefixes: List[str]) -> Dict[str, str]:
+    items = {}
+
+    for prefix in prefixes:
+        _items = get_environment_vars_by_prefix(prefix=prefix)
+        items.update(_items)
+    return items
+
+
 def get_environment_vars_by_prefix(prefix: str) -> Dict[str, str]:
     """
     Extract all environment variables with a prefix
