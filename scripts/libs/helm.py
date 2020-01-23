@@ -97,6 +97,7 @@ class Helm:
         namespace: str,
         chart: str = "",
         chart_path: Optional[Path] = None,
+        values_files: Optional[List[Path]] = None,
         install: bool = True,
         version: Optional[str] = None,
         raise_exception: bool = True,
@@ -135,6 +136,10 @@ class Helm:
         # Add value setter arguments
         values_params = self.get_chart_values_list(values)
         helm_command += values_params
+
+        # Add values files
+        if values_files:
+            helm_command += self.get_chart_params(flag="--values", values=values_files)
 
         # Add the name and chart
         os_command = helm_command + [f"{name}", f"{chart}"]
