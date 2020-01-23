@@ -18,6 +18,7 @@ env = environs.Env()
 
 MYSQL = "mysql"
 POSTGRES = "postgresql"
+DATABASE_DEFAULT_PORT_MAPPING = {MYSQL: 3306, POSTGRES: 5432}
 
 
 def camel_case_split(camel_case_string: str) -> str:
@@ -69,7 +70,6 @@ def get_database_url(track: str) -> Optional[URL]:
     1. If a predefined URL for the track is set, use that
     2. If no predefined URL is set, generate one based on the preferred database type
     """
-    database_default_port_mapping = {MYSQL: 3306, POSTGRES: 5432}
 
     uppercase_track = track.upper()
     track_database_url = env.str(f"K8S_{uppercase_track}_DATABASE_URL", "")
@@ -81,7 +81,7 @@ def get_database_url(track: str) -> Optional[URL]:
         return None
 
     deploy_name = get_deploy_name(track)
-    database_port = database_default_port_mapping[database_type]
+    database_port = DATABASE_DEFAULT_PORT_MAPPING[database_type]
     database_host = f"{deploy_name}-db-{database_type}"
 
     database_url = (
