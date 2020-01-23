@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Optional
 
 import environs
 
-from scripts.settings import settings
 from scripts.utils.models import SubprocessResult
 
 from .url import URL, make_url  # type: ignore
@@ -42,6 +41,8 @@ def loads_json(string: str) -> Dict[str, Any]:
 
 
 def get_deploy_name(track: Optional[str] = None, postfix: Optional[str] = None) -> str:
+    from scripts.settings import settings
+
     track_postfix = f"-{track}" if track and track != settings.DEFAULT_TRACK else ""
     deploy_name = f"{settings.ENVIRONMENT_SLUG}{track_postfix}"
     postfix = f"-{postfix}" if postfix else ""
@@ -56,6 +57,8 @@ def get_secret_name(track: Optional[str] = None, postfix: Optional[str] = None) 
 
 
 def get_database_type() -> Optional[str]:
+    from scripts.settings import settings
+
     if settings.MYSQL_ENABLED:
         return MYSQL
     elif settings.POSTGRES_ENABLED:
@@ -71,6 +74,7 @@ def get_database_url(track: str) -> Optional[URL]:
     1. If a predefined URL for the track is set, use that
     2. If no predefined URL is set, generate one based on the preferred database type
     """
+    from scripts.settings import settings
 
     uppercase_track = track.upper()
     track_database_url = env.str(f"K8S_{uppercase_track}_DATABASE_URL", "")
