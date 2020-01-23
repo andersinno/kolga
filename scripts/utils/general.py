@@ -181,3 +181,26 @@ def env_var_safe_key(key: str) -> str:
     # Convert `key` to upper-case and replace leading digits and all
     # other non-alpha-numeric characters with underscores.
     return re.sub(r"^\d+|\W", "_", key).upper()
+
+
+def string_to_yaml(string: str, indentation: int = 0, strip: bool = True) -> bytes:
+    if strip:
+        string = string.strip()
+
+    # If we have any new lines inside the string,
+    # then we have a multi line string and will indent
+    if "\n" in string:
+        split_sting = string.split("\n")
+
+        # As we have a multi line string, let YAML know it should be
+        # interpreted as such
+        string = "|-"
+
+        for line in split_sting:
+            if strip:
+                line = line.strip()
+            string += f"\n{indentation * ' '}{line}"
+    else:
+        string = indentation * " " + string
+
+    return string.encode("utf-8")
