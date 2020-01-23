@@ -121,8 +121,15 @@ def get_environment_vars_by_prefix(prefix: str) -> Dict[str, str]:
         A dict of keys stripped of the prefix and the value as given
         in the environment variable.
     """
-    env_var = dict(os.environ)
-    return get_and_strip_prefixed_items(env_var, prefix)
+    env_vars = dict(os.environ)
+
+    # Remove the setting with name "K8S_SECRET_PREFIX" as the default
+    # value for that is K8S_SECRET_ which will in turn add an entry
+    # with the key "PREFIX"
+    # TODO: Rename K8S_SECRET_PREFIX to something that does not clash
+    if "K8S_SECRET_PREFIX" in env_vars:
+        del env_vars["K8S_SECRET_PREFIX"]
+    return get_and_strip_prefixed_items(env_vars, prefix)
 
 
 def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessResult:
