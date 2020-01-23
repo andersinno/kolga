@@ -10,6 +10,7 @@ from kubernetes import config as k8s_config
 from kubernetes.client.rest import ApiException
 
 from scripts.libs.helm import Helm
+from scripts.libs.project import Project
 from scripts.settings import settings
 from scripts.utils.exceptions import (
     DeploymentFailed,
@@ -21,10 +22,7 @@ from scripts.utils.general import (
     POSTGRES,
     camel_case_split,
     current_rfc3339_datetime,
-    get_database_type,
-    get_database_url,
     get_deploy_name,
-    get_environment_vars_by_prefix,
     get_secret_name,
     loads_json,
     run_os_command,
@@ -67,13 +65,11 @@ class Kubernetes:
             )
 
         logger.success(
-            icon=f"{self.ICON}  🔑", message=f"Using {method} for Kubernetes auth",
+            icon=f"{self.ICON}  🔑", message=f"Using {method} for Kubernetes auth"
         )
 
         config = k8s_client.Configuration()
-        k8s_config.load_kube_config(
-            client_configuration=config, config_file=kubeconfig,
-        )
+        k8s_config.load_kube_config(client_configuration=config, config_file=kubeconfig)
 
         return k8s_client.ApiClient(configuration=config)
 
@@ -161,25 +157,6 @@ class Kubernetes:
         with open(str(path), "rb") as file:
             encoded_file = b64encode(file.read()).decode("UTF-8")
         return encoded_file
-
-    @staticmethod
-    def get_environments_secrets_by_prefix(
-        prefix: str = settings.K8S_SECRET_PREFIX,
-    ) -> Dict[str, Any]:
-        """
-        Extract all environment variables with a prefix
-
-        Environment variables strting with the `prefix` attribute are
-        extracted and put into a dict.
-
-        Args:
-            prefix: Prefix to environment key that should be extracted
-
-        Returns:
-            A dict of keys stripped of the prefix and the value as given
-            in the environment variable.
-        """
-        return get_environment_vars_by_prefix(prefix)
 
     @staticmethod
     def get_helm_path() -> Path:
@@ -350,7 +327,7 @@ class Kubernetes:
             A dict with the key `auth` and base64 content of a htpasswd file as value
         """
         logger.info(
-            icon=f"{self.ICON}  🔨", title=f"Generating basic auth data: ", end="",
+            icon=f"{self.ICON}  🔨", title=f"Generating basic auth data: ", end=""
         )
 
         if not basic_auth_users:
@@ -393,17 +370,16 @@ class Kubernetes:
         )
 
     def create_database_deployment(
-        self, namespace: str, track: str, database_type: Optional[str] = None,
-    ) -> None:
-        if not database_type:
-            database_type = get_database_type()
-        if not database_type:
-            return None
+        self, namespace: str, track: str, project: Project
+    ) -> bool:
+        if not project.database:
+            return False
 
-        if database_type == POSTGRES:
+        if project.database.url.drivername == POSTGRES:
             self.create_postgres_database(namespace=namespace, track=track)
-        elif database_type == MYSQL:
+        elif project.database.url.drivername == MYSQL:
             self.create_mysql_database(namespace=namespace, track=track)
+        return True
 
     def create_postgres_database(
         self,
@@ -465,42 +441,45 @@ class Kubernetes:
 
     def create_application_deployment(
         self,
-        docker_image: str,
-        secret_name: str,
+        project: Project,
         namespace: str,
         track: str,
-        basic_auth_secret_name: Optional[str] = None,
-        file_secret_name: Optional[str] = None,
     ) -> None:
-        deploy_name = get_deploy_name(track=track)
         helm_path = self.get_helm_path()
+
+        release_override = (
+            settings.ENVIRONMENT_SLUG
+            if not project.is_dependent_project
+            else f"{settings.ENVIRONMENT_SLUG}-{project.name}"
+        )
 
         values: Dict[str, str] = {
             "namespace": namespace,
-            "image": docker_image,
+            "image": project.image,
             "gitlab.app": settings.PROJECT_PATH_SLUG,
             "gitlab.env": settings.ENVIRONMENT_SLUG,
-            "releaseOverride": settings.ENVIRONMENT_SLUG,
+            "releaseOverride": release_override,
             "application.track": track,
-            "application.secretName": secret_name,
-            "application.initializeCommand": settings.APP_INITIALIZE_COMMAND,
-            "application.migrateCommand": settings.APP_MIGRATE_COMMAND,
-            "service.url": settings.ENVIRONMENT_URL,
-            "service.urls": self.get_hostnames(),
-            "service.targetPort": settings.SERVICE_PORT,
+            "application.secretName": project.secret_name,
+            "application.initializeCommand": project.initialize_command,
+            "application.migrateCommand": project.migrate_command,
+            "service.url": project.url,
+            "service.urls": self.get_hostnames(
+                hostname=project.url, additional_urls=project.additional_urls
+            ),
+            "service.targetPort": project.service_port,
             "ingress.maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE,
         }
 
-        if basic_auth_secret_name:
-            values["ingress.basicAuthSecret"] = basic_auth_secret_name
+        if project.basic_auth_secret_name:
+            values["ingress.basicAuthSecret"] = project.basic_auth_secret_name
 
-        database_url = get_database_url(track=track)
-        if database_url:
-            values["application.database_url"] = str(database_url)
-            values["application.database_host"] = str(database_url.host)
+        if project.database:
+            values["application.database_url"] = str(project.database.url)
+            values["application.database_host"] = str(project.database.url.host)
 
-        if file_secret_name:
-            values["application.fileSecretName"] = file_secret_name
+        if project.file_secret_name:
+            values["application.fileSecretName"] = project.file_secret_name
             values["application.fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
 
         cert_issuer = self.get_certification_issuer(track=track)
@@ -516,7 +495,7 @@ class Kubernetes:
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
             chart_path=helm_path,
-            name=deploy_name,
+            name=project.deploy_name,
             namespace=namespace,
             values=values,
             raise_exception=False,
@@ -532,7 +511,7 @@ class Kubernetes:
                 if key not in secret_variables:
                     logger.info(message=f"\t{key}: {value}")
 
-            application_labels = {"release": deploy_name}
+            application_labels = {"release": project.deploy_name}
             status = self.status(namespace=namespace, labels=application_labels)
             logger.info(message=str(status))
             self.logs(
@@ -546,7 +525,7 @@ class Kubernetes:
 
         logger.info(
             icon=f"{self.ICON}  📄",
-            title=f"Deployment can be accessed via {settings.ENVIRONMENT_URL}",
+            title=f"Deployment can be accessed via {project.url}",
         )
 
     def delete(
@@ -619,8 +598,8 @@ class Kubernetes:
             logger.info(title=f" with name '{name}'", end="")
         return command_args
 
+    @staticmethod
     def get_hostnames(
-        self,
         hostname: str = settings.ENVIRONMENT_URL,
         additional_urls: List[str] = settings.K8S_ADDITIONAL_HOSTNAMES,
     ) -> str:
@@ -632,7 +611,7 @@ class Kubernetes:
 
     def get_certification_issuer(self, track: str) -> Optional[str]:
         logger.info(
-            icon=f"{self.ICON} 🏵️️", title="Checking certification issuer", end="",
+            icon=f"{self.ICON} 🏵️️", title="Checking certification issuer", end=""
         )
 
         raise_exception = False
@@ -735,4 +714,4 @@ class Kubernetes:
             resource="pods", labels=labels, namespace=namespace, raise_exception=False
         )
 
-        return ReleaseStatus(deployment=deployment_status.out, pods=pods_status.out,)
+        return ReleaseStatus(deployment=deployment_status.out, pods=pods_status.out)

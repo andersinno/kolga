@@ -2,7 +2,6 @@ import base64
 import os
 import tempfile
 from pathlib import Path
-from uuid import uuid4
 
 import pytest
 from kubernetes.client.rest import ApiException
@@ -49,18 +48,6 @@ def test__encode_secret() -> None:
     expected_data = {"password": "MTIzNA==", "username": "dXNlcg=="}
 
     assert Kubernetes._encode_secret(test_data) == expected_data
-
-
-def test_get_environments_secrets_by_prefix() -> None:
-    prefix = f"TEST_{str(uuid4())}_SECRET_"
-
-    env_vars = {f"{prefix}PASSWORD": "pass", f"{prefix}LIZARD": "-1"}
-    secrets = {f"PASSWORD": "pass", f"LIZARD": "-1"}
-
-    for key, secret in env_vars.items():
-        os.environ[key] = secret
-
-    assert Kubernetes.get_environments_secrets_by_prefix(prefix) == secrets
 
 
 def test__b64_encode_file() -> None:
@@ -134,20 +121,6 @@ def test_create_secret_qa(kubernetes: Kubernetes, test_namespace: str) -> None:
     )
 
 
-def test_create_secrets_from_environment(
-    kubernetes: Kubernetes, test_namespace: str
-) -> None:
-    track = "mtest-fro-env"
-    expected_secret_name = get_secret_name(track)
-    secret_result = kubernetes.create_secrets_from_environment(
-        namespace=K8S_NAMESPACE, track=track
-    )
-    assert secret_result == expected_secret_name
-    kubernetes.get(
-        resource="secret", namespace=K8S_NAMESPACE, name=expected_secret_name
-    )
-
-
 def test_delete_namespace(kubernetes: Kubernetes, test_namespace: str) -> None:
     kubernetes.delete(
         resource="namespace", name=test_namespace, namespace=K8S_NAMESPACE
@@ -159,7 +132,9 @@ def test_delete_namespace(kubernetes: Kubernetes, test_namespace: str) -> None:
 def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
     track = DEFAULT_TRACK
     deploy_name = get_deploy_name(track=track)
-    kubernetes.create_secrets_from_environment(namespace=test_namespace, track=track)
+    kubernetes.create_secret(
+        data={"test": "test"}, namespace=test_namespace, track=track
+    )
 
     kubernetes.delete_all(namespace=test_namespace, labels={"release": deploy_name})
 
