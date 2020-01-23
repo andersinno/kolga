@@ -1,7 +1,7 @@
 import functools
 import operator
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from scripts.utils.logger import logger
 from scripts.utils.models import SubprocessResult
@@ -76,8 +76,13 @@ class Helm:
 
     @staticmethod
     def get_chart_values_list(values: Dict[str, str]) -> List[str]:
-        # Create a list of lists with all of the "--set" values for the Helm template
-        values_params = [["--set", f"{name}={value}"] for name, value in values.items()]
+        values_list = [f"{name}={value}" for name, value in values.items()]
+        return Helm.get_chart_params(flag="--set", values=values_list)
+
+    @staticmethod
+    def get_chart_params(flag: str, values: List[Any]) -> List[str]:
+        # Create a list of lists with all of the flag and values for the Helm template
+        values_params = [[flag, str(value)] for value in values]
         # Flatten the list of lists to a single list
         flattened_value_params: List[str] = functools.reduce(
             operator.iconcat, values_params, []
