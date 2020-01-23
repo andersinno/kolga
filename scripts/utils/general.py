@@ -144,3 +144,19 @@ def validate_file_secret_path(path: Path, valid_prefixes: List[str]) -> bool:
     return any(
         absolute_path.startswith(valid_prefix) for valid_prefix in valid_prefixes
     )
+
+
+def env_var_safe_key(key: str) -> str:
+    """
+    Returns a version of the project name that can be used in env vars
+
+    Note that this is not bulletproof at the moment and there might be cases
+    that will not work as expected. More validation is needed in order to make
+    sure that this always returns a valid value.
+
+    Returns:
+        A string modified to work with env var names
+    """
+    # Convert `key` to upper-case and replace leading digits and all
+    # other non-alpha-numeric characters with underscores.
+    return re.sub(r"^\d+|\W", "_", key).upper()
