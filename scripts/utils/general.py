@@ -41,14 +41,15 @@ def loads_json(string: str) -> Dict[str, Any]:
     return result
 
 
-def get_deploy_name(track: Optional[str] = None) -> str:
+def get_deploy_name(track: Optional[str] = None, postfix: Optional[str] = None) -> str:
     track_postfix = f"-{track}" if track and track != settings.DEFAULT_TRACK else ""
     deploy_name = f"{settings.ENVIRONMENT_SLUG}{track_postfix}"
-    return deploy_name
+    postfix = f"-{postfix}" if postfix else ""
+    return f"{deploy_name}{postfix}"
 
 
-def get_secret_name(track: Optional[str] = None) -> str:
-    deployment_name = get_deploy_name(track)
+def get_secret_name(track: Optional[str] = None, postfix: Optional[str] = None) -> str:
+    deployment_name = get_deploy_name(track, postfix=postfix)
     secret_name = f"{deployment_name}-secret"
 
     return secret_name
