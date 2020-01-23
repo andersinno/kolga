@@ -6,7 +6,7 @@ service:
   targetPort: 8000
 
 app_image:
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 ingress:
   secretName: ai-qa-cert
