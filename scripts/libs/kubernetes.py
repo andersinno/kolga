@@ -26,6 +26,7 @@ from scripts.utils.general import (
     get_secret_name,
     loads_json,
     run_os_command,
+    string_to_yaml,
     validate_file_secret_path,
 )
 from scripts.utils.logger import logger
@@ -374,11 +375,36 @@ class Kubernetes:
     ) -> bool:
         if not project.database:
             return False
+        values_files = None
 
         if project.database.url.drivername == POSTGRES:
             self.create_postgres_database(namespace=namespace, track=track)
         elif project.database.url.drivername == MYSQL:
             self.create_mysql_database(namespace=namespace, track=track)
+            if project.dependency_projects:
+                database_values_file = tempfile.NamedTemporaryFile(delete=False)
+                values_files = [Path(database_values_file.name)]
+                database_values_file.write(b"initializationFiles: \n")
+                for dependency_project in project.dependency_projects:
+                    if dependency_project.database:
+                        database_values_file.write(
+                            string_to_yaml(
+                                f"{dependency_project.name}.sql: ",
+                                indentation=2,
+                                strip=False,
+                            )
+                        )
+                        yaml_sql_string = string_to_yaml(
+                            dependency_project.database.creation_sql, indentation=4
+                        )
+                        database_values_file.write(yaml_sql_string)
+                        database_values_file.write(b"\n")
+                database_values_file.close()
+
+            self.create_mysql_database(
+                namespace=namespace, track=track, values_files=values_files
+            )
+
         return True
 
     def create_postgres_database(
