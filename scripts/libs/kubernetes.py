@@ -477,6 +477,10 @@ class Kubernetes:
         if project.database:
             values["application.database_url"] = str(project.database.url)
             values["application.database_host"] = str(project.database.url.host)
+            values["application.database_db"] = str(project.database.url.database)
+            values["application.database_port"] = str(project.database.url.port)
+            values["application.database_username"] = str(project.database.url.username)
+            values["application.database_password"] = str(project.database.url.password)
 
         if project.file_secret_name:
             values["application.fileSecretName"] = project.file_secret_name
@@ -502,7 +506,11 @@ class Kubernetes:
         )
 
         if result.return_code:
-            secret_variables = ["application.database_url"]
+            secret_variables = [
+                "application.database_url",
+                "application.database_username",
+                "application.database_password",
+            ]
             logger.info(
                 icon=f"{self.ICON} 🏷️",
                 title="Deployment values (without environment vars):",
