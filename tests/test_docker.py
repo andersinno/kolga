@@ -136,6 +136,24 @@ def test_get_image_tags_name(
     assert images_tags == sorted(expected_tags)
 
 
+def test_stage_image_tag() -> None:
+    d = Docker()
+    stage_tag = d.stage_image_tag(stage="finalstage")
+    assert (
+        stage_tag
+        == "localhost:5000/test/testing:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
+    )
+
+
+def test_test_image_tag() -> None:
+    d = Docker()
+    stage_tag = d.test_image_tag()
+    assert (
+        stage_tag
+        == "localhost:5000/test/testing:2a7958c61a31a38a365aa347147aba2aaaaaaa-development"
+    )
+
+
 # =====================================================
 # DOCKER REGISTRY REQUIRED FROM THIS POINT FORWARD
 # =====================================================
