@@ -13,7 +13,7 @@ class Devops:
         )
 
         subparsers.add_parser(
-            "create_images", help="Builds Docker images from a local Dockerfile",
+            "create_images", help="Builds Docker images from a local Dockerfile"
         )
 
         deploy_application_parser = subparsers.add_parser(
@@ -21,26 +21,20 @@ class Devops:
             help="Deploy an application based on the current Docker image",
         )
         deploy_application_parser.add_argument(
-            "-t", "--track", dest="track", default=settings.DEFAULT_TRACK,
+            "-t", "--track", dest="track", default=settings.DEFAULT_TRACK
         )
 
-        subparsers.add_parser(
-            "docker_test_image", help="Print image tag",
-        )
+        subparsers.add_parser("docker_test_image", help="Print image tag")
 
-        subparsers.add_parser(
-            "help", help="Prints this help message",
-        )
+        subparsers.add_parser("help", help="Prints this help message")
 
-        subparsers.add_parser(
-            "logo", help="Prints the magnificent Anders DevOps logo",
-        )
+        subparsers.add_parser("logo", help="Prints the magnificent Anders DevOps logo")
 
         review_cleanup_parser = subparsers.add_parser(
-            "review_cleanup", help="Cleans up the current namespace",
+            "review_cleanup", help="Cleans up the current namespace"
         )
         review_cleanup_parser.add_argument(
-            "-t", "--track", dest="track", default=settings.DEFAULT_TRACK,
+            "-t", "--track", dest="track", default=settings.DEFAULT_TRACK
         )
 
         subparsers.add_parser(
@@ -69,31 +63,31 @@ class Devops:
 
     def deploy_application(self, track: str) -> None:
         from scripts.libs.kubernetes import Kubernetes
-        from scripts.libs.docker import Docker
+        from scripts.libs.project import Project
 
-        d = Docker()
+        main_project = Project(track=track)
+        projects = main_project.dependency_projects + [main_project]
 
         k = Kubernetes(track=track)
         k.setup_helm()
         namespace = k.create_namespace()
-        file_secret_name, file_secrets_paths = k.create_file_secrets_from_environment(
-            namespace=namespace, track=track,
-        )
-        secret_name = k.create_secrets_from_environment(
-            extra_data=file_secrets_paths, namespace=namespace, track=track,
-        )
-        basic_auth_secret_name = k.create_basic_auth_secret(
-            namespace=namespace, track=track
-        )
-        k.create_database_deployment(namespace=namespace, track=track)
-        k.create_application_deployment(
-            docker_image=d.image_tag,
-            file_secret_name=file_secret_name,
-            namespace=namespace,
-            secret_name=secret_name,
-            basic_auth_secret_name=basic_auth_secret_name,
-            track=track,
-        )
+
+        for project in projects:
+            file_secret_name, file_secrets_paths = k.create_file_secrets_from_environment(
+                namespace=namespace, track=track,
+            )
+            secret_data = dict(project.secret_data.items() + file_secrets_paths.items())  # type: ignore
+            k.create_secret(
+                data=secret_data,
+                namespace=namespace,
+                track=track,
+                secret_name=project.secret_name,
+            )
+            # TODO: Move this to the Project class
+            k.create_basic_auth_secret(namespace=namespace, track=track)
+            k.create_application_deployment(
+                namespace=namespace, track=track, project=project
+            )
 
     def help(self) -> None:
         self.parser.print_help()
