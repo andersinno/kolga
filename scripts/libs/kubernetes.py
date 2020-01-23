@@ -411,6 +411,7 @@ class Kubernetes:
         track: str,
         helm_chart: str = "stable/postgresql",
         helm_chart_version: str = "7.7.2",
+        values_files: Optional[List[Path]] = None,
     ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
         image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
@@ -432,6 +433,7 @@ class Kubernetes:
             name=deploy_name,
             namespace=namespace,
             values=values,
+            values_files=values_files,
             version=helm_chart_version,
         )
 
@@ -441,6 +443,7 @@ class Kubernetes:
         track: str,
         helm_chart: str = "stable/mysql",
         helm_chart_version: str = "1.6.0",
+        values_files: Optional[List[Path]] = None,
     ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
         values = {
@@ -456,6 +459,7 @@ class Kubernetes:
             name=deploy_name,
             namespace=namespace,
             values=values,
+            values_files=values_files,
             version=helm_chart_version,
         )
 
