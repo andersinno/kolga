@@ -9,13 +9,10 @@ from kubernetes import client as k8s_client
 from kubernetes import config as k8s_config
 from kubernetes.client.rest import ApiException
 
-from scripts.utils.logger import logger
-from scripts.utils.models import BasicAuthUser, ReleaseStatus, SubprocessResult
-
-from ..libs.helm import Helm
-from ..settings import settings
-from ..utils.exceptions import DeploymentFailed, NoClusterConfigError
-from ..utils.general import (
+from scripts.libs.helm import Helm
+from scripts.settings import settings
+from scripts.utils.exceptions import DeploymentFailed, NoClusterConfigError
+from scripts.utils.general import (
     MYSQL,
     POSTGRES,
     camel_case_split,
@@ -28,6 +25,8 @@ from ..utils.general import (
     loads_json,
     run_os_command,
 )
+from scripts.utils.logger import logger
+from scripts.utils.models import BasicAuthUser, ReleaseStatus, SubprocessResult
 
 
 class Kubernetes:
