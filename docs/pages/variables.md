@@ -50,9 +50,9 @@ supplies a predefined variables with the SHA.
 | K8S\_SECRET\_PREFIX           | Application environment variable prefix             | K8S\_SECRET\_                |            |
 | KUBECONFIG                    | Path to Kubernetes config                           |                              |            |
 | MYSQL\_ENABLED                | Should a MySQL database be created for preview      | False                        |            |
-| MYSQL\_VERSION\_TAG           | Version of MySQL for preview environment            | 9\.6                         |            |
+| MYSQL\_VERSION\_TAG           | Version of MySQL for preview environment            | 5\.7                         |            |
 | POSTGRES\_ENABLED             | Should a PostgreSQL database be created for preview | True                         |            |
-| POSTGRES\_VERSION\_TAG        | Version of PostgeSQL for preview environment        | 5\.7                         |            |
+| POSTGRES\_IMAGE               | PostgeSQL image for preview environment             | bitnami/postgresql:9.6       |            |
 | PROJECT\_DIR                  | Path to where code is cloned and CI start path      |                              | GitLab     |
 | PROJECT\_NAME                 | The name of the project                             |                              | GitLab     |
 | PROJECT\_PATH\_SLUG           | Slug to project path \(<org>/<repo>\)               |                              | GitLab     |

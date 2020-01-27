@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Set
+from typing import Any, Optional, Set
 
 from docker.models.images import Image
 
@@ -14,6 +14,31 @@ class DockerImage:
     @property
     def unsynced_tags(self) -> Set[str]:
         return self.local_tags - self.remote_tags
+
+
+@dataclass
+class DockerImageRef:
+    registry: Optional[str]
+    repository: str
+    tag: Optional[str]
+
+    @classmethod
+    def parse_string(cls, ref: str) -> "DockerImageRef":
+        registry: Optional[str] = None
+        repository: Optional[str] = None
+        tag: Optional[str] = None
+
+        if "." in ref:
+            registry, rest = ref.split("/", 1)
+        else:
+            rest = ref
+
+        if ":" in rest:
+            repository, tag = rest.split(":", 1)
+        else:
+            repository = rest
+
+        return cls(registry=registry, repository=repository, tag=tag)
 
 
 @dataclass

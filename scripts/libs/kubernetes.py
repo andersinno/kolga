@@ -26,7 +26,12 @@ from scripts.utils.general import (
     run_os_command,
 )
 from scripts.utils.logger import logger
-from scripts.utils.models import BasicAuthUser, ReleaseStatus, SubprocessResult
+from scripts.utils.models import (
+    BasicAuthUser,
+    DockerImageRef,
+    ReleaseStatus,
+    SubprocessResult,
+)
 
 
 class Kubernetes:
@@ -345,12 +350,20 @@ class Kubernetes:
         helm_chart_version: str = "7.7.2",
     ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
+        image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
         values = {
-            "image.tag": settings.POSTGRES_VERSION_TAG,
+            "image.repository": image.repository,
             "postgresqlUsername": settings.DATABASE_USER,
             "postgresqlPassword": settings.DATABASE_PASSWORD,
             "postgresqlDatabase": settings.DATABASE_DB,
         }
+
+        if image.registry is not None:
+            values["image.registry"] = image.registry
+
+        if image.tag is not None:
+            values["image.tag"] = image.tag
+
         self.helm.upgrade_chart(
             chart=helm_chart,
             name=deploy_name,
