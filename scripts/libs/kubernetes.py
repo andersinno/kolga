@@ -9,13 +9,10 @@ from kubernetes import client as k8s_client
 from kubernetes import config as k8s_config
 from kubernetes.client.rest import ApiException
 
-from scripts.utils.logger import logger
-from scripts.utils.models import BasicAuthUser, ReleaseStatus, SubprocessResult
-
-from ..libs.helm import Helm
-from ..settings import settings
-from ..utils.exceptions import DeploymentFailed, NoClusterConfigError
-from ..utils.general import (
+from scripts.libs.helm import Helm
+from scripts.settings import settings
+from scripts.utils.exceptions import DeploymentFailed, NoClusterConfigError
+from scripts.utils.general import (
     MYSQL,
     POSTGRES,
     camel_case_split,
@@ -27,6 +24,13 @@ from ..utils.general import (
     get_secret_name,
     loads_json,
     run_os_command,
+)
+from scripts.utils.logger import logger
+from scripts.utils.models import (
+    BasicAuthUser,
+    DockerImageRef,
+    ReleaseStatus,
+    SubprocessResult,
 )
 
 
@@ -346,12 +350,20 @@ class Kubernetes:
         helm_chart_version: str = "7.7.2",
     ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
+        image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
         values = {
-            "image.tag": settings.POSTGRES_VERSION_TAG,
+            "image.repository": image.repository,
             "postgresqlUsername": settings.DATABASE_USER,
             "postgresqlPassword": settings.DATABASE_PASSWORD,
             "postgresqlDatabase": settings.DATABASE_DB,
         }
+
+        if image.registry is not None:
+            values["image.registry"] = image.registry
+
+        if image.tag is not None:
+            values["image.tag"] = image.tag
+
         self.helm.upgrade_chart(
             chart=helm_chart,
             name=deploy_name,
