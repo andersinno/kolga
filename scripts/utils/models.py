@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass, field
 from typing import Any, Optional, Set
 
@@ -28,7 +29,7 @@ class DockerImageRef:
         repository: Optional[str] = None
         tag: Optional[str] = None
 
-        if "." in ref:
+        if re.match("[^:/]*\\.", ref):
             registry, rest = ref.split("/", 1)
         else:
             rest = ref
