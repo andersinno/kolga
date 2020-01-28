@@ -139,7 +139,7 @@ class Settings:
 
         self.active_ci: Optional[Any] = None
         self.supported_cis: List[Any] = [GitLabMapper()]
-        self._get_ci_environment()
+        self._set_ci_environment()
         setattr(self, PROJECT_NAME_VAR, self._get_project_name())
 
         self._set_attributes()
@@ -158,7 +158,7 @@ class Settings:
                 value = parser(project_prefixed_variable_name, default_value)
             setattr(self, variable, value)
 
-    def _get_ci_environment(self) -> None:
+    def _set_ci_environment(self) -> None:
         for ci in self.supported_cis:
             if ci.is_active:
                 self.active_ci = ci
