@@ -50,6 +50,15 @@ RUN sha256sum "$POETRY_TARGET"
 RUN echo "$POETRY_CHECKSUM *$POETRY_TARGET" | sha256sum -c -
 RUN python /tmp/get-poetry.py
 
+# Remove all other python version than the one used by the base image
+# Note: `find` does not support negative lookahead, nor does `grep`
+# Space savings: ~70MB
+RUN find $HOME/.poetry/lib/poetry/_vendor \
+      -type d \
+      -not -regex "^.*py3.8.*$" \
+      -not -path $HOME/.poetry/lib/poetry/_vendor \
+      -exec rm -rf {} +
+
 # ===================================
 FROM build-base AS stage
 # ===================================
