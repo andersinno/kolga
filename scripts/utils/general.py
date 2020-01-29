@@ -28,6 +28,27 @@ def camel_case_split(camel_case_string: str) -> str:
     return split_string.capitalize()
 
 
+def current_rfc3339_datetime() -> str:
+    local_time = datetime.now(timezone.utc).astimezone()
+    return local_time.isoformat()
+
+
+def env_var_safe_key(key: str) -> str:
+    """
+    Returns a version of the project name that can be used in env vars
+
+    Note that this is not bulletproof at the moment and there might be cases
+    that will not work as expected. More validation is needed in order to make
+    sure that this always returns a valid value.
+
+    Returns:
+        A string modified to work with env var names
+    """
+    # Convert `key` to upper-case and replace leading digits and all
+    # other non-alpha-numeric characters with underscores.
+    return re.sub(r"^\d+|\W", "_", key).upper()
+
+
 def loads_json(string: str) -> Dict[str, Any]:
     try:
         result = json.loads(string)
@@ -155,32 +176,11 @@ def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessRe
     )
 
 
-def current_rfc3339_datetime() -> str:
-    local_time = datetime.now(timezone.utc).astimezone()
-    return local_time.isoformat()
-
-
 def validate_file_secret_path(path: Path, valid_prefixes: List[str]) -> bool:
     absolute_path = str(path.absolute())
     return any(
         absolute_path.startswith(valid_prefix) for valid_prefix in valid_prefixes
     )
-
-
-def env_var_safe_key(key: str) -> str:
-    """
-    Returns a version of the project name that can be used in env vars
-
-    Note that this is not bulletproof at the moment and there might be cases
-    that will not work as expected. More validation is needed in order to make
-    sure that this always returns a valid value.
-
-    Returns:
-        A string modified to work with env var names
-    """
-    # Convert `key` to upper-case and replace leading digits and all
-    # other non-alpha-numeric characters with underscores.
-    return re.sub(r"^\d+|\W", "_", key).upper()
 
 
 def string_to_yaml(string: str, indentation: int = 0, strip: bool = True) -> bytes:
