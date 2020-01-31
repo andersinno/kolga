@@ -32,8 +32,10 @@ class Docker:
 
         self.image_cache: Set[str] = set()
 
-        if not self.dockerfile.exists():
-            raise FileExistsError(f"No Dockerfile found at {self.dockerfile}")
+        dockerfile_path = settings.DOCKER_BUILD_CONTEXT / self.dockerfile
+
+        if not dockerfile_path.exists():
+            raise FileExistsError(f"No Dockerfile found at {dockerfile_path}")
 
     def stage_image_tag(self, stage: str) -> str:
         return f"{self.image_tag}-{stage}"
