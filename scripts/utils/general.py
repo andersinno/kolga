@@ -5,19 +5,26 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from shlex import quote
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 import environs
 
 from scripts.utils.models import SubprocessResult
 
-from .url import URL, make_url  # type: ignore
-
 env = environs.Env()
 
 MYSQL = "mysql"
 POSTGRES = "postgresql"
-DATABASE_DEFAULT_PORT_MAPPING = {MYSQL: 3306, POSTGRES: 5432}
+AMQP = "amqp"
+DATABASE_DEFAULT_PORT_MAPPING = {MYSQL: 3306, POSTGRES: 5432, AMQP: 5672}
+
+
+def get_project_secret_var(project_name: str, value: str = "") -> str:
+    from scripts.settings import settings
+
+    project = env_var_safe_key(project_name)
+    value = env_var_safe_key(value)
+    return f"{project}_{settings.K8S_SECRET_PREFIX}{value}"
 
 
 def camel_case_split(camel_case_string: str) -> str:
@@ -26,6 +33,29 @@ def camel_case_split(camel_case_string: str) -> str:
     )
     split_string = " ".join(split_string_list)
     return split_string.capitalize()
+
+
+def create_artifact_file_from_dict(
+    data: Union[Dict[str, Any], Mapping[str, Any]], filename: str = ".env"
+) -> Path:
+    from scripts.settings import settings
+
+    if not filename.endswith(".env"):
+        filename = f"{filename}.env"
+
+    cwd = Path.cwd()
+    env_dir = cwd / settings.SERVICE_ARTIFACT_FOLDER
+    env_file = env_dir / filename
+
+    # We don't handle OSError here as the execution
+    # should stop if this fails
+    env_dir.mkdir(exist_ok=True)
+
+    with env_file.open(mode="w+") as f:
+        for key, value in data.items():
+            f.write(f"{key}={value}\n")
+
+    return env_file
 
 
 def current_rfc3339_datetime() -> str:
@@ -75,49 +105,6 @@ def get_secret_name(track: Optional[str] = None, postfix: Optional[str] = None) 
     secret_name = f"{deployment_name}-secret"
 
     return secret_name
-
-
-def get_database_type() -> Optional[str]:
-    from scripts.settings import settings
-
-    if settings.MYSQL_ENABLED:
-        return MYSQL
-    elif settings.POSTGRES_ENABLED:
-        return POSTGRES
-    return None
-
-
-def get_database_url(track: str) -> Optional[URL]:
-    """
-    Get the database URL based on the environment
-
-    How the database URL is selected:
-    1. If a predefined URL for the track is set, use that
-    2. If no predefined URL is set, generate one based on the preferred database type
-    """
-    from scripts.settings import settings
-
-    uppercase_track = track.upper()
-    track_database_url = env.str(f"K8S_{uppercase_track}_DATABASE_URL", "")
-    if track_database_url:
-        return make_url(track_database_url)
-
-    database_type = get_database_type()
-    if not database_type:
-        return None
-
-    deploy_name = get_deploy_name(track)
-    database_port = DATABASE_DEFAULT_PORT_MAPPING[database_type]
-    database_host = f"{deploy_name}-db-{database_type}"
-
-    database_url = (
-        f""
-        f"{database_type}://{settings.DATABASE_USER}:{settings.DATABASE_PASSWORD}"
-        f"@{database_host}:{database_port}"
-        f"/{settings.DATABASE_DB}"
-    )
-
-    return make_url(database_url)
 
 
 def get_and_strip_prefixed_items(items: Dict[Any, Any], prefix: str) -> Dict[str, Any]:

@@ -26,10 +26,6 @@ def test_project_defaults() -> None:
     assert project.urls == ""
     assert not project.is_dependent_project
     assert project.dependency_projects == []
-    assert (
-        str(getattr(getattr(project, "database"), "url"))
-        == "postgresql://testuser:testpass@testing-staging-db-postgresql:5432/testdb"
-    )
     assert project.additional_urls == []
 
 
@@ -66,36 +62,6 @@ def test_dependency_project_no_host_port() -> None:
     project = Project(track="staging")
     assert len(project.dependency_projects) == 1
     assert project.dependency_projects[0].name == "odin"
-
-
-@override_settings(
-    DEPENDS_ON_PROJECTS="localhost:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
-)
-def test_dependency_project_postgresql() -> None:
-    project = Project(track="staging")
-    assert len(project.dependency_projects) == 1
-    assert project.dependency_projects[0].database is None
-
-
-@override_settings(
-    DEPENDS_ON_PROJECTS="localhost:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage",
-    MYSQL_ENABLED=True,
-)
-def test_dependency_mysql() -> None:
-    project = Project(track="staging")
-    assert project.database
-    assert len(project.dependency_projects) == 1
-    assert project.dependency_projects[0].database is not None
-    assert project.dependency_projects[0].database.url.host == project.database.url.host
-    assert project.dependency_projects[0].database.url.database == "odin"
-    assert (
-        project.dependency_projects[0].database.url.username
-        != project.database.url.username
-    )
-    assert (
-        project.dependency_projects[0].database.url.password
-        != project.database.url.password
-    )
 
 
 @override_settings(

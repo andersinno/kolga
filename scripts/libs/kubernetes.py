@@ -11,6 +11,7 @@ from kubernetes.client.rest import ApiException
 
 from scripts.libs.helm import Helm
 from scripts.libs.project import Project
+from scripts.libs.service import Service
 from scripts.settings import settings
 from scripts.utils.exceptions import (
     DeploymentFailed,
@@ -18,24 +19,16 @@ from scripts.utils.exceptions import (
     NoClusterConfigError,
 )
 from scripts.utils.general import (
-    MYSQL,
-    POSTGRES,
     camel_case_split,
     current_rfc3339_datetime,
     get_deploy_name,
     get_secret_name,
     loads_json,
     run_os_command,
-    string_to_yaml,
     validate_file_secret_path,
 )
 from scripts.utils.logger import logger
-from scripts.utils.models import (
-    BasicAuthUser,
-    DockerImageRef,
-    ReleaseStatus,
-    SubprocessResult,
-)
+from scripts.utils.models import BasicAuthUser, ReleaseStatus, SubprocessResult
 
 
 class Kubernetes:
@@ -375,99 +368,16 @@ class Kubernetes:
             project=project,
         )
 
-    def create_database_deployment(
-        self, namespace: str, track: str, project: Project
-    ) -> bool:
-        if not project.database:
-            return False
-        values_files = None
-
-        if project.database.url.drivername == POSTGRES:
-            self.create_postgres_database(namespace=namespace, track=track)
-        elif project.database.url.drivername == MYSQL:
-            self.create_mysql_database(namespace=namespace, track=track)
-            if project.dependency_projects:
-                database_values_file = tempfile.NamedTemporaryFile(delete=False)
-                values_files = [Path(database_values_file.name)]
-                database_values_file.write(b"initializationFiles: \n")
-                for dependency_project in project.dependency_projects:
-                    if dependency_project.database:
-                        database_values_file.write(
-                            string_to_yaml(
-                                f"{dependency_project.name}.sql: ",
-                                indentation=2,
-                                strip=False,
-                            )
-                        )
-                        yaml_sql_string = string_to_yaml(
-                            dependency_project.database.creation_sql, indentation=4
-                        )
-                        database_values_file.write(yaml_sql_string)
-                        database_values_file.write(b"\n")
-                database_values_file.close()
-
-            self.create_mysql_database(
-                namespace=namespace, track=track, values_files=values_files
-            )
-
-        return True
-
-    def create_postgres_database(
-        self,
-        namespace: str,
-        track: str,
-        helm_chart: str = "stable/postgresql",
-        helm_chart_version: str = "7.7.2",
-        values_files: Optional[List[Path]] = None,
-    ) -> None:
-        deploy_name = f"{get_deploy_name(track=track)}-db"
-        image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
-        values = {
-            "image.repository": image.repository,
-            "postgresqlUsername": settings.DATABASE_USER,
-            "postgresqlPassword": settings.DATABASE_PASSWORD,
-            "postgresqlDatabase": settings.DATABASE_DB,
-        }
-
-        if image.registry is not None:
-            values["image.registry"] = image.registry
-
-        if image.tag is not None:
-            values["image.tag"] = image.tag
+    def deploy_service(self, service: "Service", namespace: str, track: str) -> None:
+        deploy_name = f"{get_deploy_name(track=track)}-{service.name}"
 
         self.helm.upgrade_chart(
-            chart=helm_chart,
+            chart=service.chart,
             name=deploy_name,
             namespace=namespace,
-            values=values,
-            values_files=values_files,
-            version=helm_chart_version,
-        )
-
-    def create_mysql_database(
-        self,
-        namespace: str,
-        track: str,
-        helm_chart: str = "stable/mysql",
-        helm_chart_version: str = "1.6.0",
-        values_files: Optional[List[Path]] = None,
-    ) -> None:
-        deploy_name = f"{get_deploy_name(track=track)}-db"
-        values = {
-            "imageTag": settings.MYSQL_VERSION_TAG,
-            "mysqlUser": settings.DATABASE_USER,
-            "mysqlPassword": settings.DATABASE_PASSWORD,
-            "mysqlRootPassword": settings.DATABASE_PASSWORD,
-            "mysqlDatabase": settings.DATABASE_DB,
-            "testFramework.enabled": "false",
-        }
-        self.helm.upgrade_chart(
-            chart=helm_chart,
-            name=deploy_name,
-            namespace=namespace,
-            values=values,
-            values_files=values_files,
-            version=helm_chart_version,
+            values=service.values,
+            values_files=service.values_files,
+            version=service.chart_version,
         )
 
     def create_application_deployment(
@@ -499,14 +409,6 @@ class Kubernetes:
         if project.basic_auth_secret_name:
             values["ingress.basicAuthSecret"] = project.basic_auth_secret_name
 
-        if project.database:
-            values["application.database_url"] = str(project.database.url)
-            values["application.database_host"] = str(project.database.url.host)
-            values["application.database_db"] = str(project.database.url.database)
-            values["application.database_port"] = str(project.database.url.port)
-            values["application.database_username"] = str(project.database.url.username)
-            values["application.database_password"] = str(project.database.url.password)
-
         if project.file_secret_name:
             values["application.fileSecretName"] = project.file_secret_name
             values["application.fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
@@ -531,18 +433,12 @@ class Kubernetes:
         )
 
         if result.return_code:
-            secret_variables = [
-                "application.database_url",
-                "application.database_username",
-                "application.database_password",
-            ]
             logger.info(
                 icon=f"{self.ICON} 🏷️",
                 title="Deployment values (without environment vars):",
             )
             for key, value in values.items():
-                if key not in secret_variables:
-                    logger.info(message=f"\t{key}: {value}")
+                logger.info(message=f"\t{key}: {value}")
 
             application_labels = {"release": project.deploy_name}
             status = self.status(namespace=namespace, labels=application_labels)

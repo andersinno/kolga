@@ -1,12 +1,9 @@
 from hashlib import sha256
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from scripts.libs.database import Database
 from scripts.libs.docker import Docker
 from scripts.utils.general import (
-    MYSQL,
     env_var_safe_key,
-    get_database_url,
     get_deploy_name,
     get_environment_vars_by_prefix,
     get_environment_vars_by_prefixes,
@@ -47,7 +44,6 @@ class Project:
         urls: str = "",
         is_dependent_project: bool = False,
         deploy_name: str = "",
-        database: Optional[Database] = None,
         **kwargs: str,
     ) -> None:
         # Set variables from arguments and if they do not exist,
@@ -66,7 +62,6 @@ class Project:
         self.basic_auth_secret_name = basic_auth_secret_name
         self.urls = urls
         self.is_dependent_project = is_dependent_project
-        self.database = database
 
         if not image:
             docker = Docker()
@@ -78,10 +73,6 @@ class Project:
         if not self.file_secret_name:
             file_secret_postfix = f"{postfix}-file"
             self.file_secret_name = get_secret_name(track=track, postfix=file_secret_postfix)
-
-        if not is_dependent_project and not self.database:
-            database_url = get_database_url(track=track)
-            self.database = Database(url=database_url)
 
         self.deploy_name = deploy_name
         if not deploy_name:
@@ -137,22 +128,12 @@ class Project:
                 if project_arg:
                     project_kwargs[project_arg] = project_env_vars[env_var]
 
-            dependency_database = None
-            if self.database and self.database.url.drivername == MYSQL:
-                dependency_database_url = Database.get_random_auth_database_url(
-                    database_driver=MYSQL,
-                    database_name=name,
-                    database_hostname=self.database.url.host,
-                )
-                dependency_database = Database(url=dependency_database_url)
-
             dependency_project = Project(
                 name=name,
                 image=image,
                 is_dependent_project=True,
                 track=track,
                 url=url,
-                database=dependency_database,
                 **project_kwargs,
             )
             dependency_projects.append(dependency_project)

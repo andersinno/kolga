@@ -5,7 +5,6 @@ import pytest
 
 from scripts.utils.general import (
     camel_case_split,
-    get_database_url,
     get_deploy_name,
     get_environment_vars_by_prefix,
     get_secret_name,
@@ -51,17 +50,6 @@ def test_get_deploy_name(track: str, expected: str) -> None:
 )
 def test_get_secret_name(track: str, expected: str) -> None:
     assert get_secret_name(track) == expected
-
-
-def test_get_database_url_stable() -> None:
-    url = get_database_url(DEFAULT_TRACK)
-    assert url
-    assert url.drivername == "postgresql"
-    assert url.username == "testuser"
-    assert url.password == "testpass"
-    assert url.host == "testing-db-postgresql"
-    assert url.port == 5432
-    assert url.database == "testdb"
 
 
 def test_get_environment_vars_by_prefix() -> None:

@@ -62,10 +62,9 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "DATABASE_DB": [env.str, "appdb"],
     "DATABASE_PASSWORD": [env.str, str(uuid.uuid4())],
     "DATABASE_USER": [env.str, "user"],
-    "MYSQL_ENABLED": [env.bool, False],
     "MYSQL_VERSION_TAG": [env.str, "5.7"],
-    "POSTGRES_ENABLED": [env.bool, False],
     "POSTGRES_IMAGE": [env.str, "docker.io/bitnami/postgresql:9.6"],
+    "SERVICE_ARTIFACT_FOLDER": [env.str, ""],
     # ================================================
     # KUBERNETES
     # ================================================
@@ -112,10 +111,9 @@ class Settings:
     DATABASE_DB: str
     DATABASE_PASSWORD: str
     DATABASE_USER: str
-    MYSQL_ENABLED: bool
     MYSQL_VERSION_TAG: str
-    POSTGRES_ENABLED: bool
     POSTGRES_IMAGE: str
+    SERVICE_ARTIFACT_FOLDER: str
     K8S_ADDITIONAL_HOSTNAMES: List[str]
     K8S_CLUSTER_ISSUER: str
     K8S_INGRESS_BASE_DOMAIN: str

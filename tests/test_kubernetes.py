@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 from kubernetes.client.rest import ApiException
 
-from scripts.libs.helm import Helm
 from scripts.libs.kubernetes import Kubernetes
 from scripts.libs.project import Project
 from scripts.utils.general import get_deploy_name, get_secret_name
@@ -147,30 +146,3 @@ def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
 
     with pytest.raises(Exception):
         kubernetes.get(resource="secret", name=test_namespace)
-
-
-# ======================================================================
-# KUBERNETES CLUSTER _AND_ HELM SERVER REQUIRED FROM THIS POINT FORWARD
-# ======================================================================
-
-
-def test_create_postgres_database(
-    kubernetes: Kubernetes, test_namespace: str, helm: Helm
-) -> None:
-    helm_test_repo_url = os.environ.get("TEST_HELM_REGISTRY", "http://localhost:8080")
-    helm.add_repo("testing", helm_test_repo_url)
-    track = DEFAULT_TRACK
-    kubernetes.create_postgres_database(
-        namespace=test_namespace, track=track, helm_chart="testing/postgresql"
-    )
-
-
-def test_create_mysql_database(
-    kubernetes: Kubernetes, test_namespace: str, helm: Helm
-) -> None:
-    helm_test_repo_url = os.environ.get("TEST_HELM_REGISTRY", "http://localhost:8080")
-    helm.add_repo("testing", helm_test_repo_url)
-    track = DEFAULT_TRACK
-    kubernetes.create_mysql_database(
-        namespace=test_namespace, track=track, helm_chart="testing/mysql"
-    )
