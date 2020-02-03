@@ -131,6 +131,21 @@ variables:
       - $REVIEW_DISABLED
   interruptible: true
 
+.review-no-env:
+  stage: review
+  script:
+    - devops deploy_application --track review
+  only:
+    refs:
+      - merge_requests
+    kubernetes: active
+  except:
+    refs:
+      - master
+    variables:
+      - $REVIEW_DISABLED
+  interruptible: true
+
 .review-cleanup:
   variables:
     git_strategy: none
