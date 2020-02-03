@@ -123,9 +123,9 @@ class Kubernetes:
             error_body = {"message": "An unknown error occurred"}
         if Kubernetes._is_client_error(error.status):
             reason = camel_case_split(str(error_body.get("reason", "Unknown")))
-            print(
-                f"{cf.yellow}{cf.bold}{reason}{cf.reset}"
-                f" ({error.status} {cf.italic}{error_body['message'].capitalize()}{cf.reset})"
+            logger.info(
+                title=f"{cf.yellow}{cf.bold}{reason}{cf.reset}",
+                message=f" ({error.status} {cf.italic}{error_body['message'].capitalize()}{cf.reset})",
             )
             if raise_client_exception:
                 raise error
@@ -214,6 +214,7 @@ class Kubernetes:
                 raise e
 
         logger.success()
+
         return namespace
 
     def create_secret(

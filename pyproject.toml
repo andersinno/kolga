@@ -30,6 +30,7 @@ recommonmark = "^0.6.0"
 sphinx-rtd-theme = "^0.4.3"
 docstr-coverage = "^1.0"
 markdown = "^3.1"
+flake8-print = "^3.1"
 
 [build-system]
 requires = ["poetry>=0.12"]

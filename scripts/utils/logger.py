@@ -36,7 +36,7 @@ class Logger:
         if error and not raise_exception:
             _message += f"{error}"
 
-        print(f"{cf.red}{_message}{cf.reset}")
+        print(f"{cf.red}{_message}{cf.reset}")  # noqa: T001
         if raise_exception:
             error = error or Exception(message_string)
             raise error
@@ -50,7 +50,7 @@ class Logger:
             icon: Icon to place as before the output
         """
         _message = self._create_message(message, icon)
-        print(f"{cf.yellow}{_message}{cf.reset}")
+        print(f"{cf.yellow}{_message}{cf.reset}")  # noqa: T001
 
     def success(self, message: str = "", icon: Optional[str] = None) -> None:
         """
@@ -62,7 +62,7 @@ class Logger:
         """
         message_string = message if message else "Done"
         _message = self._create_message(message_string, icon)
-        print(f"{cf.green}{_message}{cf.reset}")
+        print(f"{cf.green}{_message}{cf.reset}")  # noqa: T001
 
     def info(
         self,
@@ -84,7 +84,7 @@ class Logger:
             f"{cf.bold}{title}{cf.reset}{message}" if title else f"{message}"
         )
         _message = self._create_message(message_string, icon)
-        print(f"{_message}", end=end, flush=True)
+        print(f"{_message}", end=end, flush=True)  # noqa: T001
 
     def std(
         self,
@@ -107,7 +107,7 @@ class Logger:
         if raise_exception:
             raise Exception(output_string)
         else:
-            print(output_string)
+            print(output_string)  # noqa: T001
 
 
 logger = Logger()

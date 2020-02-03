@@ -113,7 +113,7 @@ class Devops:
         from scripts.libs.docker import Docker
 
         d = Docker()
-        print(d.test_image_tag())
+        print(d.test_image_tag())  # noqa: T001
 
     def logo(self) -> None:
         logo = """
@@ -126,7 +126,7 @@ class Devops:
                                                             | |
                                                             |_|
         """  # noqa: W291
-        print(logo)
+        print(logo)  # noqa: T001
 
 
 if __name__ == "__main__":
