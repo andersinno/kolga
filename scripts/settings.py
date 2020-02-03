@@ -72,6 +72,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "DATABASE_USER": [env.str, "user"],
     "MYSQL_VERSION_TAG": [env.str, "5.7"],
     "POSTGRES_IMAGE": [env.str, "docker.io/bitnami/postgresql:9.6"],
+    "RABBITMQ_VERSION_TAG": [env.str, "3.8.2"],
     "SERVICE_ARTIFACT_FOLDER": [env.str, ""],
     # ================================================
     # KUBERNETES
@@ -121,6 +122,7 @@ class Settings:
     DATABASE_USER: str
     MYSQL_VERSION_TAG: str
     POSTGRES_IMAGE: str
+    RABBITMQ_VERSION_TAG: str
     SERVICE_ARTIFACT_FOLDER: str
     K8S_ADDITIONAL_HOSTNAMES: List[str]
     K8S_CLUSTER_ISSUER: str

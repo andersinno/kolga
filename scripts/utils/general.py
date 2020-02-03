@@ -15,6 +15,7 @@ env = environs.Env()
 
 MYSQL = "mysql"
 POSTGRES = "postgresql"
+RABBITMQ = "rabbitmq"
 AMQP = "amqp"
 DATABASE_DEFAULT_PORT_MAPPING = {MYSQL: 3306, POSTGRES: 5432, AMQP: 5672}
 
