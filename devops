@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from typing import List
 
 from scripts.settings import settings
 
@@ -22,6 +23,18 @@ class Devops:
         )
         deploy_application_parser.add_argument(
             "-t", "--track", dest="track", default=settings.DEFAULT_TRACK
+        )
+
+        deploy_service_parser = subparsers.add_parser(
+            "deploy_service", help="Deploy a service supported by the devops pipeline"
+        )
+        deploy_service_parser.add_argument(
+            "-t", "--track", dest="track", default=settings.DEFAULT_TRACK
+        )
+        deploy_service_parser.add_argument("-s", "--service", dest="service")
+        deploy_service_parser.add_argument("-e", "--env-var", dest="envvar")
+        deploy_service_parser.add_argument(
+            "-p", "--projects", dest="projects", nargs="+"
         )
 
         subparsers.add_parser("docker_test_image", help="Print image tag")
@@ -91,6 +104,38 @@ class Devops:
             k.create_application_deployment(
                 namespace=namespace, track=track, project=project
             )
+
+    def deploy_service(
+        self, track: str, service: str, envvar: str, projects: List[str]
+    ) -> None:
+        from scripts.libs.kubernetes import Kubernetes
+        from scripts.libs.service import Service
+        from scripts.libs.services import services
+        from scripts.utils.general import create_artifact_file_from_dict
+
+        service_class = services.get(service, None)
+        if not service_class:
+            raise Exception(f"The service {service} is currently not supported")
+
+        k = Kubernetes(track=track)
+        k.setup_helm()
+        namespace = k.create_namespace()
+
+        service_instance = service_class(
+            name=service, track=track, artifact_name=envvar
+        )
+
+        for project in projects:
+            project_service = Service(
+                name=project, track=track, chart_path=k.get_helm_path()
+            )
+            service_instance.add_prerequisite(project_service)
+
+        service_instance.setup_prerequisites()
+        k.deploy_service(service=service_instance, track=track, namespace=namespace)
+        create_artifact_file_from_dict(
+            data=service_instance.get_artifacts(), filename=service
+        )
 
     def help(self) -> None:
         self.parser.print_help()

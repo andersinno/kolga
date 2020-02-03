@@ -3,6 +3,7 @@ image: andersinnovations/devops:6cbb6de210761162c37c586a1dff5564b27021ac
 stages:
   - build
   - test
+  - review-service
   - review
   - staging
   - production
@@ -25,6 +26,9 @@ variables:
 
   # Default name for the database
   DATABASE_DB: "$CI_ENVIRONMENT_SLUG"
+
+  # Default place to store service artifacts
+  SERVICE_ARTIFACT_FOLDER: "service_artifacts"
 
 .build:
   services:
@@ -85,6 +89,26 @@ variables:
     max: 2
     when:
       - runner_system_failure
+
+.review-service:
+  stage: review-service
+  variables:
+    DEFAULT_TRACK: review
+  environment:
+    name: qa/r/${CI_COMMIT_REF_SLUG}
+    on_stop: stop_review
+  artifacts:
+    paths:
+      - $SERVICE_ARTIFACT_FOLDER/
+    expire_in: 1 hour
+  only:
+    refs:
+      - merge_requests
+    kubernetes: active
+  except:
+    variables:
+      - $REVIEW_DISABLED
+  interruptible: true
 
 .review:
   stage: review
