@@ -62,11 +62,26 @@ spec:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
+          {{- if .Values.application.livenessFile }}
+          livenessProbe:
+            exec:
+              command:
+              - cat
+              - {{ .Values.application.livenessFile }}
+          {{ else }}
           livenessProbe:
             initialDelaySeconds: 60
             httpGet:
               path: /healthz
               port: {{ .Values.service.targetPort }}
+          {{- end }}
+          {{- if .Values.application.readinessFile }}
+          readinessProbe:
+            exec:
+              command:
+              - cat
+              - {{ .Values.application.readinessFile }}
+          {{ else }}
           readinessProbe:
             initialDelaySeconds: 60
             httpGet:

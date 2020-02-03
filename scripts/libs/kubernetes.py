@@ -423,6 +423,12 @@ class Kubernetes:
         if settings.K8S_INGRESS_PREVENT_ROBOTS:
             values["ingress.preventRobots"] = "1"
 
+        if settings.K8S_LIVENESS_FILE:
+            values["application.livenessFile"] = settings.K8S_LIVENESS_FILE
+
+        if settings.K8S_READINESS_FILE:
+            values["application.readinessFile"] = settings.K8S_READINESS_FILE
+
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
             chart_path=helm_path,

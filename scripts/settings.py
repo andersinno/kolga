@@ -88,6 +88,8 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_FILE_SECRET_MOUNTPATH": [env.str, "/tmp/secrets"],
     "K8S_FILE_SECRET_PREFIX": [env.str, "K8S_FILE_SECRET_"],
     "K8S_SECRET_PREFIX": [env.str, "K8S_SECRET_"],
+    "K8S_LIVENESS_FILE": [env.str, ""],
+    "K8S_READINESS_FILE": [env.str, ""],
     "KUBECONFIG": [env.str, ""],
     "DEPENDS_ON_PROJECTS": [env.str, ""],
 }
@@ -135,6 +137,8 @@ class Settings:
     K8S_FILE_SECRET_MOUNTPATH: str
     K8S_FILE_SECRET_PREFIX: str
     K8S_SECRET_PREFIX: str
+    K8S_LIVENESS_FILE: str
+    K8S_READINESS_FILE: str
     KUBECONFIG: str
     DEPENDS_ON_PROJECTS: str
 
