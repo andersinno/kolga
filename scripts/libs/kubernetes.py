@@ -438,6 +438,9 @@ class Kubernetes:
         if settings.K8S_CERTMANAGER_USE_OLD_API:
             values["ingress.certManagerAnnotationPrefix"] = "certmanager.k8s.io"
 
+        if settings.K8S_INGRESS_PREVENT_ROBOTS:
+            values["ingress.preventRobots"] = "1"
+
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
             chart_path=helm_path,
