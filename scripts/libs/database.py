@@ -38,9 +38,9 @@ class Database:
         sql = ""
         if url.drivername == MYSQL:
             sql = f"""
-            CREATE DATABASE {url.database} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+            CREATE DATABASE `{url.database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             CREATE USER IF NOT EXISTS '{url.username}'@'%' IDENTIFIED BY '{url.password}';
-            GRANT ALL PRIVILEGES ON {url.database}.* TO '{url.username}'@'%';
+            GRANT ALL PRIVILEGES ON `{url.database}`.* TO '{url.username}'@'%';
             FLUSH PRIVILEGES;
             """
         return sql

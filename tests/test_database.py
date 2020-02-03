@@ -62,9 +62,9 @@ def test_get_database_creation_sql_from_url() -> None:
     creation_query = Database.get_database_creation_sql_from_url(url)
 
     expected_query = f"""
-        CREATE DATABASE {url_args["database"]} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+        CREATE DATABASE `{url_args["database"]}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
         CREATE USER IF NOT EXISTS '{url_args["username"]}'@'%' IDENTIFIED BY '{url_args["password"]}';
-        GRANT ALL PRIVILEGES ON {url_args["database"]}.* TO '{url_args["username"]}'@'%';
+        GRANT ALL PRIVILEGES ON `{url_args["database"]}`.* TO '{url_args["username"]}'@'%';
         FLUSH PRIVILEGES;
         """
 
