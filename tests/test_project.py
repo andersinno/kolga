@@ -20,7 +20,7 @@ def test_project_defaults() -> None:
         project.image
         == "localhost:5000/test/testing:2a7958c61a31a38a365aa347147aba2aaaaaaa"
     )
-    assert project.secret_name == "testing-staging-secret"
+    assert project.secret_name == "testing-staging-testing-secret"
     assert project.secret_data == {}
     assert project.basic_auth_secret_name == ""
     assert project.urls == ""

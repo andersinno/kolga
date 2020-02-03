@@ -8,6 +8,7 @@ from kubernetes.client.rest import ApiException
 
 from scripts.libs.helm import Helm
 from scripts.libs.kubernetes import Kubernetes
+from scripts.libs.project import Project
 from scripts.utils.general import get_deploy_name, get_secret_name
 from scripts.utils.models import BasicAuthUser
 
@@ -103,8 +104,9 @@ def test_create_secret_stable(kubernetes: Kubernetes, test_namespace: str) -> No
     track = DEFAULT_TRACK
     expected_secret_name = get_secret_name(track)
     data = {"test_secret": "1234"}
+    project = Project(track=track)
     secret_result = kubernetes.create_secret(
-        data=data, namespace=K8S_NAMESPACE, track=track
+        data=data, namespace=K8S_NAMESPACE, track=track, project=project
     )
     assert secret_result == expected_secret_name
 
@@ -112,8 +114,12 @@ def test_create_secret_stable(kubernetes: Kubernetes, test_namespace: str) -> No
 def test_create_secret_qa(kubernetes: Kubernetes, test_namespace: str) -> None:
     track = "qa"
     expected_secret_name = get_secret_name(track)
+    project = Project(track=track)
     secret_result = kubernetes.create_secret(
-        data={"test_secret": "1234"}, namespace=K8S_NAMESPACE, track=track
+        data={"test_secret": "1234"},
+        namespace=K8S_NAMESPACE,
+        track=track,
+        project=project,
     )
     assert secret_result == expected_secret_name
     kubernetes.get(
@@ -132,8 +138,9 @@ def test_delete_namespace(kubernetes: Kubernetes, test_namespace: str) -> None:
 def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
     track = DEFAULT_TRACK
     deploy_name = get_deploy_name(track=track)
+    project = Project(track=track)
     kubernetes.create_secret(
-        data={"test": "test"}, namespace=test_namespace, track=track
+        data={"test": "test"}, namespace=test_namespace, track=track, project=project
     )
 
     kubernetes.delete_all(namespace=test_namespace, labels={"release": deploy_name})

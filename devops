@@ -82,9 +82,12 @@ class Devops:
                 namespace=namespace,
                 track=track,
                 secret_name=project.secret_name,
+                project=project,
             )
             # TODO: Move this to the Project class
-            k.create_basic_auth_secret(namespace=namespace, track=track)
+            k.create_basic_auth_secret(
+                namespace=namespace, track=track, project=project
+            )
             k.create_application_deployment(
                 namespace=namespace, track=track, project=project
             )

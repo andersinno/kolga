@@ -57,7 +57,7 @@ class Project:
                 setattr(self, attr, kwargs[attr])
             else:
                 setattr(self, attr, getattr(settings, env_var, ""))
-        postfix = self.name if is_dependent_project else None
+        postfix = self.name
 
         self.track = track
         self.image = image

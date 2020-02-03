@@ -222,10 +222,11 @@ class Kubernetes:
         data: Dict[str, str],
         namespace: str,
         track: str,
+        project: Project,
         secret_name: Optional[str] = None,
         encode: bool = True,
     ) -> str:
-        deploy_name = get_deploy_name(track=track)
+        deploy_name = get_deploy_name(track=track, postfix=project.name)
         if not secret_name:
             secret_name = get_secret_name(track=track)
         v1 = k8s_client.CoreV1Api(self.client)
@@ -357,7 +358,9 @@ class Kubernetes:
 
         return {"auth": encoded_file}
 
-    def create_basic_auth_secret(self, namespace: str, track: str) -> Optional[str]:
+    def create_basic_auth_secret(
+        self, namespace: str, track: str, project: Project
+    ) -> Optional[str]:
         if not settings.K8S_INGRESS_BASIC_AUTH:
             return None
 
@@ -369,6 +372,7 @@ class Kubernetes:
             track=track,
             secret_name=secret_name,
             encode=False,
+            project=project,
         )
 
     def create_database_deployment(
@@ -474,18 +478,12 @@ class Kubernetes:
     ) -> None:
         helm_path = self.get_helm_path()
 
-        release_override = (
-            settings.ENVIRONMENT_SLUG
-            if not project.is_dependent_project
-            else f"{settings.ENVIRONMENT_SLUG}-{project.name}"
-        )
-
         values: Dict[str, str] = {
             "namespace": namespace,
             "image": project.image,
             "gitlab.app": settings.PROJECT_PATH_SLUG,
             "gitlab.env": settings.ENVIRONMENT_SLUG,
-            "releaseOverride": release_override,
+            "releaseOverride": f"{settings.ENVIRONMENT_SLUG}-{project.name}",
             "application.track": track,
             "application.secretName": project.secret_name,
             "application.initializeCommand": project.initialize_command,
