@@ -1,5 +1,6 @@
 import os
 import uuid
+from glob import glob
 from typing import Any, Dict, List, Optional, Tuple
 
 from environs import Env
@@ -10,11 +11,18 @@ from scripts.utils.models import BasicAuthUser
 from .utils.environ_parsers import basicauth_parser, list_none_parser
 from .utils.exceptions import NoClusterConfigError
 
+service_artifacts_folder = os.environ.get("SERVICE_ARTIFACT_FOLDER", None)
+env_files = []
+if service_artifacts_folder:
+    env_files.extend(glob(f"./{service_artifacts_folder}/*.env"))
+
 env = Env()
 
 env.add_parser("basicauth", basicauth_parser)
 env.add_parser("list_none", list_none_parser)
 env.read_env()
+for env_file in env_files:
+    env.read_env(env_file)
 
 PROJECT_NAME_VAR = "PROJECT_NAME"
 
