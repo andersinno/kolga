@@ -488,7 +488,6 @@ class Kubernetes:
             "kubectl",
             "delete",
             resource,
-            "--include-uninitialized",
             "--ignore-not-found",
             "--wait=true",
             f"--namespace={namespace}",
