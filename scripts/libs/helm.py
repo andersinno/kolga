@@ -102,13 +102,15 @@ class Helm:
         version: Optional[str] = None,
         raise_exception: bool = True,
     ) -> SubprocessResult:
-        if chart_path and not chart_path.exists():
-            logger.error(
-                message=f"Path '{str(chart_path)}' does not exist",
-                error=OSError(),
-                raise_exception=True,
-            )
-        elif chart_path:
+        if chart_path:
+            if not chart_path.is_absolute():
+                chart_path = settings.devops_root_path / chart_path
+            if not chart_path.exists():
+                logger.error(
+                    message=f"Path '{str(chart_path)}' does not exist",
+                    error=OSError(),
+                    raise_exception=True,
+                )
             chart = str(chart_path)
 
         logger.info(
