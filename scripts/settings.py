@@ -1,6 +1,8 @@
 import os
+import sys
 import uuid
 from glob import glob
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from environs import Env
@@ -150,6 +152,8 @@ class Settings:
             raise AssertionError(
                 f"Not all env variables are set class attributes ({missing_vars})"
             )
+
+        self.devops_root_path = Path(sys.argv[0]).resolve().parent
 
         self.active_ci: Optional[Any] = None
         self.supported_cis: List[Any] = [GitLabMapper()]

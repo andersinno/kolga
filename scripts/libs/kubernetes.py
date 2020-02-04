@@ -157,7 +157,7 @@ class Kubernetes:
     def get_helm_path() -> Path:
         application_path = Path(settings.PROJECT_DIR)
         helm_path = application_path / "helm"
-        auto_helm_path = Path("/tmp/devops/ci-configuration/helm")
+        auto_helm_path = settings.devops_root_path / "helm"
         if not helm_path.exists() and auto_helm_path.exists():
             shutil.copytree(auto_helm_path, helm_path)
         elif not helm_path.exists():

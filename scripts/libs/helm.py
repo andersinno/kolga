@@ -3,6 +3,7 @@ import operator
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from scripts.settings import settings
 from scripts.utils.general import kuberenetes_safe_name, run_os_command
 from scripts.utils.logger import logger
 from scripts.utils.models import SubprocessResult
