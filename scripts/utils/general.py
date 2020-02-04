@@ -80,6 +80,23 @@ def env_var_safe_key(key: str) -> str:
     return re.sub(r"^\d+|\W", "_", key).upper()
 
 
+def kuberenetes_safe_name(name: str) -> str:
+    """
+    Returns a version of the string that can be used in in kubernetes resource names
+
+    This function replaces anything that is not a-z, A-Z, 0-9, - with -.
+    Finally the string is converted to lower case.
+
+    Example:
+        kubernetes_Name-with?Strange-ch4rs --> kubernetes-name-with-strange-ch4rs
+
+    Returns:
+        A string modified to work with kubernetes resource names
+    """
+
+    return re.sub(r"[^a-zA-Z0-9]", "-", name).lower()
+
+
 def loads_json(string: str) -> Dict[str, Any]:
     try:
         result = json.loads(string)
@@ -98,7 +115,8 @@ def get_deploy_name(track: Optional[str] = None, postfix: Optional[str] = None) 
     track_postfix = f"-{track}" if track and track != settings.DEFAULT_TRACK else ""
     deploy_name = f"{settings.ENVIRONMENT_SLUG}{track_postfix}"
     postfix = f"-{postfix}" if postfix else ""
-    return f"{deploy_name}{postfix}"
+    name = f"{deploy_name}{postfix}"
+    return kuberenetes_safe_name(name)
 
 
 def get_secret_name(track: Optional[str] = None, postfix: Optional[str] = None) -> str:

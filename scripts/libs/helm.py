@@ -3,10 +3,9 @@ import operator
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from scripts.utils.general import kuberenetes_safe_name, run_os_command
 from scripts.utils.logger import logger
 from scripts.utils.models import SubprocessResult
-
-from ..utils.general import run_os_command
 
 
 class Helm:
@@ -141,15 +140,17 @@ class Helm:
         if values_files:
             helm_command += self.get_chart_params(flag="--values", values=values_files)
 
+        safe_name = kuberenetes_safe_name(name=name)
+
         # Add the name and chart
-        os_command = helm_command + [f"{name}", f"{chart}"]
+        os_command = helm_command + [f"{safe_name}", f"{chart}"]
 
         result = run_os_command(os_command)
         if result.return_code:
             logger.std(result, raise_exception=raise_exception)
             return result
         logger.success()
-        logger.info(f"\tName: {name}")
+        logger.info(f"\tName: {safe_name} (orig: {name})")
         logger.info(f"\tNamespace: {namespace}")
         logger.info(f"\tValues count: {int(len(values_params) / 2)}")
         return result
