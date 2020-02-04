@@ -22,6 +22,13 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
     # Set maximum allowed upload file size
     nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.ingress.maxBodySize }}
+    {{- if .Values.ingress.preventRobots }}
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location = /robots.txt {
+        add_header Content-Type text/plain;
+        return 200 "User-agent: *\nDisallow: /\n";
+      }
+    {{- end }}
 spec:
   tls:
     - hosts:

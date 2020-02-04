@@ -85,6 +85,7 @@ variables:
     url: https://$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
     on_stop: stop_review
   variables:
+    K8S_INGRESS_PREVENT_ROBOTS: 1
     POSTGRES_ENABLED: 1
   only:
     refs:
@@ -135,6 +136,7 @@ variables:
     name: qa/staging
     url: https://$CI_PROJECT_PATH_SLUG-qa.$KUBE_INGRESS_BASE_DOMAIN
   variables:
+    K8S_INGRESS_PREVENT_ROBOTS: 1
     POSTGRES_ENABLED: 0
   only:
     refs:
