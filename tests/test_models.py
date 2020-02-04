@@ -3,7 +3,7 @@ import pytest
 from scripts.utils.models import DockerImageRef
 
 
-@pytest.parametrize(  # type: ignore
+@pytest.mark.parametrize(  # type: ignore
     "ref, registry, repository, tag",
     (
         (
