@@ -35,19 +35,6 @@ spec:
                 name: {{ .Values.application.secretName }}
           {{- end }}
           env:
-            - name: DATABASE_URL
-              value: {{ .Values.application.database_url | quote }}
-            - name: DATABASE_HOST
-              value: {{ .Values.application.database_host | quote }}
-            - name: DATABASE_DB
-              value: {{ .Values.application.database_db | quote }}
-            - name: DATABASE_PORT
-              value: {{ .Values.application.database_port | quote }}
-            - name: DATABASE_USERNAME
-              value: {{ .Values.application.database_username | quote }}
-            - name: DATABASE_PASSWORD
-              value: {{ .Values.application.database_password | quote }}
-
             - name: POD_IP
               valueFrom:
                 fieldRef:
