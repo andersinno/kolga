@@ -16,8 +16,8 @@ RUN ln -s pip3 /usr/bin/pip
 # ===================================
 FROM build-base AS kubectl
 # ===================================
-ARG KUBECTL_VERSION=1.16.4
-ARG KUBECTL_CHECKSUM=407444fcbfa6905d96e3584fd1f008d1d844108763fe45e2f30f58efea661501
+ARG KUBECTL_VERSION=1.17.2
+ARG KUBECTL_CHECKSUM=7f9bc410e8cc7f3b4075b50ab144fe08fefc5e7a9d03b9c09ee2e7e483e0c436
 ARG SOURCE=https://dl.k8s.io/v$KUBECTL_VERSION/kubernetes-client-linux-amd64.tar.gz
 ARG TARGET=/kubernetes-client.tar.gz
 RUN curl -fLSs "$SOURCE" -o "$TARGET"
