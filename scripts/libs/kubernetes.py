@@ -423,6 +423,9 @@ class Kubernetes:
         if settings.K8S_INGRESS_PREVENT_ROBOTS:
             values["ingress.preventRobots"] = "1"
 
+        if settings.K8S_INGRESS_DISABLED:
+            values["ingress.disabled"] = "1"
+
         if settings.K8S_LIVENESS_FILE:
             values["application.livenessFile"] = settings.K8S_LIVENESS_FILE
 

@@ -45,6 +45,7 @@ supplies a predefined variables with the SHA.
 | K8S\_CLUSTER\_ISSUER          | The name of the clusterIssuer to be used by ingress |                              |            |
 | K8S\_INGRESS\_BASE\_DOMAIN    | Kubernetes default base domain for preview          |                              | GitLab     |
 | K8S\_INGRESS\_BASIC\_AUTH     | Space delimited basic auth cred, ex. foo:bar df:aa  |                              |            |
+| K8S\_INGRESS\_DISABLED        | Disable ingress deployment                          | False                        |            |
 | K8S\_INGRESS\_MAX\_BODY\_SIZE | Set max body size for requests to the nginx ingress | 100m                         |            |
 | K8S\_INGRESS\_PREVENT\_ROBOTS | Add a basic robots.txt to disallow all robots       | False                        |            |
 | K8S\_NAMESPACE                | Kubernetes namespace to use                         |                              | GitLab     |

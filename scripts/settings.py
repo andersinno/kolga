@@ -81,6 +81,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_CLUSTER_ISSUER": [env.str, ""],
     "K8S_INGRESS_BASE_DOMAIN": [env.str, ""],
     "K8S_INGRESS_BASIC_AUTH": [env.basicauth, []],
+    "K8S_INGRESS_DISABLED": [env.bool, False],
     "K8S_CERTMANAGER_USE_OLD_API": [env.bool, False],
     "K8S_INGRESS_MAX_BODY_SIZE": [env.str, "100m"],
     "K8S_INGRESS_PREVENT_ROBOTS": [env.bool, False],
@@ -130,6 +131,7 @@ class Settings:
     K8S_CLUSTER_ISSUER: str
     K8S_INGRESS_BASE_DOMAIN: str
     K8S_INGRESS_BASIC_AUTH: List[BasicAuthUser]
+    K8S_INGRESS_DISABLED: bool
     K8S_CERTMANAGER_USE_OLD_API: bool
     K8S_INGRESS_MAX_BODY_SIZE: str
     K8S_INGRESS_PREVENT_ROBOTS: bool
