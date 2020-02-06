@@ -14,9 +14,12 @@ from .utils.environ_parsers import basicauth_parser, list_none_parser
 from .utils.exceptions import NoClusterConfigError
 
 service_artifacts_folder = os.environ.get("SERVICE_ARTIFACT_FOLDER", None)
+build_artifacts_folder = os.environ.get("BUILD_ARTIFACT_FOLDER", None)
 env_files = []
 if service_artifacts_folder:
     env_files.extend(glob(f"./{service_artifacts_folder}/*.env"))
+if build_artifacts_folder:
+    env_files.extend(glob(f"./{build_artifacts_folder}/*.env"))
 
 env = Env()
 
@@ -44,6 +47,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "CONTAINER_REGISTRY_PASSWORD": [env.str, ""],
     "CONTAINER_REGISTRY_REPO": [env.str, ""],
     "CONTAINER_REGISTRY_USER": [env.str, ""],
+    "BUILT_DOCKER_TEST_IMAGE": [env.str, ""],
     "DOCKER_BUILD_ARG_PREFIX": [env.str, "DOCKER_BUILD_ARG_"],
     "DOCKER_BUILD_CONTEXT": [env.str, "."],
     "DOCKER_BUILD_SOURCE": [env.str, "Dockerfile"],
@@ -69,6 +73,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     # ================================================
     "APP_INITIALIZE_COMMAND": [env.str, ""],
     "APP_MIGRATE_COMMAND": [env.str, ""],
+    "BUILD_ARTIFACT_FOLDER": [env.str, ""],
     "DATABASE_DB": [env.str, "appdb"],
     "DATABASE_PASSWORD": [env.str, str(uuid.uuid4())],
     "DATABASE_USER": [env.str, "user"],
@@ -106,6 +111,7 @@ class Settings:
     CONTAINER_REGISTRY_PASSWORD: str
     CONTAINER_REGISTRY_REPO: str
     CONTAINER_REGISTRY_USER: str
+    BUILT_DOCKER_TEST_IMAGE: str
     DOCKER_BUILD_ARG_PREFIX: str
     DOCKER_BUILD_CONTEXT: str
     DOCKER_BUILD_SOURCE: str
@@ -122,6 +128,7 @@ class Settings:
     GIT_TARGET_BRANCH: str
     APP_INITIALIZE_COMMAND: str
     APP_MIGRATE_COMMAND: str
+    BUILD_ARTIFACT_FOLDER: str
     DATABASE_DB: str
     DATABASE_PASSWORD: str
     DATABASE_USER: str

@@ -29,6 +29,7 @@ variables:
 
   # Default place to store service artifacts
   SERVICE_ARTIFACT_FOLDER: "service_artifacts"
+  BUILD_ARTIFACT_FOLDER: "build_artifacts"
 
 .build:
   services:
@@ -46,6 +47,10 @@ variables:
   except:
     variables:
       - $BUILD_DISABLED
+  artifacts:
+    paths:
+      - $BUILD_ARTIFACT_FOLDER/
+    expire_in: 1 hour
   interruptible: true
   retry:
     max: 2

@@ -19,6 +19,8 @@ RABBITMQ = "rabbitmq"
 AMQP = "amqp"
 DATABASE_DEFAULT_PORT_MAPPING = {MYSQL: 3306, POSTGRES: 5432, AMQP: 5672}
 
+BUILT_DOCKER_TEST_IMAGE = "BUILT_DOCKER_TEST_IMAGE"
+
 
 def get_project_secret_var(project_name: str, value: str = "") -> str:
     from scripts.settings import settings
@@ -37,26 +39,24 @@ def camel_case_split(camel_case_string: str) -> str:
 
 
 def create_artifact_file_from_dict(
-    data: Union[Dict[str, Any], Mapping[str, Any]], filename: str = ".env"
+    env_dir: str, data: Union[Dict[str, Any], Mapping[str, Any]], filename: str = ".env"
 ) -> Path:
-    from scripts.settings import settings
-
     if not filename.endswith(".env"):
         filename = f"{filename}.env"
 
     cwd = Path.cwd()
-    env_dir = cwd / settings.SERVICE_ARTIFACT_FOLDER
-    env_file = env_dir / filename
+    env_dir = cwd / env_dir  # type: ignore
+    env_file = env_dir / filename  # type: ignore
 
     # We don't handle OSError here as the execution
     # should stop if this fails
-    env_dir.mkdir(exist_ok=True)
+    env_dir.mkdir(exist_ok=True)  # type: ignore
 
     with env_file.open(mode="w+") as f:
         for key, value in data.items():
             f.write(f"{key}={value}\n")
 
-    return env_file
+    return env_file  # type: ignore
 
 
 def current_rfc3339_datetime() -> str:
