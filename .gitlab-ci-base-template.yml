@@ -45,6 +45,10 @@ variables:
     variables:
       - $BUILD_DISABLED
   interruptible: true
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
 
 .test:
   services:
@@ -62,6 +66,10 @@ variables:
     variables:
       - $TEST_DISABLED
   interruptible: true
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
 
 .light-test:
   stage: test
@@ -75,6 +83,10 @@ variables:
     variables:
       - $TEST_DISABLED
   interruptible: true
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
 
 .review:
   stage: review
