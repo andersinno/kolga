@@ -55,7 +55,9 @@ class Settings:
     MYSQL_ENABLED: bool = env.bool("MYSQL_ENABLED", False)
     MYSQL_VERSION_TAG: str = env.str("MYSQL_VERSION_TAG", "5.7")
     POSTGRES_ENABLED: bool = env.bool("POSTGRES_ENABLED", False)
-    POSTGRES_IMAGE: str = env.str("POSTGRES_IMAGE", "docker.io/bitnami/postgresql:9.6")
+    POSTGRES_IMAGE: str = env.str(
+        "POSTGRES_IMAGE", "docker.io/andersinnovations/postgis:9.6-bitnami"
+    )
 
     # KUBERNETES
     K8S_ADDITIONAL_HOSTNAMES: List[str] = env.list("K8S_ADDITIONAL_HOSTNAMES", [])
