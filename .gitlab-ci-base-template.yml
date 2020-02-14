@@ -10,10 +10,6 @@ stages:
 variables:
   DOCKER_BUILD_CONTEXT: "."
 
-  # Docker by default users `vfs` which is not suitable for
-  # production use. overlay2 is the preferred driver by Docker.
-  DOCKER_DRIVER: overlay2
-
   # Default usernames and passwords for postgres setups
   # Note: These are the credentials that will be used for testing
   DATABASE_USER: user
