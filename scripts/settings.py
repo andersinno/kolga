@@ -125,7 +125,7 @@ class Settings:
 
 
         """
-        for key in f"KUBECONFIG_{track}", "KUBECONFIG":
+        for key in f"KUBECONFIG_{track.upper()}", "KUBECONFIG":
             kubeconfig = os.environ.get(key, "")
             if not kubeconfig:
                 continue
