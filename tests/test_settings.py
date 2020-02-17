@@ -21,13 +21,13 @@ def fake_track(invalid_value: str) -> str:
     "track, expected_variable",
     [(None, "KUBECONFIG"), ("", "KUBECONFIG"), ("stable", "KUBECONFIG_stable")],
 )
-def really_test_setup_kubeconfig_with_track(track: str, expected_variable: str) -> None:
+def test_setup_kubeconfig_with_track(track: str, expected_variable: str) -> None:
     os.environ.update(
         {
             "KUBECONFIG": "Value from fall-back KUBECONFIG",
-            f"KUBECONFIG_{fake_track(track)}": "A totally wrong KUBECONFIG",
+            f"KUBECONFIG_{fake_track(track).upper()}": "A totally wrong KUBECONFIG",
             **(
-                {f"KUBECONFIG_{track}": "Value from track-specific KUBECONFIG"}
+                {f"KUBECONFIG_{track.upper()}": "Value from track-specific KUBECONFIG"}
                 if track
                 else {}
             ),
