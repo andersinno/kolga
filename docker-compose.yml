@@ -71,6 +71,7 @@ services:
     - CONTAINER_REGISTRY=docker-registry:5000
     - CONTAINER_REGISTRY_REPO=docker-registry:5000/test
     - DOCKER_HOST=unix:///var/run/docker.sock
+    - HOME=/tmp
     - K3S_CLUSTER_SECRET=k3stestclustersecret
     - K3S_URL=https://kubernetes:6443
     - KUBECONFIG=/config/kubeconfig.yaml
@@ -78,10 +79,11 @@ services:
     volumes:
       - k3s-config:/config
       - .:/app
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKER_SOCKET_PATH-/var/run/docker.sock}:/var/run/docker.sock
       - type: bind
         source: ./tests/registry/certs/docker_registry.crt
         target: /etc/docker/certs.d/docker-registry:5000/ca.crt
+    user: ${USERID-0}:${GROUPID-0}
     command: ${CLIENT_COMMAND}
 
 volumes:
