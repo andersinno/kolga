@@ -24,16 +24,25 @@ def kubeconfig_key(track: Optional[str] = None) -> str:
 
 
 @pytest.mark.parametrize(  # type: ignore
-    "track, expected_variable", (("", "KUBECONFIG"), ("stable", "KUBECONFIG_STABLE")),
+    "track, is_track_present, expected_variable",
+    [
+        ("", True, "KUBECONFIG"),
+        ("stable", True, "KUBECONFIG_STABLE"),
+        ("review", False, "KUBECONFIG"),
+    ],
 )
-def test_setup_kubeconfig_with_track(track: str, expected_variable: str) -> None:
+def test_setup_kubeconfig_with_track(
+    track: str, is_track_present: bool, expected_variable: str
+) -> None:
     os.environ.update(
         {
             kubeconfig_key(): "Value from fall-back KUBECONFIG",
             kubeconfig_key(fake_track(track)): "A totally wrong KUBECONFIG",
-            kubeconfig_key(track): "Value from track-specific KUBECONFIG",
         }
     )
+
+    if is_track_present:
+        os.environ[kubeconfig_key(track)] = "Value from track-specific KUBECONFIG"
 
     expected_value = os.environ[expected_variable]
 
