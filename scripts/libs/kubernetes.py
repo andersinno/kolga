@@ -207,18 +207,29 @@ class Kubernetes:
                           namespace already exists.
         """
         v1 = k8s_client.CoreV1Api(self.client)
-        v1_metadata = k8s_client.V1ObjectMeta(name=namespace, labels={"app": "kubed"})
-        v1_namespace = k8s_client.V1Namespace(metadata=v1_metadata)
         logger.info(
-            icon=f"{self.ICON}  🔨", title=f"Creating namespace {namespace}: ", end=""
+            icon=f"{self.ICON}  🔨", title=f"Checking namespace {namespace}: ", end=""
         )
 
+        try:
+            v1.read_namespace(name=namespace)
+        except ApiException as e:
+            self._handle_api_error(e)
+            if e.status != 404:
+                raise e
+        else:
+            logger.success()
+            return namespace
+
+        v1_metadata = k8s_client.V1ObjectMeta(name=namespace, labels={"app": "kubed"})
+        v1_namespace = k8s_client.V1Namespace(metadata=v1_metadata)
         try:
             v1.create_namespace(v1_namespace)
         except ApiException as e:
             self._handle_api_error(e)
             if e.status != 409:  # Namespace exists
                 raise e
+
         logger.success()
         return namespace
 
