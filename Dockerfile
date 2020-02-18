@@ -116,12 +116,17 @@ RUN apk add --no-cache --virtual .build-deps \
     && apk del .build-deps
 
 COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 # ===================================
 FROM app-base AS development
 # ===================================
 LABEL "com.azure.dev.pipelines.agent.handler.node.path"="/usr/bin/node"
+
+# Create a writable directory for shared configurations
+RUN mkdir -m777 /config
 
 COPY --from=poetry /root/.poetry /root/.poetry
 RUN ln -s /root/.poetry/bin/poetry /usr/bin/poetry
