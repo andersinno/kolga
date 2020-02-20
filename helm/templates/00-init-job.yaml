@@ -38,7 +38,7 @@ spec:
         {{- if and .Values.application.fileSecretName }}
         volumeMounts:
         {{- if .Values.application.fileSecretName }}
-          - mountPath: {{ .Values.application.fileSecretName }}
+          - mountPath: {{ .Values.application.fileSecretPath }}
             name: filesecrets
         {{- end }}
         {{- end }}
