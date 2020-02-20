@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 from datetime import datetime, timezone
+from pathlib import Path
 from shlex import quote
 from typing import Any, Dict, List, Optional
 
@@ -131,3 +132,10 @@ def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessRe
 def current_rfc3339_datetime() -> str:
     local_time = datetime.now(timezone.utc).astimezone()
     return local_time.isoformat()
+
+
+def validate_file_secret_path(path: Path, valid_prefixes: List[str]) -> bool:
+    absolute_path = str(path.absolute())
+    return any(
+        absolute_path.startswith(valid_prefix) for valid_prefix in valid_prefixes
+    )

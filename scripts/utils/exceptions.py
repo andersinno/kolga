@@ -1,6 +1,10 @@
-class NoClusterConfigError(Exception):
+class DeploymentFailed(Exception):
     pass
 
 
-class DeploymentFailed(Exception):
+class ImproperlyConfigured(Exception):
+    pass
+
+
+class NoClusterConfigError(Exception):
     pass
