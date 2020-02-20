@@ -46,7 +46,8 @@ spec:
       volumes:
       {{- if .Values.application.fileSecretName }}
         - name: filesecrets
-          secretName: {{ .Values.application.fileSecretName }}
+          secret:
+            secretName: {{ .Values.application.fileSecretName }}
       {{- end }}
       {{- end }}
 {{- end -}}
