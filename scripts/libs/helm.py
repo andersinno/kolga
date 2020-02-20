@@ -117,6 +117,8 @@ class Helm:
             "--wait",
             "--timeout",
             "180s",
+            "--history-max",
+            "30",
             install_arg,
             "--namespace",
             f"{namespace}",
