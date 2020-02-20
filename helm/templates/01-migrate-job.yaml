@@ -36,14 +36,14 @@ spec:
         env:
           - name: DATABASE_URL
             value: {{ .Values.application.database_url | quote }}
-        {{- if and .Values.application.fileSecretName }}
+        {{- if .Values.application.fileSecretName }}
         volumeMounts:
         {{- if .Values.application.fileSecretName }}
           - mountPath: {{ .Values.application.fileSecretPath }}
             name: filesecrets
         {{- end }}
         {{- end }}
-      {{- if and .Values.application.fileSecretName }}
+      {{- if .Values.application.fileSecretName }}
       volumes:
       {{- if .Values.application.fileSecretName }}
         - name: filesecrets
