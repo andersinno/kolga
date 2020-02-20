@@ -76,8 +76,11 @@ class Devops:
         k = Kubernetes(track=track)
         k.setup_helm()
         namespace = k.create_namespace()
-        secret_name = k.create_secrets_from_environment(
+        file_secret_name, file_secrets_paths = k.create_file_secrets_from_environment(
             namespace=namespace, track=track,
+        )
+        secret_name = k.create_secrets_from_environment(
+            extra_data=file_secrets_paths, namespace=namespace, track=track,
         )
         basic_auth_secret_name = k.create_basic_auth_secret(
             namespace=namespace, track=track
@@ -85,6 +88,7 @@ class Devops:
         k.create_database_deployment(namespace=namespace, track=track)
         k.create_application_deployment(
             docker_image=d.image_tag,
+            file_secret_name=file_secret_name,
             namespace=namespace,
             secret_name=secret_name,
             basic_auth_secret_name=basic_auth_secret_name,

@@ -2,7 +2,7 @@ import shutil
 import tempfile
 from base64 import b64encode
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import colorful as cf
 from kubernetes import client as k8s_client
@@ -11,7 +11,11 @@ from kubernetes.client.rest import ApiException
 
 from scripts.libs.helm import Helm
 from scripts.settings import settings
-from scripts.utils.exceptions import DeploymentFailed, NoClusterConfigError
+from scripts.utils.exceptions import (
+    DeploymentFailed,
+    ImproperlyConfigured,
+    NoClusterConfigError,
+)
 from scripts.utils.general import (
     MYSQL,
     POSTGRES,
@@ -24,6 +28,7 @@ from scripts.utils.general import (
     get_secret_name,
     loads_json,
     run_os_command,
+    validate_file_secret_path,
 )
 from scripts.utils.logger import logger
 from scripts.utils.models import (
@@ -274,9 +279,52 @@ class Kubernetes:
         logger.success()
         return secret_name
 
-    def create_secrets_from_environment(self, namespace: str, track: str) -> str:
+    def create_file_secrets_from_environment(
+        self, namespace: str, track: str
+    ) -> Tuple[Optional[str], Dict[str, str]]:
+        filesecrets = self.get_environments_secrets_by_prefix(
+            settings.K8S_FILE_SECRET_PREFIX
+        )
+        if not filesecrets:
+            return None, {}
+
+        secrets, filename_mapping = self._parse_file_secrets(filesecrets)
+        secret_name = self.create_secret(
+            data=secrets, encode=False, namespace=namespace, track=track
+        )
+
+        return secret_name, filename_mapping
+
+    def create_secrets_from_environment(
+        self, namespace: str, track: str, extra_data: Optional[Dict[str, str]] = None
+    ) -> str:
         secrets = self.get_environments_secrets_by_prefix()
+        if extra_data:
+            secrets.update(extra_data)
         return self.create_secret(data=secrets, namespace=namespace, track=track)
+
+    def _parse_file_secrets(
+        self, filesecrets: Dict[str, str]
+    ) -> Tuple[Dict[str, str], Dict[str, str]]:
+        if settings.active_ci:
+            valid_prefixes = settings.active_ci.VALID_FILE_SECRET_PATH_PREFIXES
+        else:
+            raise ImproperlyConfigured("An active CI is needed")
+
+        filecontents = {}
+        mapping = {}
+        for name, filename in filesecrets.items():
+            path = Path(filename)
+            if not validate_file_secret_path(path, valid_prefixes):
+                logger.warning(f'Not a valid file path: "{path}". Skipping.')
+                continue
+            try:
+                filecontents[name] = self._b64_encode_file(path)
+                mapping[name] = f"{settings.K8S_FILE_SECRET_MOUNTPATH}/{name}"
+            except OSError as e:
+                logger.error(f'Error while reading a file: "{path}"', error=e)
+
+        return filecontents, mapping
 
     def setup_helm(self) -> None:
         self.helm.setup_helm()
@@ -413,7 +461,8 @@ class Kubernetes:
         secret_name: str,
         namespace: str,
         track: str,
-        basic_auth_secret_name: Optional[str],
+        basic_auth_secret_name: Optional[str] = None,
+        file_secret_name: Optional[str] = None,
     ) -> None:
         deploy_name = get_deploy_name(track=track)
         helm_path = self.get_helm_path()
@@ -441,6 +490,10 @@ class Kubernetes:
         if database_url:
             values["application.database_url"] = str(database_url)
             values["application.database_host"] = str(database_url.host)
+
+        if file_secret_name:
+            values["application.fileSecretName"] = file_secret_name
+            values["application.fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
 
         cert_issuer = self.get_certification_issuer(track=track)
         if cert_issuer:
