@@ -290,7 +290,11 @@ class Kubernetes:
 
         secrets, filename_mapping = self._parse_file_secrets(filesecrets)
         secret_name = self.create_secret(
-            data=secrets, encode=False, namespace=namespace, track=track
+            data=secrets,
+            encode=False,
+            namespace=namespace,
+            secret_name=f"{get_secret_name(track=track)}-filesecrets",
+            track=track,
         )
 
         return secret_name, filename_mapping
