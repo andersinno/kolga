@@ -63,7 +63,7 @@ spec:
             httpGet:
               path: /readiness
               port: {{ .Values.service.targetPort }}
-          {{- if and .Values.application.fileSecretName .Values.application.temporaryStoragePath }}
+          {{- if or .Values.application.fileSecretName .Values.application.temporaryStoragePath }}
           volumeMounts:
           {{- if .Values.application.temporaryStoragePath }}
             - mountPath: {{ .Values.application.temporaryStoragePath }}
@@ -76,7 +76,7 @@ spec:
           {{- end }}
       imagePullSecrets:
         - name: regcred
-      {{- if and .Values.application.fileSecretName .Values.application.temporaryStoragePath }}
+      {{- if or .Values.application.fileSecretName .Values.application.temporaryStoragePath }}
       volumes:
       {{- if .Values.application.temporaryStoragePath }}
         - name: non-persistent-writable-volume
