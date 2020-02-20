@@ -1,4 +1,4 @@
-image: docker.anders.fi/anders/ci-configuration:e60117cf65da3daac58a6a43962bd0ddf4304a84
+image: andersinnovations/devops:6cbb6de210761162c37c586a1dff5564b27021ac
 
 stages:
   - build
