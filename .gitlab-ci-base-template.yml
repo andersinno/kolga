@@ -5,6 +5,7 @@ stages:
   - test
   - review
   - staging
+  - production
   - cleanup_review
 
 variables:
@@ -37,6 +38,7 @@ variables:
     - merge_requests
     - master
     - qa
+    - /^r-[\d]+$/
   except:
     variables:
       - $BUILD_DISABLED
@@ -153,6 +155,27 @@ variables:
   except:
     variables:
       - $STAGING_DISABLED
+  interruptible: false
+
+.production:
+  stage: production
+  script:
+    - devops deploy_application --track stable
+  environment:
+    name: production
+    url: https://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+  variables:
+    POSTGRES_ENABLED: 0
+  only:
+    refs:
+      - /^r-[\d]+$/
+    kubernetes: active
+  except:
+    refs:
+      # This will prevent branches with name ^r-[\d]+
+      - branches
+    variables:
+      - $PRODUCTION_DISABLED
   interruptible: false
 
 before_script:

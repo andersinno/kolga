@@ -12,3 +12,6 @@ stop_review:
 
 staging:
   extends: .staging
+
+production:
+  extends: .production
