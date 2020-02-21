@@ -114,7 +114,7 @@ class Helm:
         helm_command = [
             "helm",
             "upgrade",
-            "--wait",
+            "--atomic",
             "--timeout",
             "180s",
             install_arg,
