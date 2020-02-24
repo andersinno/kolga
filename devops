@@ -103,8 +103,11 @@ class Devops:
         namespace = k.create_namespace()
 
         for project in projects:
-            file_secret_name, file_secrets_paths = k.create_file_secrets_from_environment(
-                namespace=namespace, track=track,
+            file_secrets_paths = k.create_file_secrets_from_environment(
+                namespace=namespace,
+                track=track,
+                project=project,
+                secret_name=project.file_secret_name,
             )
             secret_data = dict(project.secret_data.items() + file_secrets_paths.items())  # type: ignore
             k.create_secret(

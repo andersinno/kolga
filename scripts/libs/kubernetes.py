@@ -22,6 +22,7 @@ from scripts.utils.general import (
     camel_case_split,
     current_rfc3339_datetime,
     get_deploy_name,
+    get_environment_vars_by_prefix,
     get_secret_name,
     kuberenetes_safe_name,
     loads_json,
@@ -251,32 +252,25 @@ class Kubernetes:
         logger.success()
 
     def create_file_secrets_from_environment(
-        self, namespace: str, track: str
-    ) -> Tuple[Optional[str], Dict[str, str]]:
-        filesecrets = self.get_environments_secrets_by_prefix(
-            settings.K8S_FILE_SECRET_PREFIX
+        self, namespace: str, track: str, project: Project, secret_name: str,
+    ) -> Dict[str, str]:
+        filesecrets = get_environment_vars_by_prefix(
+            prefix=settings.K8S_FILE_SECRET_PREFIX
         )
         if not filesecrets:
-            return None, {}
+            return {}
 
         secrets, filename_mapping = self._parse_file_secrets(filesecrets)
-        secret_name = self.create_secret(
+        self.create_secret(
             data=secrets,
             encode=False,
             namespace=namespace,
-            secret_name=f"{get_secret_name(track=track)}-filesecrets",
+            secret_name=secret_name,
             track=track,
+            project=project,
         )
 
-        return secret_name, filename_mapping
-
-    def create_secrets_from_environment(
-        self, namespace: str, track: str, extra_data: Optional[Dict[str, str]] = None
-    ) -> str:
-        secrets = self.get_environments_secrets_by_prefix()
-        if extra_data:
-            secrets.update(extra_data)
-        return self.create_secret(data=secrets, namespace=namespace, track=track)
+        return filename_mapping
 
     def _parse_file_secrets(
         self, filesecrets: Dict[str, str]
