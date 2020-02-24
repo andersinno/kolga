@@ -8,7 +8,7 @@ from kubernetes.client.rest import ApiException
 
 from scripts.libs.kubernetes import Kubernetes
 from scripts.libs.project import Project
-from scripts.utils.general import get_deploy_name, get_secret_name
+from scripts.utils.general import get_deploy_name
 from scripts.utils.models import BasicAuthUser
 
 DEFAULT_TRACK = os.environ.get("DEFAULT_TRACK", "stable")
@@ -101,29 +101,29 @@ def test_create_namespace_named(kubernetes: Kubernetes) -> None:
 
 def test_create_secret_stable(kubernetes: Kubernetes, test_namespace: str) -> None:
     track = DEFAULT_TRACK
-    expected_secret_name = get_secret_name(track)
     data = {"test_secret": "1234"}
     project = Project(track=track)
-    secret_result = kubernetes.create_secret(
-        data=data, namespace=K8S_NAMESPACE, track=track, project=project
+    kubernetes.create_secret(
+        data=data,
+        namespace=K8S_NAMESPACE,
+        track=track,
+        project=project,
+        secret_name=project.secret_name,
     )
-    assert secret_result == expected_secret_name
+    kubernetes.get(resource="secret", namespace=K8S_NAMESPACE, name=project.secret_name)
 
 
 def test_create_secret_qa(kubernetes: Kubernetes, test_namespace: str) -> None:
     track = "qa"
-    expected_secret_name = get_secret_name(track)
     project = Project(track=track)
-    secret_result = kubernetes.create_secret(
+    kubernetes.create_secret(
         data={"test_secret": "1234"},
         namespace=K8S_NAMESPACE,
         track=track,
         project=project,
+        secret_name=project.secret_name,
     )
-    assert secret_result == expected_secret_name
-    kubernetes.get(
-        resource="secret", namespace=K8S_NAMESPACE, name=expected_secret_name
-    )
+    kubernetes.get(resource="secret", namespace=K8S_NAMESPACE, name=project.secret_name)
 
 
 def test_delete_namespace(kubernetes: Kubernetes, test_namespace: str) -> None:
@@ -139,7 +139,11 @@ def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
     deploy_name = get_deploy_name(track=track)
     project = Project(track=track)
     kubernetes.create_secret(
-        data={"test": "test"}, namespace=test_namespace, track=track, project=project
+        data={"test": "test"},
+        namespace=test_namespace,
+        track=track,
+        project=project,
+        secret_name=project.secret_name,
     )
 
     kubernetes.delete_all(namespace=test_namespace, labels={"release": deploy_name})

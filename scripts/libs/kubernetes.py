@@ -217,12 +217,10 @@ class Kubernetes:
         namespace: str,
         track: str,
         project: Project,
-        secret_name: Optional[str] = None,
+        secret_name: str,
         encode: bool = True,
-    ) -> str:
+    ) -> None:
         deploy_name = get_deploy_name(track=track, postfix=project.name)
-        if not secret_name:
-            secret_name = get_secret_name(track=track)
         v1 = k8s_client.CoreV1Api(self.client)
         v1_metadata = k8s_client.V1ObjectMeta(
             name=secret_name, namespace=namespace, labels={"release": deploy_name}
@@ -251,7 +249,6 @@ class Kubernetes:
             except ApiException as e:
                 self._handle_api_error(e, raise_client_exception=True)
         logger.success()
-        return secret_name
 
     def create_file_secrets_from_environment(
         self, namespace: str, track: str
@@ -354,13 +351,13 @@ class Kubernetes:
 
     def create_basic_auth_secret(
         self, namespace: str, track: str, project: Project
-    ) -> Optional[str]:
+    ) -> None:
         if not settings.K8S_INGRESS_BASIC_AUTH:
             return None
 
         secret_data = self._create_basic_auth_data()
         secret_name = f"{get_secret_name(track)}-basicauth"
-        return self.create_secret(
+        self.create_secret(
             data=secret_data,
             namespace=namespace,
             track=track,
