@@ -72,7 +72,9 @@ class Project:
 
         if not self.file_secret_name:
             file_secret_postfix = f"{postfix}-file"
-            self.file_secret_name = get_secret_name(track=track, postfix=file_secret_postfix)
+            self.file_secret_name = get_secret_name(
+                track=track, postfix=file_secret_postfix
+            )
 
         self.deploy_name = deploy_name
         if not deploy_name:

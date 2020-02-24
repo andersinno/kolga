@@ -382,10 +382,7 @@ class Kubernetes:
         )
 
     def create_application_deployment(
-        self,
-        project: Project,
-        namespace: str,
-        track: str,
+        self, project: Project, namespace: str, track: str,
     ) -> None:
         helm_path = self.get_helm_path()
 
