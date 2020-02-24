@@ -13,11 +13,16 @@ from scripts.utils.models import SubprocessResult
 
 env = environs.Env()
 
+AMQP = "amqp"
 MYSQL = "mysql"
 POSTGRES = "postgresql"
 RABBITMQ = "rabbitmq"
-AMQP = "amqp"
-DATABASE_DEFAULT_PORT_MAPPING = {MYSQL: 3306, POSTGRES: 5432, AMQP: 5672}
+
+DATABASE_DEFAULT_PORT_MAPPING = {
+    AMQP: 5672,
+    MYSQL: 3306,
+    POSTGRES: 5432,
+}
 
 BUILT_DOCKER_TEST_IMAGE = "BUILT_DOCKER_TEST_IMAGE"
 
