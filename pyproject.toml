@@ -13,7 +13,6 @@ docker = "^4.1"
 kubernetes = "^10.0"
 colorful = "^0.5.4"
 environs = "^6.0"
-gitpython = "^3.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

@@ -13,8 +13,16 @@ class Devops:
             dest="command", metavar="<command>", required=True
         )
 
-        subparsers.add_parser(
+        create_images_parser = subparsers.add_parser(
             "create_images", help="Builds Docker images from a local Dockerfile"
+        )
+
+        create_images_parser.add_argument(
+            "--git-submodule-depth", dest="git_submodule_depth", default=1
+        )
+
+        create_images_parser.add_argument(
+            "--git-submodule-jobs", dest="git_submodule_jobs", default=2
         )
 
         deploy_application_parser = subparsers.add_parser(
@@ -50,9 +58,17 @@ class Devops:
             "-t", "--track", dest="track", default=settings.DEFAULT_TRACK
         )
 
-        subparsers.add_parser(
+        test_setup_parser = subparsers.add_parser(
             "test_setup",
             help="Sets up an environment for running tests on built Docker image",
+        )
+
+        test_setup_parser.add_argument(
+            "--git-submodule-depth", dest="git_submodule_depth", default=1
+        )
+
+        test_setup_parser.add_argument(
+            "--git-submodule-jobs", dest="git_submodule_jobs", default=2
         )
 
     def run_command(self) -> None:
@@ -62,7 +78,7 @@ class Devops:
         # use dispatch pattern to invoke method with same name
         getattr(self, command)(**args)
 
-    def create_images(self) -> None:
+    def create_images(self, git_submodule_depth: int, git_submodule_jobs: int) -> None:
         from scripts.libs.git import Git
         from scripts.libs.docker import Docker
         from scripts.libs.project import Project
@@ -73,7 +89,7 @@ class Devops:
         )
 
         g = Git()
-        g.update_submodules()
+        g.update_submodules(depth=git_submodule_depth, jobs=git_submodule_jobs)
 
         d = Docker()
         d.login()
@@ -168,12 +184,12 @@ class Devops:
         k = Kubernetes(track=track)
         k.delete_namespace()
 
-    def test_setup(self) -> None:
+    def test_setup(self, git_submodule_depth: int, git_submodule_jobs: int) -> None:
         from scripts.libs.docker import Docker
         from scripts.libs.git import Git
 
         g = Git()
-        g.update_submodules()
+        g.update_submodules(depth=git_submodule_depth, jobs=git_submodule_jobs)
 
         d = Docker()
         d.login()
