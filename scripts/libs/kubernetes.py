@@ -365,6 +365,7 @@ class Kubernetes:
 
         self.helm.upgrade_chart(
             chart=service.chart,
+            chart_path=service.chart_path,
             name=deploy_name,
             namespace=namespace,
             values=service.values,
