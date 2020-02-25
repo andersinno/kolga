@@ -3,6 +3,7 @@ include:
 
 variables:
   DEVELOPMENT_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}-development
+  KOLGA_BRANCH: ${CI_COMMIT_REF_NAME}
 
 stages:
   - build
