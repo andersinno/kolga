@@ -210,11 +210,15 @@ class Kubernetes:
             ApiException: If the namespace creation fails by other means than a
                           namespace conflict, something that happens if the
                           namespace already exists.
+            ValueError: Invalid namespace
         """
         v1 = k8s_client.CoreV1Api(self.client)
         logger.info(
             icon=f"{self.ICON}  🔨", title=f"Checking namespace {namespace}: ", end=""
         )
+
+        if not namespace:
+            raise ValueError("No namespace defined")
 
         try:
             v1.read_namespace(name=namespace)
