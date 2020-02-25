@@ -26,6 +26,8 @@ variables:
   # Default name for the database
   DATABASE_DB: "$CI_ENVIRONMENT_SLUG"
 
+  KOLGA_BRANCH: "v2"
+
 .build:
   services:
     - docker:stable-dind
@@ -180,7 +182,7 @@ variables:
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
-  - git clone --single-branch --branch v2 git@git.anders.fi:anders/ci-configuration.git /tmp/devops/ci-configuration
+  - git clone --single-branch --branch ${KOLGA_BRANCH} git@git.anders.fi:anders/ci-configuration.git /tmp/devops/ci-configuration
   - export PATH="$PATH:/tmp/devops/ci-configuration"
   - source /tmp/devops/ci-configuration/utils/shell_utils.sh
   - set_docker_host
