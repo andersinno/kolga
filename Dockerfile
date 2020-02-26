@@ -101,17 +101,22 @@ RUN apk add --no-cache --virtual .build-deps \
     && ln -sf python3 /usr/bin/python \
     && ln -s pip3 /usr/bin/pip \
     && poetry config virtualenvs.create false \
-	&& poetry install --no-dev --no-interaction \
-	&& pip install docker-compose \
-	&& apk del .build-deps \
-	&& apk del .fetch-deps
+    && poetry install --no-dev --no-interaction \
+    && pip install docker-compose \
+    && apk del .build-deps \
+    && apk del .fetch-deps
 
 COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 # ===================================
 FROM app-base AS development
 # ===================================
+
+# Create a writable directory for shared configurations
+RUN mkdir -m777 /config
 
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
