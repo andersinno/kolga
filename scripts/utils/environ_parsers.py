@@ -1,5 +1,7 @@
 import re
-from typing import List
+from typing import Any, List
+
+from environs import Env
 
 from scripts.utils.models import BasicAuthUser
 
@@ -18,3 +20,20 @@ def basicauth_parser(value: str) -> List[BasicAuthUser]:
             if user:
                 users.append(user)
     return users
+
+
+def list_none_parser(value: str) -> Any:
+    """
+    Identical parser to environs normal list parser, but with None support
+
+    Args:
+        value: A string value from the environment, or None
+
+    Returns:
+        A list from the string, or empty list in the case of
+        empty string or None
+    """
+    if not value:
+        return []
+
+    return Env.list(value)

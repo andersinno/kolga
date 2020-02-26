@@ -35,10 +35,6 @@ spec:
                 name: {{ .Values.application.secretName }}
           {{- end }}
           env:
-            - name: DATABASE_URL
-              value: {{ .Values.application.database_url | quote }}
-            - name: DATABASE_HOST
-              value: {{ .Values.application.database_host | quote }}
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -53,11 +49,26 @@ spec:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
+          {{- if .Values.application.livenessFile }}
+          livenessProbe:
+            exec:
+              command:
+              - cat
+              - {{ .Values.application.livenessFile }}
+          {{ else }}
           livenessProbe:
             initialDelaySeconds: 60
             httpGet:
               path: /healthz
               port: {{ .Values.service.targetPort }}
+          {{- end }}
+          {{- if .Values.application.readinessFile }}
+          readinessProbe:
+            exec:
+              command:
+              - cat
+              - {{ .Values.application.readinessFile }}
+          {{ else }}
           readinessProbe:
             initialDelaySeconds: 60
             httpGet:

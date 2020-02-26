@@ -128,6 +128,49 @@ For the sake of consistency, all pre-defined CI configurations found in this pro
 
 - **GitLab**
 
+
+## Review service
+
+Deploy extra services that will run alongside the main application project.
+
+To create a review service, add a job that `extends: .review-service` and then in the `scripts` part
+the DevOps CLI command `deploy_service` should be called to deploy a service.
+
+Example:
+
+```
+service-mysql:
+  extends: .review-service
+  script:
+    - devops deploy_service --track review --service mysql --env_var DATABASE_URL --projects my_api, some_backend
+  only:
+    - master
+```
+
+### Commands
+
+**DevOps CLI**
+
+The `deploy_service` command that can be used to deploy a service to a Kubernetes cluster. For each service that
+is to be deployed, a separate `review_service` job should be specified.
+
+
+**Parameters:**
+
+| Variable           | Default     | Description                                                                                   |
+|--------------------|-------------|-----------------------------------------------------------------------------------------------|
+| `-t / --track`     | review      | Specifies which track to run on, defaults to `review`, and should most likely not be changed. |
+| `-s / --service`   |             | Name of the service to deploy, such as `mysql`, `postgresql`, `rabbitmq`.                     |
+| `-e / --env-var`    |             | Specifies what environment name will get passed as the connection URI to the project.         |
+| `-p / --projects`  |             | Comma separated list of the projects that should get access to the service.                   |
+
+
+| Variable                 | Default | Description                                                                                                                                                                                                                                                                                                                                            |
+|--------------------------|---------|--------------------------------------------------|
+| `POSTGRES_VERSION_TAG`   | 9.6     | Version of PostgreSQL to use if deployed        |
+| `MYSQL_VERSION_TAG`      | 5.7     | Version of MySQL to user if deployed            |
+
+
 ## Review
 
 Review environments are deployments done at the pull/merge request stage to make the review more interactive and let the reviewers and the coder get a live environment to test before merging. These environments are non-persistent and made to be completely removed when the code has been merged.
@@ -138,16 +181,10 @@ Review environments are deployments done at the pull/merge request stage to make
 
 The `deploy_application` command is share across all deployment stages, and is therefor also used for deploying review environments. In the case of the review the argument `--track review` is recommended to be to give the deployment a distinctive name when deployed to the Kubernetes cluster.
 
-As with all deployments but especially as part of deploying a review environment, a non-persistent database can be deployed at the same time as the application by settings the environment variable `POSTGRES_ENABLED=1` or `MYSQL_ENABLED=1` as well as the database version that to deploy.
-
 **Configuration**
 
 | Variable                 | Default | Description                                                                                                                                                                                                                                                                                                                                            |
 |--------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `POSTGRES_ENABLED`       | False   | Deploy a PostgreSQL database a long side the application and inject its database URL <br> as `application.database_url` to the Helm chart and in the default Helm chart, <br> expose the value as the environment variable `DATABASE_URL`.                                                                                                                  |
-| `POSTGRES_VERSION_TAG`   | 9.6     | Version of PostgreSQL to deploy if `POSTGRES_ENABLED` is set to true.                                                                                                                                                                                                                                                                                  |
-| `MYSQL_ENABLED`          | False   | Deploy a MySQL database a long side the application and inject its database URL as <br> `application.database_url`to the Helm chart and in the default Helm chart, <br> expose the value as the environment variable `DATABASE_URL` .                                                                                                                      |
-| `MYSQL_VERSION_TAG`      | 5.7     | Version of MySQL to deploy if `MYSQL_ENABLED` is set to true.                                                                                                                                                                                                                                                                                          |
 | `ENVIRONMENT_SLUG`       |         | The slug name of the environment. This will be injected as `releaseOverride` in <br> the Helm chart and in the defaultHelm chart this will be set as the `release` <br> label for the Deployment.                                                                                                                                                         |
 | `ENVIRONMENT_URL`        |         | The URL of the final environment. This needs to be a URL that the Kubernetes  <br> cluster can actually manage and create SSL certificates for. This will be injected <br> as `service.url` in the Helm chart and in the default Helm chart this will be set <br> as the `host` value for the Ingress.                                                           |
 | `SERVICE_PORT`           | 8000    | The port that the application listens to. This will be injected as `service.port` <br> in the Helm chart and in the default Helm chart this will be set as the <br> `targetPort` value for the Service.                                                                                                                                                    |
@@ -176,10 +213,6 @@ The `deploy_application` command is share across all deployment stages, and is t
 
 | Variable                 | Default | Description                                                                                                                                                                                                                                                                                                                                            |
 |--------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `POSTGRES_ENABLED`       | False   | **HIGHLY DISCOURAGES.**<br>Deploy a PostgreSQL database a long side the application and inject its database URL <br> as `application.database_url` to the Helm chart and in the default Helm chart, <br> expose the value as the environment variable `DATABASE_URL`.                                                                                                                  |
-| `POSTGRES_VERSION_TAG`   | 9.6     | Version of PostgreSQL to deploy if `POSTGRES_ENABLED` is set to true.                                                                                                                                                                                                                                                                                  |
-| `MYSQL_ENABLED`          | False   | **HIGHLY DISCOURAGES.**<br>Deploy a MySQL database a long side the application and inject its database URL as <br> `application.database_url`to the Helm chart and in the default Helm chart, <br> expose the value as the environment variable `DATABASE_URL` .                                                                                                                      |
-| `MYSQL_VERSION_TAG`      | 5.7     | Version of MySQL to deploy if `MYSQL_ENABLED` is set to true.                                                                                                                                                                                                                                                                                          |
 | `ENVIRONMENT_SLUG`       |         | The slug name of the environment. This will be injected as `releaseOverride` in <br> the Helm chart and in the defaultHelm chart this will be set as the `release` <br> label for the Deployment.                                                                                                                                                         |
 | `ENVIRONMENT_URL`        |         | The URL of the final environment. This needs to be a URL that the Kubernetes  <br> cluster can actually manage and create SSL certificates for. This will be injected <br> as `service.url` in the Helm chart and in the default Helm chart this will be set <br> as the `host` value for the Ingress.                                                           |
 | `SERVICE_PORT`           | 8000    | The port that the application listens to. This will be injected as `service.port` <br> in the Helm chart and in the default Helm chart this will be set as the <br> `targetPort` value for the Service.                                                                                                                                                    |
@@ -205,10 +238,6 @@ The `deploy_application` command is share across all deployment stages, and is t
 
 | Variable                 | Default | Description                                                                                                                                                                                                                                                                                                                                            |
 |--------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `POSTGRES_ENABLED`       | False   | **HIGHLY DISCOURAGES.**<br>Deploy a PostgreSQL database a long side the application and inject its database URL <br> as `application.database_url` to the Helm chart and in the default Helm chart, <br> expose the value as the environment variable `DATABASE_URL`.                                                                                                                  |
-| `POSTGRES_VERSION_TAG`   | 9.6     | Version of PostgreSQL to deploy if `POSTGRES_ENABLED` is set to true.                                                                                                                                                                                                                                                                                  |
-| `MYSQL_ENABLED`          | False   | **HIGHLY DISCOURAGES.**<br>Deploy a MySQL database a long side the application and inject its database URL as <br> `application.database_url`to the Helm chart and in the default Helm chart, <br> expose the value as the environment variable `DATABASE_URL` .                                                                                                                      |
-| `MYSQL_VERSION_TAG`      | 5.7     | Version of MySQL to deploy if `MYSQL_ENABLED` is set to true.                                                                                                                                                                                                                                                                                          |
 | `ENVIRONMENT_SLUG`       |         | The slug name of the environment. This will be injected as `releaseOverride` in <br> the Helm chart and in the defaultHelm chart this will be set as the `release` <br> label for the Deployment.                                                                                                                                                         |
 | `ENVIRONMENT_URL`        |         | The URL of the final environment. This needs to be a URL that the Kubernetes  <br> cluster can actually manage and create SSL certificates for. This will be injected <br> as `service.url` in the Helm chart and in the default Helm chart this will be set <br> as the `host` value for the Ingress.                                                           |
 | `SERVICE_PORT`           | 8000    | The port that the application listens to. This will be injected as `service.port` <br> in the Helm chart and in the default Helm chart this will be set as the <br> `targetPort` value for the Service.                                                                                                                                                    |

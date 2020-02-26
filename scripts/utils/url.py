@@ -119,56 +119,6 @@ class URL(object):
             and self.query == other.query
         )
 
-    def get_dialect(self):
-        """Return the SQLAlchemy database dialect class corresponding
-        to this URL's driver name.
-        """
-
-        try:
-            if "+" in self.drivername:
-                dialect, driver = self.drivername.split("+")
-            else:
-                dialect, driver = self.drivername, "base"
-
-            module = __import__("sqlalchemy.dialects.%s" % (dialect,)).dialects
-            module = getattr(module, dialect)
-            if hasattr(module, driver):
-                module = getattr(module, driver)
-            else:
-                module = self._load_entry_point()
-                if module is None:
-                    raise ValueError(
-                        "Could not determine dialect for '%s'." % self.drivername
-                    )
-
-            return module.dialect
-        except ImportError:
-            module = self._load_entry_point()
-            if module is not None:
-                return module
-            else:
-                raise ValueError(
-                    "Could not determine dialect for '%s'." % self.drivername
-                )
-
-    def _load_entry_point(self):
-        """attempt to load this url's dialect from entry points, or return None
-        if pkg_resources is not installed or there is no matching entry point.
-
-        Raise ImportError if the actual load fails.
-
-        """
-        try:
-            import pkg_resources
-        except ImportError:
-            return None
-
-        for res in pkg_resources.iter_entry_points("sqlalchemy.dialects"):
-            if res.name == self.drivername.replace("+", "."):
-                return res.load()
-        else:
-            return None
-
     def translate_connect_args(self, names=None, **kw):
         """Translate url attributes into a dictionary of connection arguments.
 

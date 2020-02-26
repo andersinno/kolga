@@ -10,6 +10,8 @@ from kubernetes import config as k8s_config
 from kubernetes.client.rest import ApiException
 
 from scripts.libs.helm import Helm
+from scripts.libs.project import Project
+from scripts.libs.service import Service
 from scripts.settings import settings
 from scripts.utils.exceptions import (
     DeploymentFailed,
@@ -17,26 +19,18 @@ from scripts.utils.exceptions import (
     NoClusterConfigError,
 )
 from scripts.utils.general import (
-    MYSQL,
-    POSTGRES,
     camel_case_split,
     current_rfc3339_datetime,
-    get_database_type,
-    get_database_url,
     get_deploy_name,
     get_environment_vars_by_prefix,
     get_secret_name,
+    kuberenetes_safe_name,
     loads_json,
     run_os_command,
     validate_file_secret_path,
 )
 from scripts.utils.logger import logger
-from scripts.utils.models import (
-    BasicAuthUser,
-    DockerImageRef,
-    ReleaseStatus,
-    SubprocessResult,
-)
+from scripts.utils.models import BasicAuthUser, ReleaseStatus, SubprocessResult
 
 
 class Kubernetes:
@@ -67,13 +61,11 @@ class Kubernetes:
             )
 
         logger.success(
-            icon=f"{self.ICON}  🔑", message=f"Using {method} for Kubernetes auth",
+            icon=f"{self.ICON}  🔑", message=f"Using {method} for Kubernetes auth"
         )
 
         config = k8s_client.Configuration()
-        k8s_config.load_kube_config(
-            client_configuration=config, config_file=kubeconfig,
-        )
+        k8s_config.load_kube_config(client_configuration=config, config_file=kubeconfig)
 
         return k8s_client.ApiClient(configuration=config)
 
@@ -126,9 +118,9 @@ class Kubernetes:
             error_body = {"message": "An unknown error occurred"}
         if Kubernetes._is_client_error(error.status):
             reason = camel_case_split(str(error_body.get("reason", "Unknown")))
-            print(
-                f"{cf.yellow}{cf.bold}{reason}{cf.reset}"
-                f" ({error.status} {cf.italic}{error_body['message'].capitalize()}{cf.reset})"
+            logger.info(
+                title=f"{cf.yellow}{cf.bold}{reason}{cf.reset}",
+                message=f" ({error.status} {cf.italic}{error_body['message'].capitalize()}{cf.reset})",
             )
             if raise_client_exception:
                 raise error
@@ -163,29 +155,10 @@ class Kubernetes:
         return encoded_file
 
     @staticmethod
-    def get_environments_secrets_by_prefix(
-        prefix: str = settings.K8S_SECRET_PREFIX,
-    ) -> Dict[str, Any]:
-        """
-        Extract all environment variables with a prefix
-
-        Environment variables strting with the `prefix` attribute are
-        extracted and put into a dict.
-
-        Args:
-            prefix: Prefix to environment key that should be extracted
-
-        Returns:
-            A dict of keys stripped of the prefix and the value as given
-            in the environment variable.
-        """
-        return get_environment_vars_by_prefix(prefix)
-
-    @staticmethod
     def get_helm_path() -> Path:
         application_path = Path(settings.PROJECT_DIR)
         helm_path = application_path / "helm"
-        auto_helm_path = Path("/tmp/devops/ci-configuration/helm")
+        auto_helm_path = settings.devops_root_path / "helm"
         if not helm_path.exists() and auto_helm_path.exists():
             shutil.copytree(auto_helm_path, helm_path)
         elif not helm_path.exists():
@@ -236,6 +209,7 @@ class Kubernetes:
                 raise e
 
         logger.success()
+
         return namespace
 
     def create_secret(
@@ -243,12 +217,11 @@ class Kubernetes:
         data: Dict[str, str],
         namespace: str,
         track: str,
-        secret_name: Optional[str] = None,
+        project: Project,
+        secret_name: str,
         encode: bool = True,
-    ) -> str:
-        deploy_name = get_deploy_name(track=track)
-        if not secret_name:
-            secret_name = get_secret_name(track=track)
+    ) -> None:
+        deploy_name = get_deploy_name(track=track, postfix=project.name)
         v1 = k8s_client.CoreV1Api(self.client)
         v1_metadata = k8s_client.V1ObjectMeta(
             name=secret_name, namespace=namespace, labels={"release": deploy_name}
@@ -277,35 +250,27 @@ class Kubernetes:
             except ApiException as e:
                 self._handle_api_error(e, raise_client_exception=True)
         logger.success()
-        return secret_name
 
     def create_file_secrets_from_environment(
-        self, namespace: str, track: str
-    ) -> Tuple[Optional[str], Dict[str, str]]:
-        filesecrets = self.get_environments_secrets_by_prefix(
-            settings.K8S_FILE_SECRET_PREFIX
+        self, namespace: str, track: str, project: Project, secret_name: str,
+    ) -> Dict[str, str]:
+        filesecrets = get_environment_vars_by_prefix(
+            prefix=settings.K8S_FILE_SECRET_PREFIX
         )
         if not filesecrets:
-            return None, {}
+            return {}
 
         secrets, filename_mapping = self._parse_file_secrets(filesecrets)
-        secret_name = self.create_secret(
+        self.create_secret(
             data=secrets,
             encode=False,
             namespace=namespace,
-            secret_name=f"{get_secret_name(track=track)}-filesecrets",
+            secret_name=secret_name,
             track=track,
+            project=project,
         )
 
-        return secret_name, filename_mapping
-
-    def create_secrets_from_environment(
-        self, namespace: str, track: str, extra_data: Optional[Dict[str, str]] = None
-    ) -> str:
-        secrets = self.get_environments_secrets_by_prefix()
-        if extra_data:
-            secrets.update(extra_data)
-        return self.create_secret(data=secrets, namespace=namespace, track=track)
+        return filename_mapping
 
     def _parse_file_secrets(
         self, filesecrets: Dict[str, str]
@@ -350,7 +315,7 @@ class Kubernetes:
             A dict with the key `auth` and base64 content of a htpasswd file as value
         """
         logger.info(
-            icon=f"{self.ICON}  🔨", title=f"Generating basic auth data: ", end="",
+            icon=f"{self.ICON}  🔨", title=f"Generating basic auth data: ", end=""
         )
 
         if not basic_auth_users:
@@ -378,125 +343,64 @@ class Kubernetes:
 
         return {"auth": encoded_file}
 
-    def create_basic_auth_secret(self, namespace: str, track: str) -> Optional[str]:
+    def create_basic_auth_secret(
+        self, namespace: str, track: str, project: Project
+    ) -> None:
         if not settings.K8S_INGRESS_BASIC_AUTH:
             return None
 
         secret_data = self._create_basic_auth_data()
         secret_name = f"{get_secret_name(track)}-basicauth"
-        return self.create_secret(
+        self.create_secret(
             data=secret_data,
             namespace=namespace,
             track=track,
             secret_name=secret_name,
             encode=False,
+            project=project,
         )
 
-    def create_database_deployment(
-        self, namespace: str, track: str, database_type: Optional[str] = None,
-    ) -> None:
-        if not database_type:
-            database_type = get_database_type()
-        if not database_type:
-            return None
-
-        if database_type == POSTGRES:
-            self.create_postgres_database(namespace=namespace, track=track)
-        elif database_type == MYSQL:
-            self.create_mysql_database(namespace=namespace, track=track)
-
-    def create_postgres_database(
-        self,
-        namespace: str,
-        track: str,
-        helm_chart: str = "stable/postgresql",
-        helm_chart_version: str = "7.7.2",
-    ) -> None:
-        deploy_name = f"{get_deploy_name(track=track)}-db"
-        image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
-        values = {
-            "image.repository": image.repository,
-            "postgresqlUsername": settings.DATABASE_USER,
-            "postgresqlPassword": settings.DATABASE_PASSWORD,
-            "postgresqlDatabase": settings.DATABASE_DB,
-        }
-
-        if image.registry is not None:
-            values["image.registry"] = image.registry
-
-        if image.tag is not None:
-            values["image.tag"] = image.tag
+    def deploy_service(self, service: "Service", namespace: str, track: str) -> None:
+        deploy_name = f"{get_deploy_name(track=track)}-{service.name}"
 
         self.helm.upgrade_chart(
-            chart=helm_chart,
+            chart=service.chart,
+            chart_path=service.chart_path,
             name=deploy_name,
             namespace=namespace,
-            values=values,
-            version=helm_chart_version,
-        )
-
-    def create_mysql_database(
-        self,
-        namespace: str,
-        track: str,
-        helm_chart: str = "stable/mysql",
-        helm_chart_version: str = "1.6.0",
-    ) -> None:
-        deploy_name = f"{get_deploy_name(track=track)}-db"
-        values = {
-            "imageTag": settings.MYSQL_VERSION_TAG,
-            "mysqlUser": settings.DATABASE_USER,
-            "mysqlPassword": settings.DATABASE_PASSWORD,
-            "mysqlRootPassword": settings.DATABASE_PASSWORD,
-            "mysqlDatabase": settings.DATABASE_DB,
-            "testFramework.enabled": "false",
-        }
-        self.helm.upgrade_chart(
-            chart=helm_chart,
-            name=deploy_name,
-            namespace=namespace,
-            values=values,
-            version=helm_chart_version,
+            values=service.values,
+            values_files=service.values_files,
+            version=service.chart_version,
         )
 
     def create_application_deployment(
-        self,
-        docker_image: str,
-        secret_name: str,
-        namespace: str,
-        track: str,
-        basic_auth_secret_name: Optional[str] = None,
-        file_secret_name: Optional[str] = None,
+        self, project: Project, namespace: str, track: str,
     ) -> None:
-        deploy_name = get_deploy_name(track=track)
         helm_path = self.get_helm_path()
 
         values: Dict[str, str] = {
             "namespace": namespace,
-            "image": docker_image,
+            "image": project.image,
             "gitlab.app": settings.PROJECT_PATH_SLUG,
             "gitlab.env": settings.ENVIRONMENT_SLUG,
-            "releaseOverride": settings.ENVIRONMENT_SLUG,
+            "releaseOverride": f"{settings.ENVIRONMENT_SLUG}-{kuberenetes_safe_name(project.name)}",
             "application.track": track,
-            "application.secretName": secret_name,
-            "application.initializeCommand": settings.APP_INITIALIZE_COMMAND,
-            "application.migrateCommand": settings.APP_MIGRATE_COMMAND,
-            "service.url": settings.ENVIRONMENT_URL,
-            "service.urls": self.get_hostnames(),
-            "service.targetPort": settings.SERVICE_PORT,
+            "application.secretName": project.secret_name,
+            "application.initializeCommand": project.initialize_command,
+            "application.migrateCommand": project.migrate_command,
+            "service.url": project.url,
+            "service.urls": self.get_hostnames(
+                hostname=project.url, additional_urls=project.additional_urls
+            ),
+            "service.targetPort": project.service_port,
             "ingress.maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE,
         }
 
-        if basic_auth_secret_name:
-            values["ingress.basicAuthSecret"] = basic_auth_secret_name
+        if project.basic_auth_secret_name:
+            values["ingress.basicAuthSecret"] = project.basic_auth_secret_name
 
-        database_url = get_database_url(track=track)
-        if database_url:
-            values["application.database_url"] = str(database_url)
-            values["application.database_host"] = str(database_url.host)
-
-        if file_secret_name:
-            values["application.fileSecretName"] = file_secret_name
+        if project.file_secret_name:
+            values["application.fileSecretName"] = project.file_secret_name
             values["application.fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
 
         cert_issuer = self.get_certification_issuer(track=track)
@@ -509,26 +413,33 @@ class Kubernetes:
         if settings.K8S_INGRESS_PREVENT_ROBOTS:
             values["ingress.preventRobots"] = "1"
 
+        if settings.K8S_INGRESS_DISABLED:
+            values["ingress.disabled"] = "1"
+
+        if settings.K8S_LIVENESS_FILE:
+            values["application.livenessFile"] = settings.K8S_LIVENESS_FILE
+
+        if settings.K8S_READINESS_FILE:
+            values["application.readinessFile"] = settings.K8S_READINESS_FILE
+
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
             chart_path=helm_path,
-            name=deploy_name,
+            name=project.deploy_name,
             namespace=namespace,
             values=values,
             raise_exception=False,
         )
 
         if result.return_code:
-            secret_variables = ["application.database_url"]
             logger.info(
                 icon=f"{self.ICON} 🏷️",
                 title="Deployment values (without environment vars):",
             )
             for key, value in values.items():
-                if key not in secret_variables:
-                    logger.info(message=f"\t{key}: {value}")
+                logger.info(message=f"\t{key}: {value}")
 
-            application_labels = {"release": deploy_name}
+            application_labels = {"release": project.deploy_name}
             status = self.status(namespace=namespace, labels=application_labels)
             logger.info(message=str(status))
             self.logs(
@@ -542,7 +453,7 @@ class Kubernetes:
 
         logger.info(
             icon=f"{self.ICON}  📄",
-            title=f"Deployment can be accessed via {settings.ENVIRONMENT_URL}",
+            title=f"Deployment can be accessed via {project.url}",
         )
 
     def delete(
@@ -615,8 +526,8 @@ class Kubernetes:
             logger.info(title=f" with name '{name}'", end="")
         return command_args
 
+    @staticmethod
     def get_hostnames(
-        self,
         hostname: str = settings.ENVIRONMENT_URL,
         additional_urls: List[str] = settings.K8S_ADDITIONAL_HOSTNAMES,
     ) -> str:
@@ -628,7 +539,7 @@ class Kubernetes:
 
     def get_certification_issuer(self, track: str) -> Optional[str]:
         logger.info(
-            icon=f"{self.ICON} 🏵️️", title="Checking certification issuer", end="",
+            icon=f"{self.ICON} 🏵️️", title="Checking certification issuer", end=""
         )
 
         raise_exception = False
@@ -731,4 +642,4 @@ class Kubernetes:
             resource="pods", labels=labels, namespace=namespace, raise_exception=False
         )
 
-        return ReleaseStatus(deployment=deployment_status.out, pods=pods_status.out,)
+        return ReleaseStatus(deployment=deployment_status.out, pods=pods_status.out)

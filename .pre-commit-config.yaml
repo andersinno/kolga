@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/ambv/black
-    rev: stable
+    rev: 19.10b0
     hooks:
     - id: black
       language_version: python3.7
@@ -11,7 +11,7 @@ repos:
     - id: flake8
 
 -   repo: https://github.com/asottile/seed-isort-config
-    rev: v1.9.3
+    rev: v1.9.4
     hooks:
     -   id: seed-isort-config
 
@@ -21,7 +21,8 @@ repos:
     -   id: isort
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: master
+    rev: v0.761
     hooks:
     -   id: mypy
+        additional_dependencies: ["sphinx"]
         args: [--strict]

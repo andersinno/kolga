@@ -3,6 +3,7 @@ image: andersinnovations/devops:6cbb6de210761162c37c586a1dff5564b27021ac
 stages:
   - build
   - test
+  - review-service
   - review
   - staging
   - production
@@ -26,6 +27,12 @@ variables:
   # Default name for the database
   DATABASE_DB: "$CI_ENVIRONMENT_SLUG"
 
+  # Default place to store service artifacts
+  SERVICE_ARTIFACT_FOLDER: "service_artifacts"
+  BUILD_ARTIFACT_FOLDER: "build_artifacts"
+
+  KOLGA_BRANCH: "v3"
+
 .build:
   services:
     - docker:stable-dind
@@ -42,6 +49,10 @@ variables:
   except:
     variables:
       - $BUILD_DISABLED
+  artifacts:
+    paths:
+      - $BUILD_ARTIFACT_FOLDER/
+    expire_in: 1 hour
   interruptible: true
   retry:
     max: 2
@@ -86,6 +97,26 @@ variables:
     when:
       - runner_system_failure
 
+.review-service:
+  stage: review-service
+  variables:
+    DEFAULT_TRACK: review
+  environment:
+    name: qa/r/${CI_COMMIT_REF_SLUG}
+    on_stop: stop_review
+  artifacts:
+    paths:
+      - $SERVICE_ARTIFACT_FOLDER/
+    expire_in: 1 hour
+  only:
+    refs:
+      - merge_requests
+    kubernetes: active
+  except:
+    variables:
+      - $REVIEW_DISABLED
+  interruptible: true
+
 .review:
   stage: review
   script:
@@ -96,7 +127,21 @@ variables:
     on_stop: stop_review
   variables:
     K8S_INGRESS_PREVENT_ROBOTS: 1
-    POSTGRES_ENABLED: 1
+  only:
+    refs:
+      - merge_requests
+    kubernetes: active
+  except:
+    refs:
+      - master
+    variables:
+      - $REVIEW_DISABLED
+  interruptible: true
+
+.review-no-env:
+  stage: review
+  script:
+    - devops deploy_application --track review
   only:
     refs:
       - merge_requests
@@ -147,7 +192,6 @@ variables:
     url: https://$CI_PROJECT_PATH_SLUG-qa.$KUBE_INGRESS_BASE_DOMAIN
   variables:
     K8S_INGRESS_PREVENT_ROBOTS: 1
-    POSTGRES_ENABLED: 0
   only:
     refs:
       - master
@@ -180,7 +224,7 @@ variables:
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
-  - git clone --single-branch --branch v2 git@git.anders.fi:anders/ci-configuration.git /tmp/devops/ci-configuration
+  - git clone --single-branch --branch ${KOLGA_BRANCH} git@git.anders.fi:anders/ci-configuration.git /tmp/devops/ci-configuration
   - export PATH="$PATH:/tmp/devops/ci-configuration"
   - source /tmp/devops/ci-configuration/utils/shell_utils.sh
   - set_docker_host

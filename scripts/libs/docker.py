@@ -251,7 +251,7 @@ class Docker:
     def delete_image(self, image: DockerImage) -> None:
         logger.warning(icon=f"{self.ICON}", message="Removing Docker image")
         for tag in image.local_tags:
-            print(f"\t {image.repository}:{tag}: ", end="", flush=True)
+            logger.info(message=f"\t {image.repository}:{tag}: ", end="")
             try:
                 self.client.images.remove(f"{image.repository}:{tag}")
             except docker.errors.ImageNotFound:

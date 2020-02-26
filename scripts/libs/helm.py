@@ -1,12 +1,12 @@
 import functools
 import operator
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
+from scripts.settings import settings
+from scripts.utils.general import kuberenetes_safe_name, run_os_command
 from scripts.utils.logger import logger
 from scripts.utils.models import SubprocessResult
-
-from ..utils.general import run_os_command
 
 
 class Helm:
@@ -76,8 +76,13 @@ class Helm:
 
     @staticmethod
     def get_chart_values_list(values: Dict[str, str]) -> List[str]:
-        # Create a list of lists with all of the "--set" values for the Helm template
-        values_params = [["--set", f"{name}={value}"] for name, value in values.items()]
+        values_list = [f"{name}={value}" for name, value in values.items()]
+        return Helm.get_chart_params(flag="--set", values=values_list)
+
+    @staticmethod
+    def get_chart_params(flag: str, values: List[Any]) -> List[str]:
+        # Create a list of lists with all of the flag and values for the Helm template
+        values_params = [[flag, str(value)] for value in values]
         # Flatten the list of lists to a single list
         flattened_value_params: List[str] = functools.reduce(
             operator.iconcat, values_params, []
@@ -92,17 +97,20 @@ class Helm:
         namespace: str,
         chart: str = "",
         chart_path: Optional[Path] = None,
+        values_files: Optional[List[Path]] = None,
         install: bool = True,
         version: Optional[str] = None,
         raise_exception: bool = True,
     ) -> SubprocessResult:
-        if chart_path and not chart_path.exists():
-            logger.error(
-                message=f"Path '{str(chart_path)}' does not exist",
-                error=OSError(),
-                raise_exception=True,
-            )
-        elif chart_path:
+        if chart_path:
+            if not chart_path.is_absolute():
+                chart_path = settings.devops_root_path / chart_path
+            if not chart_path.exists():
+                logger.error(
+                    message=f"Path '{str(chart_path)}' does not exist",
+                    error=OSError(),
+                    raise_exception=True,
+                )
             chart = str(chart_path)
 
         logger.info(
@@ -131,15 +139,21 @@ class Helm:
         values_params = self.get_chart_values_list(values)
         helm_command += values_params
 
+        # Add values files
+        if values_files:
+            helm_command += self.get_chart_params(flag="--values", values=values_files)
+
+        safe_name = kuberenetes_safe_name(name=name)
+
         # Add the name and chart
-        os_command = helm_command + [f"{name}", f"{chart}"]
+        os_command = helm_command + [f"{safe_name}", f"{chart}"]
 
         result = run_os_command(os_command)
         if result.return_code:
             logger.std(result, raise_exception=raise_exception)
             return result
         logger.success()
-        logger.info(f"\tName: {name}")
+        logger.info(f"\tName: {safe_name} (orig: {name})")
         logger.info(f"\tNamespace: {namespace}")
         logger.info(f"\tValues count: {int(len(values_params) / 2)}")
         return result

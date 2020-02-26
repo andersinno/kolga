@@ -1,3 +1,4 @@
+{{- if (not .Values.ingress.disabled ) -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -46,3 +47,4 @@ spec:
               serviceName: {{ template "appname" $ }}-service
               servicePort: 80
     {{- end }}
+{{- end }}
