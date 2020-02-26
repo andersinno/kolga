@@ -24,6 +24,7 @@ class Docker:
     def __init__(self, dockerfile: str = settings.DOCKER_BUILD_SOURCE) -> None:
         self.client = docker.DockerClient(base_url=settings.DOCKER_HOST)
         self.dockerfile = Path(dockerfile)
+        self.docker_context = Path(settings.DOCKER_BUILD_CONTEXT)
 
         self.image_repo = f"{settings.CONTAINER_REGISTRY_REPO}"
         if settings.DOCKER_IMAGE_NAME:
@@ -32,10 +33,16 @@ class Docker:
 
         self.image_cache: Set[str] = set()
 
-        dockerfile_path = settings.DOCKER_BUILD_CONTEXT / self.dockerfile
+        if not self.dockerfile.exists():
+            raise FileNotFoundError(f"No Dockerfile found at {self.dockerfile}")
 
-        if not dockerfile_path.exists():
-            raise FileExistsError(f"No Dockerfile found at {dockerfile_path}")
+        if not self.docker_context.exists():
+            raise NotADirectoryError(f"No such folder found, {self.docker_context}")
+
+        if self.docker_context not in self.dockerfile.parents:
+            raise ValueError(
+                f"Dockerfile {self.dockerfile} not in build context {self.docker_context}"
+            )
 
     def stage_image_tag(self, stage: str) -> str:
         return f"{self.image_tag}-{stage}"
@@ -106,7 +113,7 @@ class Docker:
         if announce:
             logger.info(
                 icon=f"{self.ICON} ℹ️ ",
-                title=f"For {settings.DOCKER_BUILD_CONTEXT}/{self.dockerfile}, found stages: ",
+                title=f"For {self.dockerfile}, found stages: ",
                 message=f"{stages}",
             )
         return stages
@@ -184,19 +191,15 @@ class Docker:
 
         return built_images
 
-    def build_stage(
-        self,
-        stage: str = "",
-        path: str = settings.DOCKER_BUILD_CONTEXT,
-        final_image: bool = False,
-    ) -> DockerImage:
+    def build_stage(self, stage: str = "", final_image: bool = False) -> DockerImage:
         logger.info(icon=f"{self.ICON} 🔨", title=f"Building stage '{stage}': ", end="")
         try:
+            relative_docker_path = self.dockerfile.relative_to(self.docker_context)
             image_obj, build_log = self.client.images.build(
                 buildargs=self.get_build_arguments(),
                 cache_from=list(self.image_cache),
-                dockerfile=settings.DOCKER_BUILD_SOURCE,
-                path=path,
+                dockerfile=str(relative_docker_path),
+                path=str(self.docker_context),
                 target=stage,
             )
             image = DockerImage(image_obj, self.image_repo)
