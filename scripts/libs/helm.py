@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import yaml
 
 from scripts.utils.logger import logger
-from scripts.utils.models import SubprocessResult
+from scripts.utils.models import HelmValues, SubprocessResult
 
 from ..utils.general import run_os_command
 
@@ -77,7 +77,7 @@ class Helm:
     def upgrade_chart(
         self,
         name: str,
-        values: Dict[str, Any],
+        values: HelmValues,
         namespace: str,
         chart: str = "",
         chart_path: Optional[Path] = None,

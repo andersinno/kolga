@@ -2,7 +2,7 @@ import shutil
 import tempfile
 from base64 import b64encode
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import colorful as cf
 import yaml
@@ -30,6 +30,11 @@ from scripts.utils.general import (
     loads_json,
     run_os_command,
     validate_file_secret_path,
+)
+from scripts.utils.helm_values import (
+    ApplicationDeploymentValues,
+    MySQLDeploymentValues,
+    PostgreSQLDeploymentValues,
 )
 from scripts.utils.logger import logger
 from scripts.utils.models import (
@@ -419,7 +424,7 @@ class Kubernetes:
     ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
         image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
-        values: Dict[str, Any] = {
+        values: PostgreSQLDeploymentValues = {
             "image": {"repository": image.repository},
             "postgresqlUsername": settings.DATABASE_USER,
             "postgresqlPassword": settings.DATABASE_PASSWORD,
@@ -448,13 +453,13 @@ class Kubernetes:
         helm_chart_version: str = "1.6.0",
     ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
-        values = {
+        values: MySQLDeploymentValues = {
             "imageTag": settings.MYSQL_VERSION_TAG,
             "mysqlUser": settings.DATABASE_USER,
             "mysqlPassword": settings.DATABASE_PASSWORD,
             "mysqlRootPassword": settings.DATABASE_PASSWORD,
             "mysqlDatabase": settings.DATABASE_DB,
-            "testFramework": {"enabled": "false"},
+            "testFramework": {"enabled": False},
         }
 
         self.helm.upgrade_chart(
@@ -477,7 +482,7 @@ class Kubernetes:
         deploy_name = get_deploy_name(track=track)
         helm_path = self.get_helm_path()
 
-        values: Dict[str, Any] = {
+        values: ApplicationDeploymentValues = {
             "application": {
                 "initializeCommand": settings.APP_INITIALIZE_COMMAND,
                 "migrateCommand": settings.APP_MIGRATE_COMMAND,
@@ -519,7 +524,7 @@ class Kubernetes:
             values["ingress"]["certManagerAnnotationPrefix"] = "certmanager.k8s.io"
 
         if settings.K8S_INGRESS_PREVENT_ROBOTS:
-            values["ingress"]["preventRobots"] = "1"
+            values["ingress"]["preventRobots"] = True
 
         if settings.K8S_REPLICACOUNT:
             values["replicaCount"] = settings.K8S_REPLICACOUNT
@@ -541,7 +546,7 @@ class Kubernetes:
 
             secret_variables = {"application.database_url"}
             for path in secret_variables:
-                d = values
+                d = cast(Dict[str, Any], values)
                 *path_parts, last_part = path.split(".")
                 try:
                     for key in path_parts:
@@ -645,12 +650,12 @@ class Kubernetes:
         self,
         hostname: str = settings.ENVIRONMENT_URL,
         additional_urls: List[str] = settings.K8S_ADDITIONAL_HOSTNAMES,
-    ) -> str:
+    ) -> List[str]:
         hostnames = []
         hostnames.append(hostname)
         hostnames.extend(additional_urls)
 
-        return f"{{{','.join(hostnames)}}}"
+        return hostnames
 
     def get_certification_issuer(self, track: str) -> Optional[str]:
         logger.info(
