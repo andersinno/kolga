@@ -115,11 +115,14 @@ def get_environment_vars_by_prefix(prefix: str) -> Dict[str, str]:
     }
 
 
-def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessResult:
-
+def run_os_command(
+    command_list: List[str], shell: bool = False, input: Optional[str] = None,
+) -> SubprocessResult:
     command = command_list if not shell else " ".join(map(quote, command_list))
 
-    result = subprocess.run(command, encoding="UTF-8", capture_output=True, shell=shell)
+    result = subprocess.run(
+        command, encoding="UTF-8", capture_output=True, input=input, shell=shell,
+    )
 
     return SubprocessResult(
         out=result.stdout,
