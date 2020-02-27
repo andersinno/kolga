@@ -1,7 +1,7 @@
-import functools
-import operator
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, Optional
+
+import yaml
 
 from scripts.utils.logger import logger
 from scripts.utils.models import SubprocessResult
@@ -74,21 +74,10 @@ class Helm:
             )
         return chart_name[0]
 
-    @staticmethod
-    def get_chart_values_list(values: Dict[str, str]) -> List[str]:
-        # Create a list of lists with all of the "--set" values for the Helm template
-        values_params = [["--set", f"{name}={value}"] for name, value in values.items()]
-        # Flatten the list of lists to a single list
-        flattened_value_params: List[str] = functools.reduce(
-            operator.iconcat, values_params, []
-        )
-
-        return flattened_value_params
-
     def upgrade_chart(
         self,
         name: str,
-        values: Dict[str, str],
+        values: Dict[str, Any],
         namespace: str,
         chart: str = "",
         chart_path: Optional[Path] = None,
@@ -122,24 +111,23 @@ class Helm:
             install_arg,
             "--namespace",
             f"{namespace}",
+            "--values",
+            "-",
         ]
 
         if version:
             helm_command += ["--version", version]
 
-        # Add value setter arguments
-        values_params = self.get_chart_values_list(values)
-        helm_command += values_params
-
         # Add the name and chart
         os_command = helm_command + [f"{name}", f"{chart}"]
 
-        result = run_os_command(os_command)
+        result = run_os_command(os_command, input=yaml.dump(values))
         if result.return_code:
             logger.std(result, raise_exception=raise_exception)
             return result
+
         logger.success()
         logger.info(f"\tName: {name}")
         logger.info(f"\tNamespace: {namespace}")
-        logger.info(f"\tValues count: {int(len(values_params) / 2)}")
+
         return result

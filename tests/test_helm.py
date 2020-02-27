@@ -23,21 +23,6 @@ def test_get_chart_name_exception() -> None:
         Helm.get_chart_name("")
 
 
-def test_get_chart_values_list() -> None:
-    value = {"app": "testapp", "release": "testing", "lizard": "-1"}
-
-    expected = [
-        "--set",
-        "app=testapp",
-        "--set",
-        "release=testing",
-        "--set",
-        "lizard=-1",
-    ]
-
-    assert Helm.get_chart_values_list(value) == expected
-
-
 class TestHelmRegistryFunctions:
     helm_repo_name = "localhelm"
     helm_repo_url = os.environ.get("TEST_HELM_REGISTRY", "http://localhost:8080")
