@@ -1,5 +1,6 @@
 [tool.black]
 include = '\.pyi?$|^/devops$'
+target_version = ["py38"]
 
 [tool.poetry]
 name = "ci-configuration"
@@ -8,7 +9,7 @@ description = ""
 authors = ["Anders Innovations <admin@anders.fi>"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 kubernetes = "^11.0"
 colorful = "^0.5.4"
 environs = "^7.0"
