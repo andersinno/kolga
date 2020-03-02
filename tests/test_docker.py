@@ -11,7 +11,7 @@ from scripts.settings import settings
 
 def test_incorrect_dockerfile_path() -> None:
     dockerfile_path = "/i_do_not_exist/Dockerfile"
-    with pytest.raises(FileExistsError):
+    with pytest.raises(FileNotFoundError):
         Docker(dockerfile_path)
 
 
