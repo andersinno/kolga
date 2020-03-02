@@ -38,6 +38,8 @@ class Docker:
             raise FileExistsError(f"No Dockerfile found at {dockerfile_path}")
 
     def stage_image_tag(self, stage: str) -> str:
+        if not stage:
+            return self.image_tag
         return f"{self.image_tag}-{stage}"
 
     def test_image_tag(self, stage: str = settings.DOCKER_TEST_IMAGE_STAGE) -> str:
