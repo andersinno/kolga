@@ -74,6 +74,7 @@ class Settings:
         "K8S_FILE_SECRET_MOUNTPATH", "/tmp/secrets"
     )
     K8S_FILE_SECRET_PREFIX: str = env.str("K8S_FILE_SECRET_PREFIX", "K8S_FILE_SECRET_")
+    K8S_REPLICACOUNT: str = env.str("K8S_REPLICACOUNT", "")
     K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET_")
     KUBECONFIG: str = env.str("KUBECONFIG", "")
 
