@@ -513,6 +513,9 @@ class Kubernetes:
         if settings.K8S_INGRESS_PREVENT_ROBOTS:
             values["ingress.preventRobots"] = "1"
 
+        if settings.K8S_REPLICACOUNT:
+            values["replicaCount"] = settings.K8S_REPLICACOUNT
+
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
             chart_path=helm_path,
