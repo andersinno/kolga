@@ -15,6 +15,7 @@ kubernetes = "^10.0"
 colorful = "^0.5.4"
 environs = "^6.0"
 gitpython = "^3.0"
+marshmallow = "^3.5.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

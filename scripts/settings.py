@@ -3,6 +3,7 @@ import uuid
 from typing import Any, List, Optional, Tuple
 
 import environs
+from marshmallow.validate import Range
 
 from scripts.utils.models import BasicAuthUser
 
@@ -62,6 +63,17 @@ class Settings:
     # KUBERNETES
     K8S_ADDITIONAL_HOSTNAMES: List[str] = env.list("K8S_ADDITIONAL_HOSTNAMES", [])
     K8S_CLUSTER_ISSUER: str = env.str("K8S_CLUSTER_ISSUER", "")
+
+    K8S_HPA_ENABLED: bool = env.bool("K8S_HPA_ENABLED", False)
+    K8S_HPA_MAX_REPLICAS: int = env.int("K8S_HPA_MAX_REPLICAS", 3)
+    K8S_HPA_MIN_REPLICAS: int = env.int("K8S_HPA_MIN_REPLICAS", 1)
+    K8S_HPA_MAX_CPU_AVG: int = env.int(
+        "K8S_HPA_MAX_CPU_AVG", default=75, validate=Range(min=0, max=100)
+    )
+    K8S_HPA_MAX_RAM_AVG: int = env.int(
+        "K8S_HPA_MAX_RAM_AVG", default=0, validate=Range(min=0, max=100)
+    )
+
     K8S_INGRESS_BASE_DOMAIN: str = env.str("K8S_INGRESS_BASE_DOMAIN", "")
     K8S_INGRESS_BASIC_AUTH: List[BasicAuthUser] = env.basicauth(
         "K8S_INGRESS_BASIC_AUTH", []

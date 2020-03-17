@@ -12,3 +12,8 @@ ingress:
   secretName: ai-qa-cert
   path: /
   certManagerAnnotationPrefix: cert-manager.io
+
+hpa:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
