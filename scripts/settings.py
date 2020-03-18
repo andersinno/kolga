@@ -38,7 +38,7 @@ class Settings:
     DEFAULT_TRACK: str = env.str("DEFAULT_TRACK", "stable")
     ENVIRONMENT_SLUG: str = env.str("ENVIRONMENT_SLUG", "")
     ENVIRONMENT_URL: str = env.str("ENVIRONMENT_URL", "")
-    SERVICE_PORT: str = env.str("SERVICE_PORT", "8000")
+    SERVICE_PORT: int = env.int("SERVICE_PORT", 8000)
 
     # GIT
     GIT_COMMIT_REF_NAME: str = env.str("GIT_COMMIT_REF_NAME", "")
@@ -74,7 +74,7 @@ class Settings:
         "K8S_FILE_SECRET_MOUNTPATH", "/tmp/secrets"
     )
     K8S_FILE_SECRET_PREFIX: str = env.str("K8S_FILE_SECRET_PREFIX", "K8S_FILE_SECRET_")
-    K8S_REPLICACOUNT: str = env.str("K8S_REPLICACOUNT", "")
+    K8S_REPLICACOUNT: Optional[int] = env.str("K8S_REPLICACOUNT", None)
     K8S_SECRET_PREFIX: str = env.str("K8S_SECRET_PREFIX", "K8S_SECRET_")
     KUBECONFIG: str = env.str("KUBECONFIG", "")
 

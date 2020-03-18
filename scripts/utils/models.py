@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass, field
-from typing import Any, Optional, Set
+from typing import Any, Optional, Set, TypedDict
 
 from docker.models.images import Image
 
@@ -40,6 +40,11 @@ class DockerImageRef:
             repository = rest
 
         return cls(registry=registry, repository=repository, tag=tag)
+
+
+class HelmValues(TypedDict):
+    # Marker class
+    pass
 
 
 @dataclass

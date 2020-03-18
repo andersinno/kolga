@@ -2,9 +2,10 @@ import shutil
 import tempfile
 from base64 import b64encode
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import colorful as cf
+import yaml
 from kubernetes import client as k8s_client
 from kubernetes import config as k8s_config
 from kubernetes.client.rest import ApiException
@@ -29,6 +30,11 @@ from scripts.utils.general import (
     loads_json,
     run_os_command,
     validate_file_secret_path,
+)
+from scripts.utils.helm_values import (
+    ApplicationDeploymentValues,
+    MySQLDeploymentValues,
+    PostgreSQLDeploymentValues,
 )
 from scripts.utils.logger import logger
 from scripts.utils.models import (
@@ -418,18 +424,18 @@ class Kubernetes:
     ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
         image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
-        values = {
-            "image.repository": image.repository,
+        values: PostgreSQLDeploymentValues = {
+            "image": {"repository": image.repository},
             "postgresqlUsername": settings.DATABASE_USER,
             "postgresqlPassword": settings.DATABASE_PASSWORD,
             "postgresqlDatabase": settings.DATABASE_DB,
         }
 
         if image.registry is not None:
-            values["image.registry"] = image.registry
+            values["image"]["registry"] = image.registry
 
         if image.tag is not None:
-            values["image.tag"] = image.tag
+            values["image"]["tag"] = image.tag
 
         self.helm.upgrade_chart(
             chart=helm_chart,
@@ -447,14 +453,15 @@ class Kubernetes:
         helm_chart_version: str = "1.6.0",
     ) -> None:
         deploy_name = f"{get_deploy_name(track=track)}-db"
-        values = {
+        values: MySQLDeploymentValues = {
             "imageTag": settings.MYSQL_VERSION_TAG,
             "mysqlUser": settings.DATABASE_USER,
             "mysqlPassword": settings.DATABASE_PASSWORD,
             "mysqlRootPassword": settings.DATABASE_PASSWORD,
             "mysqlDatabase": settings.DATABASE_DB,
-            "testFramework.enabled": "false",
+            "testFramework": {"enabled": False},
         }
+
         self.helm.upgrade_chart(
             chart=helm_chart,
             name=deploy_name,
@@ -475,43 +482,49 @@ class Kubernetes:
         deploy_name = get_deploy_name(track=track)
         helm_path = self.get_helm_path()
 
-        values: Dict[str, str] = {
-            "namespace": namespace,
+        values: ApplicationDeploymentValues = {
+            "application": {
+                "initializeCommand": settings.APP_INITIALIZE_COMMAND,
+                "migrateCommand": settings.APP_MIGRATE_COMMAND,
+                "secretName": secret_name,
+                "track": track,
+            },
+            "gitlab": {
+                "app": settings.PROJECT_PATH_SLUG,
+                "env": settings.ENVIRONMENT_SLUG,
+            },
             "image": docker_image,
-            "gitlab.app": settings.PROJECT_PATH_SLUG,
-            "gitlab.env": settings.ENVIRONMENT_SLUG,
+            "ingress": {"maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE},
+            "namespace": namespace,
             "releaseOverride": settings.ENVIRONMENT_SLUG,
-            "application.track": track,
-            "application.secretName": secret_name,
-            "application.initializeCommand": settings.APP_INITIALIZE_COMMAND,
-            "application.migrateCommand": settings.APP_MIGRATE_COMMAND,
-            "service.url": settings.ENVIRONMENT_URL,
-            "service.urls": self.get_hostnames(),
-            "service.targetPort": settings.SERVICE_PORT,
-            "ingress.maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE,
+            "service": {
+                "targetPort": settings.SERVICE_PORT,
+                "url": settings.ENVIRONMENT_URL,
+                "urls": self.get_hostnames(),
+            },
         }
 
         if basic_auth_secret_name:
-            values["ingress.basicAuthSecret"] = basic_auth_secret_name
+            values["ingress"]["basicAuthSecret"] = basic_auth_secret_name
 
         database_url = get_database_url(track=track)
         if database_url:
-            values["application.database_url"] = str(database_url)
-            values["application.database_host"] = str(database_url.host)
+            values["application"]["database_url"] = str(database_url)
+            values["application"]["database_host"] = str(database_url.host)
 
         if file_secret_name:
-            values["application.fileSecretName"] = file_secret_name
-            values["application.fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
+            values["application"]["fileSecretName"] = file_secret_name
+            values["application"]["fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
 
         cert_issuer = self.get_certification_issuer(track=track)
         if cert_issuer:
-            values["ingress.clusterIssuer"] = cert_issuer
+            values["ingress"]["clusterIssuer"] = cert_issuer
 
         if settings.K8S_CERTMANAGER_USE_OLD_API:
-            values["ingress.certManagerAnnotationPrefix"] = "certmanager.k8s.io"
+            values["ingress"]["certManagerAnnotationPrefix"] = "certmanager.k8s.io"
 
         if settings.K8S_INGRESS_PREVENT_ROBOTS:
-            values["ingress.preventRobots"] = "1"
+            values["ingress"]["preventRobots"] = True
 
         if settings.K8S_REPLICACOUNT:
             values["replicaCount"] = settings.K8S_REPLICACOUNT
@@ -526,14 +539,24 @@ class Kubernetes:
         )
 
         if result.return_code:
-            secret_variables = ["application.database_url"]
             logger.info(
                 icon=f"{self.ICON} 🏷️",
                 title="Deployment values (without environment vars):",
             )
-            for key, value in values.items():
-                if key not in secret_variables:
-                    logger.info(message=f"\t{key}: {value}")
+
+            secret_variables = {"application.database_url"}
+            for path in secret_variables:
+                d = cast(Dict[str, Any], values)
+                *path_parts, last_part = path.split(".")
+                try:
+                    for key in path_parts:
+                        d = d[key]
+                    del d[last_part]
+                except KeyError:
+                    pass
+
+            for line in yaml.dump(values).split("\n"):
+                logger.info(message=f"\t{line}")
 
             application_labels = {"release": deploy_name}
             status = self.status(namespace=namespace, labels=application_labels)
@@ -545,6 +568,7 @@ class Kubernetes:
                 raise_exception=False,
                 print_result=True,
             )
+
             raise DeploymentFailed()
 
         logger.info(
@@ -626,12 +650,12 @@ class Kubernetes:
         self,
         hostname: str = settings.ENVIRONMENT_URL,
         additional_urls: List[str] = settings.K8S_ADDITIONAL_HOSTNAMES,
-    ) -> str:
+    ) -> List[str]:
         hostnames = []
         hostnames.append(hostname)
         hostnames.extend(additional_urls)
 
-        return f"{{{','.join(hostnames)}}}"
+        return hostnames
 
     def get_certification_issuer(self, track: str) -> Optional[str]:
         logger.info(
