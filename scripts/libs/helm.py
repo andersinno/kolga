@@ -1,4 +1,5 @@
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Optional
 
 import yaml
@@ -111,17 +112,18 @@ class Helm:
             install_arg,
             "--namespace",
             f"{namespace}",
-            "--values",
-            "-",
         ]
 
         if version:
             helm_command += ["--version", version]
 
-        # Add the name and chart
-        os_command = helm_command + [f"{name}", f"{chart}"]
+        values_yaml = yaml.dump(values)
+        with NamedTemporaryFile(buffering=0) as fobj:
+            fobj.write(values_yaml.encode())
+            result = run_os_command(
+                [*helm_command, "--values", fobj.name, f"{name}", f"{chart}"],
+            )
 
-        result = run_os_command(os_command, input=yaml.dump(values))
         if result.return_code:
             logger.std(result, raise_exception=raise_exception)
             return result
