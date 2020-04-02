@@ -529,6 +529,15 @@ class Kubernetes:
         if settings.K8S_REPLICACOUNT:
             values["replicaCount"] = settings.K8S_REPLICACOUNT
 
+        if settings.K8S_HPA_ENABLED:
+            values["hpa"]["enabled"] = settings.K8S_HPA_ENABLED
+            values["hpa"]["minReplicas"] = settings.K8S_HPA_MIN_REPLICAS
+            values["hpa"]["maxReplicas"] = settings.K8S_HPA_MAX_REPLICAS
+            if settings.K8S_HPA_MAX_CPU_AVG:
+                values["hpa"]["avgCpuUtilization"] = settings.K8S_HPA_MAX_CPU_AVG
+            if settings.K8S_HPA_MAX_RAM_AVG:
+                values["hpa"]["avgRamUtilization"] = settings.K8S_HPA_MAX_RAM_AVG
+
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
             chart_path=helm_path,

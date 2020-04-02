@@ -43,6 +43,11 @@ supplies a predefined variables with the SHA.
 | GIT\_TARGET\_BRANCH           | Target branch for the specific merge/pull-request   |                              | GitLab     |
 | K8S\_ADDITIONAL\_HOSTNAMES    | Additional hostnames for the application            |                              |            |
 | K8S\_CLUSTER\_ISSUER          | The name of the clusterIssuer to be used by ingress |                              |            |
+| K8S\_HPA\_ENABLED             | Enable autoscaling of the Kubernetes deployment     | false                        |            |
+| K8S\_HPA\_MAX\_CPU\_AVG       | Average CPU % threshold for when to start scaling   |                              |            |
+| K8S\_HPA\_MAX\_RAM\_AVG       | Average RAM % threshold for when to start scaling   |                              |            |
+| K8S\_HPA\_MAX\_REPLICAS       | Maximum amount of autoscaling replicas to create    | 3                            |            |
+| K8S\_HPA\_MIN\_REPLICAS       | Minimum amount of autoscaling replicas to create    | 1                            |            |
 | K8S\_INGRESS\_BASE\_DOMAIN    | Kubernetes default base domain for preview          |                              | GitLab     |
 | K8S\_INGRESS\_BASIC\_AUTH     | Space delimited basic auth cred, ex. foo:bar df:aa  |                              |            |
 | K8S\_INGRESS\_MAX\_BODY\_SIZE | Set max body size for requests to the nginx ingress | 100m                         |            |

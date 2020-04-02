@@ -33,9 +33,18 @@ class _Service(TypedDict, total=False):
     urls: List[str]
 
 
+class _HPA(TypedDict, total=False):
+    avgCpuUtilization: int
+    avgRamUtilization: int
+    enabled: bool
+    maxReplicas: int
+    minReplicas: int
+
+
 class ApplicationDeploymentValues(HelmValues, total=False):
     application: _Application
     gitlab: _GitLab
+    hpa: _HPA
     ingress: _Ingress
     image: str
     namespace: str
