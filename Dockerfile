@@ -60,6 +60,19 @@ RUN find $HOME/.poetry/lib/poetry/_vendor \
       -exec rm -rf {} +
 
 # ===================================
+FROM build-base AS buildx
+# ===================================
+
+ARG BUILDX_CHECKSUM=30ea2f60b48e8a4a4b30e352e7116ef11d99bf60346668dd7c69619b85dae29a
+ARG BUILDX_TARGET=/buildx/docker-buildx
+
+RUN mkdir -p /buildx
+RUN curl -fLSs https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64 -o "$BUILDX_TARGET"
+RUN sha256sum "$BUILDX_TARGET"
+RUN echo "$BUILDX_CHECKSUM *$BUILDX_TARGET" | sha256sum -c -
+RUN chmod a+x "$BUILDX_TARGET"
+
+# ===================================
 FROM build-base AS stage
 # ===================================
 WORKDIR /stage
@@ -67,6 +80,7 @@ ENV PATH=$PATH:/stage/usr/bin
 COPY --from=kubectl /kubernetes/client/bin/kubectl ./usr/bin/
 COPY --from=helm /helm/linux-amd64/helm ./usr/bin/
 COPY --from=poetry /root/.poetry ./root/.poetry
+COPY --from=buildx /buildx/docker-buildx ./usr/local/lib/docker/cli-plugins/
 
 # ===================================
 FROM docker:stable-dind as app-base
@@ -78,6 +92,9 @@ COPY --from=stage /stage/ /
 
 # Symlink poetry to bin
 RUN ln -s $HOME/.poetry/bin/poetry /usr/bin/poetry
+
+# Enable Buildx support
+ENV DOCKER_CLI_EXPERIMENTAL=enabled
 
 WORKDIR /app
 
