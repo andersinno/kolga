@@ -1,4 +1,4 @@
-image: andersinnovations/devops:6cbb6de210761162c37c586a1dff5564b27021ac
+image: docker.anders.fi/anders/ci-configuration:v3-buildkit
 
 stages:
   - build
