@@ -93,8 +93,7 @@ class Devops:
 
         d = Docker()
         d.login()
-        images = d.build_stages()
-        d.push_images(images)
+        d.build_stages(push_images=True)
 
         project = Project(track="development")
         artifact_data = {

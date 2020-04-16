@@ -1,20 +1,12 @@
 import re
 from dataclasses import dataclass, field
-from typing import Any, Optional, Set
-
-from docker.models.images import Image
+from typing import Any, List, Optional
 
 
 @dataclass
 class DockerImage:
-    obj: Image
     repository: str
-    local_tags: Set[str] = field(default_factory=lambda: set())
-    remote_tags: Set[str] = field(default_factory=lambda: set())
-
-    @property
-    def unsynced_tags(self) -> Set[str]:
-        return self.local_tags - self.remote_tags
+    tags: List[str] = field(default_factory=lambda: list())
 
 
 @dataclass
