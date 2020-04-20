@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, List
 
 from scripts.utils.logger import logger
-from scripts.utils.models import DockerImage
+from scripts.utils.models import DockerImage, ImageStage
 
 from ..settings import settings
 from ..utils.general import get_environment_vars_by_prefix, run_os_command
@@ -98,8 +98,9 @@ class Docker:
 
         return get_environment_vars_by_prefix(settings.DOCKER_BUILD_ARG_PREFIX)
 
-    def get_stages(self) -> List[str]:
-        stages = []
+    def get_stage_names(self) -> List[str]:
+        stage_names = []
+
         with open(self.dockerfile) as f:
             while True:
                 line = f.readline()
@@ -111,7 +112,28 @@ class Docker:
                 stage_name = (
                     matched_stage.group("stage") if matched_stage.group("stage") else ""
                 )
-                stages.append(stage_name)
+                stage_names.append(stage_name)
+        return stage_names
+
+    def get_stages(self) -> List[ImageStage]:
+        stages: List[ImageStage] = []
+        stage_names = self.get_stage_names()
+        if not stage_names:
+            return stages
+
+        for stage in stage_names[:-1]:
+            image_stage = ImageStage(name=stage)
+            if (
+                settings.DOCKER_TEST_IMAGE_STAGE
+                and stage == settings.DOCKER_TEST_IMAGE_STAGE
+            ):
+                image_stage.development = True
+                image_stage.build = True
+            stages.append(image_stage)
+
+        final_image = ImageStage(name=stage_names[-1], final=True, build=True)
+        stages.append(final_image)
+
         return stages
 
     def get_image_tags(self, stage: str = "", final_image: bool = False) -> List[str]:
@@ -135,23 +157,6 @@ class Docker:
             return True
         return False
 
-    def get_build_stages(self, announce: bool = True) -> List[str]:
-        all_stages = self.get_stages()
-        build_stages = [all_stages[-1]]
-
-        if (
-            settings.DOCKER_TEST_IMAGE_STAGE
-            and settings.DOCKER_TEST_IMAGE_STAGE in all_stages
-        ):
-            if announce:
-                logger.info(
-                    icon=f"ℹ️",
-                    title=f"Found test stage '{settings.DOCKER_TEST_IMAGE_STAGE}' in '{self.dockerfile}', building that as well",
-                )
-            build_stages.insert(0, settings.DOCKER_TEST_IMAGE_STAGE)
-
-        return build_stages
-
     def create_cache_tag(self, postfix: str = "") -> str:
         git_ref_tag = self.get_docker_git_ref_tag()
 
@@ -166,14 +171,9 @@ class Docker:
         target_image = f"{self.cache_repo}:{target_branch}"
         cache_tags.append(target_image)
 
-        build_stages = self.get_build_stages(announce=False)
-
-        # Final stage is the completed image, no need to add stage postfix
-        # Passing empty string will result in no tag postfix.
-        cache_stages = build_stages[:-1] + [""]
-
-        for stage in cache_stages:
-            cache_tags.append(self.create_cache_tag(postfix=stage))
+        for stage in self.get_stages():
+            if stage.build:
+                cache_tags.append(self.create_cache_tag(postfix=stage.name))
 
         return cache_tags
 
@@ -182,15 +182,21 @@ class Docker:
         Build all stages of a Dockerfile and tag them
         """
         built_images = []
-        build_stages = self.get_build_stages()
+        stages = self.get_stages()
 
-        for stage in build_stages:
-            if stage == build_stages[-1]:
-                built_images.append(
-                    self.build_stage(stage, final_image=True, push_images=push_images)
+        for stage in stages:
+            if not stage.build:
+                continue
+            if stage.development:
+                logger.info(
+                    icon=f"ℹ️",
+                    title=f"Found test/development stage '{stage.name}', building that as well",
                 )
-            else:
-                built_images.append(self.build_stage(stage))
+            built_images.append(
+                self.build_stage(
+                    stage.name, final_image=stage.final, push_images=push_images
+                )
+            )
 
         return built_images
 

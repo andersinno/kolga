@@ -4,6 +4,14 @@ from typing import Any, List, Optional
 
 
 @dataclass
+class ImageStage:
+    name: str
+    final: bool = False
+    build: bool = False
+    development: bool = False
+
+
+@dataclass
 class DockerImage:
     repository: str
     tags: List[str] = field(default_factory=lambda: list())

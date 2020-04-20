@@ -61,7 +61,8 @@ def test_get_stages_names(value: str, expected: List[str]) -> None:
         f.write(encoded_string)
         f.seek(0)
         d.dockerfile = Path(f.name)
-        assert d.get_stages() == expected
+        stage_names = [stage.name for stage in d.get_stages()]
+        assert stage_names == expected
 
 
 @pytest.mark.parametrize(  # type: ignore
