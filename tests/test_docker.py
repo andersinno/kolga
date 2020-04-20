@@ -2,7 +2,6 @@ import tempfile
 from pathlib import Path
 from typing import List
 
-import docker.errors
 import pytest
 
 from scripts.libs.docker import Docker
@@ -141,7 +140,7 @@ def test_stage_image_tag() -> None:
     stage_tag = d.stage_image_tag(stage="finalstage")
     assert (
         stage_tag
-        == "localhost:5000/test/testing:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
+        == "docker-registry:5000/test/testing:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
     )
 
 
@@ -150,7 +149,7 @@ def test_test_image_tag() -> None:
     stage_tag = d.test_image_tag()
     assert (
         stage_tag
-        == "localhost:5000/test/testing:2a7958c61a31a38a365aa347147aba2aaaaaaa-development"
+        == "docker-registry:5000/test/testing:2a7958c61a31a38a365aa347147aba2aaaaaaa-development"
     )
 
 
@@ -166,21 +165,5 @@ def test_login() -> None:
 
 def test_incorrect_login() -> None:
     d = Docker()
-    with pytest.raises(docker.errors.APIError):
+    with pytest.raises(Exception):
         d.login(password="bad_login")
-
-
-def test_build_push_delete_pull_images() -> None:
-    d = Docker()
-    d.login()
-
-    images = d.build_stages()
-    d.push_images(images)
-
-    # Remove any local cache
-    for image in images:
-        d.delete_image(image)
-
-    for image in images:
-        for tag in image.remote_tags:
-            d.pull_image(f"{image.repository}:{tag}", error_on_not_found=True)
