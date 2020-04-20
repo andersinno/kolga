@@ -53,7 +53,7 @@ class PostgresqlService(Service):
     def get_database_url(self) -> URL:
         deploy_name = get_deploy_name(self.track)
         port = DATABASE_DEFAULT_PORT_MAPPING[POSTGRES]
-        host = f"{deploy_name}-db-{POSTGRES}"
+        host = f"{deploy_name}-{POSTGRES}"
 
         return URL(
             drivername=POSTGRES,
