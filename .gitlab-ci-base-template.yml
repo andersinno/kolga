@@ -1,4 +1,4 @@
-image: docker.anders.fi/anders/ci-configuration:v3-buildkit
+image: docker.anders.fi/anders/ci-configuration:v3
 
 stages:
   - build
