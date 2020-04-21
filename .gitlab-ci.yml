@@ -42,7 +42,7 @@ release-dockerhub:
     CONTAINER_REGISTRY_PASSWORD: ${DOCKERHUB_REGISTRY_PASSWORD}
     CONTAINER_REGISTRY_REPO: andersinnovations/devops
   only:
-    - v3
+    - v2
 
 test-style:
   extends: .code-tests
