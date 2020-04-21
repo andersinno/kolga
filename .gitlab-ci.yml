@@ -17,16 +17,21 @@ stages:
   only:
     - merge_requests
     - master
-    - qa
+    - v3
 
 build:
   extends: .build
+  only:
+    - merge_requests
+    - master
+    - /^r-[\d]+$/
+    - v3
 
 release-local:
   stage: release
   extends: .build
   only:
-    - v2
+    - v3
 
 release-dockerhub:
   stage: release
@@ -37,7 +42,7 @@ release-dockerhub:
     CONTAINER_REGISTRY_PASSWORD: ${DOCKERHUB_REGISTRY_PASSWORD}
     CONTAINER_REGISTRY_REPO: andersinnovations/devops
   only:
-    - v2
+    - v3
 
 test-style:
   extends: .code-tests
@@ -65,6 +70,9 @@ test-docs:
 
 test:
   extends: .test
+  only:
+    - merge_requests
+    - v3
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
