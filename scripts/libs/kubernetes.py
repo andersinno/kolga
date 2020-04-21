@@ -257,8 +257,6 @@ class Kubernetes:
         filesecrets = get_environment_vars_by_prefix(
             prefix=settings.K8S_FILE_SECRET_PREFIX
         )
-        if not filesecrets:
-            return {}
 
         secrets, filename_mapping = self._parse_file_secrets(filesecrets)
         self.create_secret(

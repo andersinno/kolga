@@ -1,4 +1,4 @@
-image: andersinnovations/devops:6cbb6de210761162c37c586a1dff5564b27021ac
+image: docker.anders.fi/anders/ci-configuration:v3-buildkit
 
 stages:
   - build
@@ -228,3 +228,4 @@ before_script:
   - export PATH="$PATH:/tmp/devops/ci-configuration"
   - source /tmp/devops/ci-configuration/utils/shell_utils.sh
   - set_docker_host
+  - setup_buildkit

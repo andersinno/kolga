@@ -93,8 +93,7 @@ class Devops:
 
         d = Docker()
         d.login()
-        images = d.build_stages()
-        d.push_images(images)
+        d.build_stages(push_images=True)
 
         project = Project(track="development")
         artifact_data = {
@@ -125,7 +124,10 @@ class Devops:
                 project=project,
                 secret_name=project.file_secret_name,
             )
-            secret_data = dict(project.secret_data.items() + file_secrets_paths.items())  # type: ignore
+            secret_data = {}
+            secret_data.update(project.secret_data)
+            secret_data.update(file_secrets_paths)
+
             k.create_secret(
                 data=secret_data,
                 namespace=namespace,

@@ -43,6 +43,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     # ================================================
     # DOCKER
     # ================================================
+    "BUILDKIT_CACHE_REPO": [env.str, "cache"],
     "CONTAINER_REGISTRY": [env.str, "docker.anders.fi"],
     "CONTAINER_REGISTRY_PASSWORD": [env.str, ""],
     "CONTAINER_REGISTRY_REPO": [env.str, ""],
@@ -107,6 +108,7 @@ class Settings:
     PROJECT_NAME: str
     PROJECT_DIR: str
     PROJECT_PATH_SLUG: str
+    BUILDKIT_CACHE_REPO: str
     CONTAINER_REGISTRY: str
     CONTAINER_REGISTRY_PASSWORD: str
     CONTAINER_REGISTRY_REPO: str

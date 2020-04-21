@@ -18,7 +18,7 @@ def test_project_defaults() -> None:
     assert project.track == "staging"
     assert (
         project.image
-        == "localhost:5000/test/testing:2a7958c61a31a38a365aa347147aba2aaaaaaa"
+        == "docker-registry:5000/test/testing:2a7958c61a31a38a365aa347147aba2aaaaaaa"
     )
     assert project.secret_name == "testing-staging-testing-secret"
     assert project.secret_data == {}
@@ -35,19 +35,19 @@ def test_default_empty_dependencies() -> None:
 
 
 @override_settings(
-    DEPENDS_ON_PROJECTS="localhost:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
+    DEPENDS_ON_PROJECTS="docker-registry:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
 )
 def test_dependency_project() -> None:
     project = Project(track="staging")
     assert len(project.dependency_projects) == 1
     assert (
         project.dependency_projects[0].image
-        == "localhost:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
+        == "docker-registry:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
     )
 
 
 @override_settings(
-    DEPENDS_ON_PROJECTS="localhost:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
+    DEPENDS_ON_PROJECTS="docker-registry:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
 )
 def test_dependency_project_host_port() -> None:
     project = Project(track="staging")
@@ -56,7 +56,7 @@ def test_dependency_project_host_port() -> None:
 
 
 @override_settings(
-    DEPENDS_ON_PROJECTS="localhost/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
+    DEPENDS_ON_PROJECTS="docker-registry/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
 )
 def test_dependency_project_no_host_port() -> None:
     project = Project(track="staging")
@@ -65,7 +65,7 @@ def test_dependency_project_no_host_port() -> None:
 
 
 @override_settings(
-    DEPENDS_ON_PROJECTS="localhost:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
+    DEPENDS_ON_PROJECTS="docker-registry:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
 )
 def test_dependency_production_like_url() -> None:
     with pytest.raises(ValueError):
@@ -73,7 +73,7 @@ def test_dependency_production_like_url() -> None:
 
 
 @override_settings(
-    DEPENDS_ON_PROJECTS="localhost:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
+    DEPENDS_ON_PROJECTS="docker-registry:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
 )
 def test_dependency_url() -> None:
     project = Project(track="staging")
@@ -81,7 +81,7 @@ def test_dependency_url() -> None:
 
 
 @override_settings(
-    DEPENDS_ON_PROJECTS="localhost:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
+    DEPENDS_ON_PROJECTS="docker-registry:5000/test/odin:2a7958c61a31a38a365aa347147aba2aaaaaaa-finalstage"
 )
 @mock.patch.dict(
     "os.environ",

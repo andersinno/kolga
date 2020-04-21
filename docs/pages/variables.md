@@ -21,6 +21,7 @@ supplies a predefined variables with the SHA.
 
 | Variable                      | Description                                         | Default                      | CI Support |
 |-------------------------------|-----------------------------------------------------|------------------------------|------------|
+| BUILDKIT\_CACHE\_REPO         | Cache subrepository for buildkit / buildx           | cache                        |            |
 | CONTAINER\_REGISTRY           | Docker registry URL                                 |                              | GitLab     |
 | CONTAINER\_REGISTRY\_PASSWORD | Password for Docker registry                        |                              | GitLab     |
 | CONTAINER\_REGISTRY\_REPO     | Docker repository for project                       |                              | Gitlab     |

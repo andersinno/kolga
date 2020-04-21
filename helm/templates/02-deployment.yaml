@@ -74,6 +74,7 @@ spec:
             httpGet:
               path: /readiness
               port: {{ .Values.service.targetPort }}
+          {{- end }}
           {{- if or .Values.application.fileSecretName .Values.application.temporaryStoragePath }}
           volumeMounts:
           {{- if .Values.application.temporaryStoragePath }}

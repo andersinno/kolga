@@ -67,6 +67,7 @@ class Project:
             docker = Docker()
             self.image = docker.image_tag
 
+        # TODO: Only set secret names if there are actual secrets
         if not self.secret_name:
             self.secret_name = get_secret_name(track=track, postfix=postfix)
 
