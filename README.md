@@ -1,5 +1,7 @@
 # Anders CI/CD DevOps
 
+> Version 3 is still in BETA and is therefor in a volatile state and can change without notice
+
 CI/CD configuration for running a complete DevOps pipeline with all stages
 from Docker builds and testnig to review, QA/staging and production environment
 creation.
