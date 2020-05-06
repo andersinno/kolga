@@ -1,4 +1,5 @@
 import os
+from typing import Dict, Union
 
 import pytest
 
@@ -24,7 +25,11 @@ def test_get_chart_name_exception() -> None:
 
 
 def test_get_chart_values_list() -> None:
-    value = {"app": "testapp", "release": "testing", "lizard": "-1"}
+    value: Dict[str, Union[str, int]] = {
+        "app": "testapp",
+        "release": "testing",
+        "lizard": "-1",
+    }
 
     expected = [
         "--set",

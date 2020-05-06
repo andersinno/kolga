@@ -1,7 +1,7 @@
 import functools
 import operator
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from scripts.settings import settings
 from scripts.utils.general import kuberenetes_safe_name, run_os_command
@@ -75,7 +75,7 @@ class Helm:
         return chart_name[0]
 
     @staticmethod
-    def get_chart_values_list(values: Dict[str, str]) -> List[str]:
+    def get_chart_values_list(values: Dict[str, Union[str, int]]) -> List[str]:
         values_list = [f"{name}={value}" for name, value in values.items()]
         return Helm.get_chart_params(flag="--set", values=values_list)
 
@@ -93,7 +93,7 @@ class Helm:
     def upgrade_chart(
         self,
         name: str,
-        values: Dict[str, str],
+        values: Dict[str, Union[str, int]],
         namespace: str,
         chart: str = "",
         chart_path: Optional[Path] = None,
