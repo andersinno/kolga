@@ -34,6 +34,16 @@ spec:
           - secretRef:
                 name: {{ .Values.application.secretName }}
           {{- end }}
+          {{- if or .Values.application.requestCpu .Values.application.requestRam }}
+          resources:
+            requests:
+              {{- if .Values.application.requestCpu }}
+              cpu: "{{ .Values.application.requestCpu }}"
+              {{- end }}
+              {{- if .Values.application.requestRam }}
+              memory: "{{ .Values.application.requestRam }}"
+              {{- end }}
+          {{- end }}
           env:
             - name: POD_IP
               valueFrom:
