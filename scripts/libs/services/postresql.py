@@ -38,17 +38,17 @@ class PostgresqlService(Service):
         self.database = database
         image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
         self.values = {
-            "image.repository": image.repository,
+            "image": {"repository": image.repository},
             "postgresqlUsername": self.username,
             "postgresqlPassword": self.password,
             "postgresqlDatabase": self.database,
         }
 
         if image.registry is not None:
-            self.values["image.registry"] = image.registry
+            self.values["image"]["registry"] = image.registry
 
         if image.tag is not None:
-            self.values["image.tag"] = image.tag
+            self.values["image"]["tag"] = image.tag
 
     def get_database_url(self) -> URL:
         deploy_name = get_deploy_name(self.track)

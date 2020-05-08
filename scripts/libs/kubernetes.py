@@ -2,9 +2,10 @@ import shutil
 import tempfile
 from base64 import b64encode
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import colorful as cf
+import yaml
 from kubernetes import client as k8s_client
 from kubernetes import config as k8s_config
 from kubernetes.client.rest import ApiException
@@ -376,56 +377,60 @@ class Kubernetes:
     ) -> None:
         helm_path = self.get_helm_path()
 
-        values: Dict[str, Union[str, int]] = {
-            "namespace": namespace,
+        values: Dict[str, Any] = {
+            "application": {
+                "initializeCommand": project.initialize_command,
+                "migrateCommand": project.migrate_command,
+                "secretName": project.secret_name,
+                "track": track,
+            },
+            "gitlab": {
+                "app": settings.PROJECT_PATH_SLUG,
+                "env": settings.ENVIRONMENT_SLUG,
+            },
             "image": project.image,
-            "gitlab.app": settings.PROJECT_PATH_SLUG,
-            "gitlab.env": settings.ENVIRONMENT_SLUG,
+            "ingress": {"maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE},
+            "namespace": namespace,
             "releaseOverride": f"{settings.ENVIRONMENT_SLUG}-{kuberenetes_safe_name(project.name)}",
-            "application.track": track,
-            "application.secretName": project.secret_name,
-            "application.initializeCommand": project.initialize_command,
-            "application.migrateCommand": project.migrate_command,
             "replicaCount": project.replica_count,
-            "service.url": project.url,
-            "service.urls": self.get_hostnames(
-                hostname=project.url, additional_urls=project.additional_urls
-            ),
-            "service.targetPort": project.service_port,
-            "ingress.maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE,
+            "service": {
+                "targetPort": project.service_port,
+                "url": project.url,
+                "urls": [project.url, *project.additional_urls],
+            },
         }
 
         if project.basic_auth_secret_name:
-            values["ingress.basicAuthSecret"] = project.basic_auth_secret_name
+            values["ingress"]["basicAuthSecret"] = project.basic_auth_secret_name
 
         if project.file_secret_name:
-            values["application.fileSecretName"] = project.file_secret_name
-            values["application.fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
+            values["application"]["fileSecretName"] = project.file_secret_name
+            values["application"]["fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
 
         if project.request_cpu:
-            values["application.requestCpu"] = project.request_cpu
+            values["application"]["requestCpu"] = project.request_cpu
 
         if project.request_ram:
-            values["application.requestRam"] = project.request_ram
+            values["application"]["requestRam"] = project.request_ram
 
         cert_issuer = self.get_certification_issuer(track=track)
         if cert_issuer:
-            values["ingress.clusterIssuer"] = cert_issuer
+            values["ingress"]["clusterIssuer"] = cert_issuer
 
         if settings.K8S_CERTMANAGER_USE_OLD_API:
-            values["ingress.certManagerAnnotationPrefix"] = "certmanager.k8s.io"
+            values["ingress"]["certManagerAnnotationPrefix"] = "certmanager.k8s.io"
 
         if settings.K8S_INGRESS_PREVENT_ROBOTS:
-            values["ingress.preventRobots"] = "1"
+            values["ingress"]["preventRobots"] = "1"
 
         if settings.K8S_INGRESS_DISABLED:
-            values["ingress.disabled"] = "1"
+            values["ingress"]["disabled"] = "1"
 
         if settings.K8S_LIVENESS_FILE:
-            values["application.livenessFile"] = settings.K8S_LIVENESS_FILE
+            values["application"]["livenessFile"] = settings.K8S_LIVENESS_FILE
 
         if settings.K8S_READINESS_FILE:
-            values["application.readinessFile"] = settings.K8S_READINESS_FILE
+            values["application"]["readinessFile"] = settings.K8S_READINESS_FILE
 
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
@@ -441,8 +446,8 @@ class Kubernetes:
                 icon=f"{self.ICON} 🏷️",
                 title="Deployment values (without environment vars):",
             )
-            for key, value in values.items():
-                logger.info(message=f"\t{key}: {value}")
+            for line in yaml.dump(values).split("\n"):
+                logger.info(message=f"\t{line}")
 
             application_labels = {"release": project.deploy_name}
             status = self.status(namespace=namespace, labels=application_labels)
@@ -530,17 +535,6 @@ class Kubernetes:
             command_args += [name]
             logger.info(title=f" with name '{name}'", end="")
         return command_args
-
-    @staticmethod
-    def get_hostnames(
-        hostname: str = settings.ENVIRONMENT_URL,
-        additional_urls: List[str] = settings.K8S_ADDITIONAL_HOSTNAMES,
-    ) -> str:
-        hostnames = []
-        hostnames.append(hostname)
-        hostnames.extend(additional_urls)
-
-        return f"{{{','.join(hostnames)}}}"
 
     def get_certification_issuer(self, track: str) -> Optional[str]:
         logger.info(

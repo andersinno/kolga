@@ -36,9 +36,8 @@ class RabbitmqService(Service):
         self.rabbitmq_version = rabbitmq_version
         self.__databases: Dict[str, Database] = {}
         self.values = {
-            "image.tag": self.rabbitmq_version,
-            "rabbitmq.username": self.username,
-            "rabbitmq.password": self.password,
+            "image": {"tag": self.rabbitmq_version},
+            "rabbitmq": {"password": self.password, "username": self.username},
         }
 
     def get_base_server_url(self) -> URL:

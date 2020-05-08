@@ -45,7 +45,7 @@ class MysqlService(Service):
             "mysqlPassword": self.password,
             "mysqlRootPassword": self.password,
             "mysqlDatabase": self.database,
-            "testFramework.enabled": "false",
+            "testFramework": {"enabled": "false"},
         }
 
     def setup_prerequisites(self) -> None:

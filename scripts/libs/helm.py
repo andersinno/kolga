@@ -1,7 +1,10 @@
 import functools
 import operator
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from tempfile import NamedTemporaryFile
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 from scripts.settings import settings
 from scripts.utils.general import kuberenetes_safe_name, run_os_command
@@ -75,11 +78,6 @@ class Helm:
         return chart_name[0]
 
     @staticmethod
-    def get_chart_values_list(values: Dict[str, Union[str, int]]) -> List[str]:
-        values_list = [f"{name}={value}" for name, value in values.items()]
-        return Helm.get_chart_params(flag="--set", values=values_list)
-
-    @staticmethod
     def get_chart_params(flag: str, values: List[Any]) -> List[str]:
         # Create a list of lists with all of the flag and values for the Helm template
         values_params = [[flag, str(value)] for value in values]
@@ -93,7 +91,7 @@ class Helm:
     def upgrade_chart(
         self,
         name: str,
-        values: Dict[str, Union[str, int]],
+        values: Dict[str, Any],
         namespace: str,
         chart: str = "",
         chart_path: Optional[Path] = None,
@@ -135,25 +133,25 @@ class Helm:
         if version:
             helm_command += ["--version", version]
 
-        # Add value setter arguments
-        values_params = self.get_chart_values_list(values)
-        helm_command += values_params
-
         # Add values files
         if values_files:
             helm_command += self.get_chart_params(flag="--values", values=values_files)
 
         safe_name = kuberenetes_safe_name(name=name)
+        values_yaml = yaml.dump(values)
 
-        # Add the name and chart
-        os_command = helm_command + [f"{safe_name}", f"{chart}"]
+        with NamedTemporaryFile(buffering=0) as fobj:
+            fobj.write(values_yaml.encode())
+            result = run_os_command(
+                [*helm_command, "--values", fobj.name, f"{safe_name}", f"{chart}"],
+            )
 
-        result = run_os_command(os_command)
         if result.return_code:
             logger.std(result, raise_exception=raise_exception)
             return result
+
         logger.success()
         logger.info(f"\tName: {safe_name} (orig: {name})")
         logger.info(f"\tNamespace: {namespace}")
-        logger.info(f"\tValues count: {int(len(values_params) / 2)}")
+
         return result
