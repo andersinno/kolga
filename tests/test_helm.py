@@ -29,6 +29,8 @@ def test_get_chart_values_list() -> None:
         "app": "testapp",
         "release": "testing",
         "lizard": "-1",
+        "integer": 1324,
+        "negative_integer": -234,
     }
 
     expected = [
@@ -38,6 +40,10 @@ def test_get_chart_values_list() -> None:
         "release=testing",
         "--set",
         "lizard=-1",
+        "--set",
+        "integer=1324",
+        "--set",
+        "negative_integer=-234",
     ]
 
     assert Helm.get_chart_values_list(value) == expected
