@@ -401,6 +401,12 @@ class Kubernetes:
             values["application.fileSecretName"] = project.file_secret_name
             values["application.fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
 
+        if project.request_cpu:
+            values["application.requestCpu"] = project.request_cpu
+
+        if project.request_ram:
+            values["application.requestRam"] = project.request_ram
+
         cert_issuer = self.get_certification_issuer(track=track)
         if cert_issuer:
             values["ingress.clusterIssuer"] = cert_issuer

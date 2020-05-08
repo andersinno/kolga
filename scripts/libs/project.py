@@ -20,6 +20,8 @@ PROJECT_ARG_SETTINGS_MAPPING = {
     "APP_MIGRATE_COMMAND": "migrate_command",
     "ENVIRONMENT_URL": "url",
     "K8S_ADDITIONAL_HOSTNAMES": "additional_urls",
+    "K8S_REQUEST_CPU": "request_cpu",
+    "K8S_REQUEST_RAM": "request_ram",
     "SERVICE_PORT": "service_port",
 }
 
@@ -30,6 +32,8 @@ class Project:
     migrate_command: str
     url: str
     additional_urls: List[str]
+    request_cpu: str
+    request_ram: str
     service_port: str
 
     dependency_projects: List["Project"]
