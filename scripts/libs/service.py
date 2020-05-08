@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Set
+from typing import List, Mapping, Optional, Set
 
 from scripts.utils.general import get_project_secret_var
+from scripts.utils.models import HelmValues
 
 
 class Service:
@@ -18,7 +19,7 @@ class Service:
         self,
         name: str,
         track: str,
-        values: Optional[Dict[str, Any]] = None,
+        values: Optional[HelmValues] = None,
         artifact_name: Optional[str] = None,
         values_files: Optional[List[Path]] = None,
         chart: str = "",
@@ -28,7 +29,7 @@ class Service:
     ) -> None:
         self.name = name
         self.track = track
-        self.values: Dict[str, Any] = values or {}
+        self.values = values or {}
         self.artifact_name = artifact_name
         self.values_files: List[Path] = values_files or []
         self.chart = chart

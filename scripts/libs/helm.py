@@ -2,14 +2,14 @@ import functools
 import operator
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 import yaml
 
 from scripts.settings import settings
 from scripts.utils.general import kuberenetes_safe_name, run_os_command
 from scripts.utils.logger import logger
-from scripts.utils.models import SubprocessResult
+from scripts.utils.models import HelmValues, SubprocessResult
 
 
 class Helm:
@@ -91,7 +91,7 @@ class Helm:
     def upgrade_chart(
         self,
         name: str,
-        values: Dict[str, Any],
+        values: HelmValues,
         namespace: str,
         chart: str = "",
         chart_path: Optional[Path] = None,

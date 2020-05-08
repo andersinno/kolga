@@ -2,7 +2,7 @@ import shutil
 import tempfile
 from base64 import b64encode
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TypedDict
 
 import colorful as cf
 import yaml
@@ -31,7 +31,58 @@ from scripts.utils.general import (
     validate_file_secret_path,
 )
 from scripts.utils.logger import logger
-from scripts.utils.models import BasicAuthUser, ReleaseStatus, SubprocessResult
+from scripts.utils.models import (
+    BasicAuthUser,
+    HelmValues,
+    ReleaseStatus,
+    SubprocessResult,
+)
+
+
+class _Application(TypedDict, total=False):
+    database_host: str
+    database_url: str
+    fileSecretName: str
+    fileSecretPath: str
+    initializeCommand: str
+    livenessFile: str
+    migrateCommand: str
+    readinessFile: str
+    requestCpu: str
+    requestRam: str
+    secretName: str
+    track: str
+
+
+class _GitLab(TypedDict, total=False):
+    app: str
+    env: str
+
+
+class _Ingress(TypedDict, total=False):
+    basicAuthSecret: str
+    certManagerAnnotationPrefix: str
+    clusterIssuer: str
+    disabled: bool
+    maxBodySize: str
+    preventRobots: bool
+
+
+class _Service(TypedDict, total=False):
+    targetPort: int
+    url: str
+    urls: List[str]
+
+
+class ApplicationDeploymentValues(HelmValues, total=False):
+    application: _Application
+    gitlab: _GitLab
+    ingress: _Ingress
+    image: str
+    namespace: str
+    releaseOverride: str
+    replicaCount: int
+    service: _Service
 
 
 class Kubernetes:
@@ -377,7 +428,7 @@ class Kubernetes:
     ) -> None:
         helm_path = self.get_helm_path()
 
-        values: Dict[str, Any] = {
+        values: ApplicationDeploymentValues = {
             "application": {
                 "initializeCommand": project.initialize_command,
                 "migrateCommand": project.migrate_command,
@@ -421,10 +472,10 @@ class Kubernetes:
             values["ingress"]["certManagerAnnotationPrefix"] = "certmanager.k8s.io"
 
         if settings.K8S_INGRESS_PREVENT_ROBOTS:
-            values["ingress"]["preventRobots"] = "1"
+            values["ingress"]["preventRobots"] = True
 
         if settings.K8S_INGRESS_DISABLED:
-            values["ingress"]["disabled"] = "1"
+            values["ingress"]["disabled"] = True
 
         if settings.K8S_LIVENESS_FILE:
             values["application"]["livenessFile"] = settings.K8S_LIVENESS_FILE

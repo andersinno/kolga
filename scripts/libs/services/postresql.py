@@ -1,4 +1,4 @@
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Mapping, TypedDict
 
 from scripts.libs.service import Service
 from scripts.settings import settings
@@ -8,8 +8,21 @@ from scripts.utils.general import (
     get_deploy_name,
     get_project_secret_var,
 )
-from scripts.utils.models import DockerImageRef
+from scripts.utils.models import DockerImageRef, HelmValues
 from scripts.utils.url import URL  # type: ignore
+
+
+class _Image(TypedDict, total=False):
+    registry: str
+    repository: str
+    tag: str
+
+
+class _Values(HelmValues):
+    image: _Image
+    postgresqlUsername: str
+    postgresqlPassword: str
+    postgresqlDatabase: str
 
 
 class PostgresqlService(Service):
@@ -37,7 +50,7 @@ class PostgresqlService(Service):
         self.password = password
         self.database = database
         image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
-        self.values = {
+        self.values: _Values = {
             "image": {"repository": image.repository},
             "postgresqlUsername": self.username,
             "postgresqlPassword": self.password,
