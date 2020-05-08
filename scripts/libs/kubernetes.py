@@ -2,7 +2,7 @@ import shutil
 import tempfile
 from base64 import b64encode
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import colorful as cf
 from kubernetes import client as k8s_client
@@ -376,7 +376,7 @@ class Kubernetes:
     ) -> None:
         helm_path = self.get_helm_path()
 
-        values: Dict[str, str] = {
+        values: Dict[str, Union[str, int]] = {
             "namespace": namespace,
             "image": project.image,
             "gitlab.app": settings.PROJECT_PATH_SLUG,
@@ -386,6 +386,7 @@ class Kubernetes:
             "application.secretName": project.secret_name,
             "application.initializeCommand": project.initialize_command,
             "application.migrateCommand": project.migrate_command,
+            "replicaCount": project.replica_count,
             "service.url": project.url,
             "service.urls": self.get_hostnames(
                 hostname=project.url, additional_urls=project.additional_urls
