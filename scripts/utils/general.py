@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 from datetime import datetime, timezone
+from hashlib import sha256
 from pathlib import Path
 from shlex import quote
 from typing import Any, Dict, List, Mapping, Optional, Union
@@ -25,6 +26,10 @@ DATABASE_DEFAULT_PORT_MAPPING = {
 }
 
 BUILT_DOCKER_TEST_IMAGE = "BUILT_DOCKER_TEST_IMAGE"
+
+DEPLOY_NAME_MAX_ENV_SLUG_LENGTH = 30
+DEPLOY_NAME_MAX_HELM_NAME_LENGTH = 53
+DEPLOY_NAME_MAX_TRACK_LENGTH = 10
 
 
 def get_project_secret_var(project_name: str, value: str = "") -> str:
@@ -117,11 +122,16 @@ def loads_json(string: str) -> Dict[str, Any]:
 def get_deploy_name(track: Optional[str] = None, postfix: Optional[str] = None) -> str:
     from scripts.settings import settings
 
-    track_postfix = f"-{track}" if track and track != settings.DEFAULT_TRACK else ""
-    deploy_name = f"{settings.ENVIRONMENT_SLUG}{track_postfix}"
     postfix = f"-{postfix}" if postfix else ""
-    name = f"{deploy_name}{postfix}"
-    return kuberenetes_safe_name(name)
+    track_postfix = f"-{track}" if track and track != settings.DEFAULT_TRACK else ""
+    environment_slug = settings.ENVIRONMENT_SLUG[:DEPLOY_NAME_MAX_ENV_SLUG_LENGTH]
+    tracked_name = f"{environment_slug}{track_postfix[:DEPLOY_NAME_MAX_TRACK_LENGTH]}"
+
+    tracked_name_len = len(tracked_name)
+    max_postfix_len = DEPLOY_NAME_MAX_HELM_NAME_LENGTH - tracked_name_len
+    deploy_name = f"{tracked_name}{truncate_with_hash(postfix, max_postfix_len)}"
+
+    return kuberenetes_safe_name(deploy_name)
 
 
 def get_secret_name(track: Optional[str] = None, postfix: Optional[str] = None) -> str:
@@ -217,3 +227,19 @@ def string_to_yaml(string: str, indentation: int = 0, strip: bool = True) -> byt
         string = indentation * " " + string
 
     return string.encode("utf-8")
+
+
+def truncate_with_hash(
+    s: str, max_length: int, hash_length: int = 2, separator: str = "-",
+) -> str:
+    if len(s) <= max_length:
+        return s
+
+    digest = sha256(s.encode("utf-8")).hexdigest()
+    postfix = f"{separator}{digest[:hash_length]}"
+    s = f"{s[:max(1, max_length - len(postfix))]}{postfix}"
+
+    if len(s) > max_length:
+        raise ValueError("Cannot truncate value with given constraints")
+
+    return s

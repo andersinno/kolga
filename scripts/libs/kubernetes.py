@@ -411,7 +411,7 @@ class Kubernetes:
         )
 
     def deploy_service(self, service: "Service", namespace: str, track: str) -> None:
-        deploy_name = f"{get_deploy_name(track=track)}-{service.name}"
+        deploy_name = get_deploy_name(track=track, postfix=service.name)
 
         self.helm.upgrade_chart(
             chart=service.chart,

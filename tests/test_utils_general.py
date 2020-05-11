@@ -1,9 +1,14 @@
 import os
+import re
+from typing import Optional
+from unittest import mock
 from uuid import uuid4
 
 import pytest
 
+from scripts.settings import settings
 from scripts.utils.general import (
+    DEPLOY_NAME_MAX_HELM_NAME_LENGTH,
     camel_case_split,
     get_deploy_name,
     get_environment_vars_by_prefix,
@@ -27,16 +32,45 @@ def test_camel_case_split(value: str, expected: str) -> None:
 
 
 @pytest.mark.parametrize(  # type: ignore
-    "track, expected",
+    "slug, track, postfix, expected",
     [
-        (DEFAULT_TRACK, "testing"),  # DEFAULT_TRACK is a special case
-        ("qa", "testing-qa"),
-        ("lizard", "testing-lizard"),
-        ("1", "testing-1"),
+        ("testing", DEFAULT_TRACK, None, "testing"),  # DEFAULT_TRACK is a special case
+        ("testing", "qa", None, "testing-qa"),
+        ("testing", "lizard", None, "testing-lizard"),
+        ("testing", "1", None, "testing-1"),
+        (
+            "massively-long-environment-name",
+            "staging",
+            None,
+            "massively-long-environment-nam-staging",
+        ),
+        (
+            "massively-long-environment-name",
+            "staging",
+            "project-name",
+            "massively-long-environment-nam-staging-project-name",
+        ),
+        (
+            "massively-long-environment-name",
+            "staging",
+            "project-name-that-just-goes-on-and-on",
+            "/massively-long-environment-nam-staging-project-nam-../",
+        ),
     ],
 )
-def test_get_deploy_name(track: str, expected: str) -> None:
-    assert get_deploy_name(track) == expected
+def test_get_deploy_name(
+    slug: str, track: str, postfix: Optional[str], expected: str,
+) -> None:
+    with mock.patch.object(settings, "ENVIRONMENT_SLUG", slug):
+        deploy_name = get_deploy_name(track=track, postfix=postfix)
+
+    assert len(deploy_name) <= DEPLOY_NAME_MAX_HELM_NAME_LENGTH
+
+    if expected.startswith("/") and expected.endswith("/"):
+        # Treat as a regular expression
+        assert re.match(f"^{expected[1:-1]}$", deploy_name)
+    else:
+        assert deploy_name == expected
 
 
 @pytest.mark.parametrize(  # type: ignore
