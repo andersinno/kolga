@@ -1,4 +1,4 @@
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Mapping, TypedDict
 
 from scripts.libs.service import Service
 from scripts.settings import settings
@@ -8,8 +8,21 @@ from scripts.utils.general import (
     get_deploy_name,
     get_project_secret_var,
 )
-from scripts.utils.models import DockerImageRef
+from scripts.utils.models import DockerImageRef, HelmValues
 from scripts.utils.url import URL  # type: ignore
+
+
+class _Image(TypedDict, total=False):
+    registry: str
+    repository: str
+    tag: str
+
+
+class _Values(HelmValues):
+    image: _Image
+    postgresqlUsername: str
+    postgresqlPassword: str
+    postgresqlDatabase: str
 
 
 class PostgresqlService(Service):
@@ -37,18 +50,18 @@ class PostgresqlService(Service):
         self.password = password
         self.database = database
         image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
-        self.values = {
-            "image.repository": image.repository,
+        self.values: _Values = {
+            "image": {"repository": image.repository},
             "postgresqlUsername": self.username,
             "postgresqlPassword": self.password,
             "postgresqlDatabase": self.database,
         }
 
         if image.registry is not None:
-            self.values["image.registry"] = image.registry
+            self.values["image"]["registry"] = image.registry
 
         if image.tag is not None:
-            self.values["image.tag"] = image.tag
+            self.values["image"]["tag"] = image.tag
 
     def get_database_url(self) -> URL:
         deploy_name = get_deploy_name(self.track)

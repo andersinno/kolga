@@ -36,7 +36,7 @@ class Project:
     replica_count: int
     request_cpu: str
     request_ram: str
-    service_port: str
+    service_port: int
 
     dependency_projects: List["Project"]
 

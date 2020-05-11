@@ -1,4 +1,4 @@
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Mapping, TypedDict
 
 from scripts.libs.database import Database
 from scripts.libs.service import Service
@@ -9,7 +9,22 @@ from scripts.utils.general import (
     RABBITMQ,
     get_deploy_name,
 )
+from scripts.utils.models import HelmValues
 from scripts.utils.url import URL  # type: ignore
+
+
+class _Image(TypedDict):
+    tag: str
+
+
+class _RabbitMQ(TypedDict):
+    password: str
+    username: str
+
+
+class _Values(HelmValues):
+    image: _Image
+    rabbitmq: _RabbitMQ
 
 
 class RabbitmqService(Service):
@@ -35,10 +50,9 @@ class RabbitmqService(Service):
         self.vhost = vhost
         self.rabbitmq_version = rabbitmq_version
         self.__databases: Dict[str, Database] = {}
-        self.values = {
-            "image.tag": self.rabbitmq_version,
-            "rabbitmq.username": self.username,
-            "rabbitmq.password": self.password,
+        self.values: _Values = {
+            "image": {"tag": self.rabbitmq_version},
+            "rabbitmq": {"password": self.password, "username": self.username},
         }
 
     def get_base_server_url(self) -> URL:

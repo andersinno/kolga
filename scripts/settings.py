@@ -61,7 +61,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "DEFAULT_TRACK": [env.str, "stable"],
     "ENVIRONMENT_SLUG": [env.str, ""],
     "ENVIRONMENT_URL": [env.str, ""],
-    "SERVICE_PORT": [env.str, "8000"],
+    "SERVICE_PORT": [env.int, 8000],
     # ================================================
     # GIT
     # ================================================

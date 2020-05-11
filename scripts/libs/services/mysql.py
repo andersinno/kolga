@@ -1,6 +1,6 @@
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Mapping, TypedDict
 from uuid import uuid4
 
 from scripts.libs.database import Database
@@ -13,7 +13,21 @@ from scripts.utils.general import (
     get_project_secret_var,
     string_to_yaml,
 )
+from scripts.utils.models import HelmValues
 from scripts.utils.url import URL  # type: ignore
+
+
+class _TestFramework(TypedDict):
+    enabled: bool
+
+
+class _Values(HelmValues):
+    imageTag: str
+    mysqlUser: str
+    mysqlPassword: str
+    mysqlRootPassword: str
+    mysqlDatabase: str
+    testFramework: _TestFramework
 
 
 class MysqlService(Service):
@@ -39,13 +53,13 @@ class MysqlService(Service):
         self.database = database
         self.mysql_version = mysql_version
         self.__databases: Dict[Service, Database] = {}
-        self.values = {
+        self.values: _Values = {
             "imageTag": self.mysql_version,
             "mysqlUser": self.username,
             "mysqlPassword": self.password,
             "mysqlRootPassword": self.password,
             "mysqlDatabase": self.database,
-            "testFramework.enabled": "false",
+            "testFramework": {"enabled": False},
         }
 
     def setup_prerequisites(self) -> None:
