@@ -23,6 +23,7 @@ PROJECT_ARG_SETTINGS_MAPPING = {
     "K8S_REPLICACOUNT": "replica_count",
     "K8S_REQUEST_CPU": "request_cpu",
     "K8S_REQUEST_RAM": "request_ram",
+    "K8S_TEMP_STORAGE_PATH": "temp_storage_path",
     "SERVICE_PORT": "service_port",
 }
 
@@ -37,6 +38,7 @@ class Project:
     request_cpu: str
     request_ram: str
     service_port: int
+    temp_storage_path: str
 
     dependency_projects: List["Project"]
 

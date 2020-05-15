@@ -102,6 +102,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_LIVENESS_FILE": [env.str, ""],
     "K8S_READINESS_FILE": [env.str, ""],
     "K8S_REPLICACOUNT": [env.int, 1],
+    "K8S_TEMP_STORAGE_PATH": [env.str, ""],
     "KUBECONFIG": [env.str, ""],
     "DEPENDS_ON_PROJECTS": [env.str, ""],
 }
@@ -158,6 +159,7 @@ class Settings:
     K8S_LIVENESS_FILE: str
     K8S_READINESS_FILE: str
     K8S_REPLICACOUNT: int
+    K8S_TEMP_STORAGE_PATH: str
     KUBECONFIG: str
     DEPENDS_ON_PROJECTS: str
 

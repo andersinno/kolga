@@ -54,6 +54,7 @@ supplies a predefined variables with the SHA.
 | K8S\_REQUEST\_CPU             | Request at least this much CPU (ex. 1000m)          |                              |            |
 | K8S\_REQUEST\_RAM             | Request at least this much RAM (ex. 512Mi)          |                              |            |
 | K8S\_SECRET\_PREFIX           | Application environment variable prefix             | K8S\_SECRET\_                |            |
+| K8S\_TEMP\_STORAGE\_PATH      | Temporary volume mount storage path                 |                              |            |
 | KUBECONFIG                    | Path to Kubernetes config                           |                              |            |
 | MYSQL\_ENABLED                | Should a MySQL database be created for preview      | False                        |            |
 | MYSQL\_VERSION\_TAG           | Version of MySQL for preview environment            | 5\.7                         |            |
