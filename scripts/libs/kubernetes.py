@@ -51,6 +51,7 @@ class _Application(TypedDict, total=False):
     requestCpu: str
     requestRam: str
     secretName: str
+    temporaryStoragePath: str
     track: str
 
 
@@ -463,6 +464,9 @@ class Kubernetes:
 
         if project.request_ram:
             values["application"]["requestRam"] = project.request_ram
+
+        if project.temp_storage_path:
+            values["application"]["temporaryStoragePath"] = project.temp_storage_path
 
         cert_issuer = self.get_certification_issuer(track=track)
         if cert_issuer:
