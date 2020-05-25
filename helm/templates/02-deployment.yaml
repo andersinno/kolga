@@ -6,7 +6,6 @@ metadata:
   annotations:
     app.gitlab.com/app: "{{ .Values.gitlab.app }}"
     app.gitlab.com/env: "{{ .Values.gitlab.env }}"
-    kolga.io/deploymentTime: {{ now | date "Mon Jan 2 15:04:05 UTC 2006" | quote }}
   labels:
     app: {{ template "appname" . }}
     release: "{{ .Release.Name }}"
@@ -21,6 +20,7 @@ spec:
       annotations:
         app.gitlab.com/app: "{{ .Values.gitlab.app }}"
         app.gitlab.com/env: "{{ .Values.gitlab.env }}"
+        kolga.io/deploymentTime: {{ now | date "Mon Jan 2 15:04:05 UTC 2006" | quote }}
       labels:
         track: "{{ .Values.application.track }}"
         release: "{{ .Release.Name }}"
