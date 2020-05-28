@@ -52,7 +52,7 @@ variables:
   artifacts:
     paths:
       - $BUILD_ARTIFACT_FOLDER/
-    expire_in: 1 hour
+    expire_in: 3 days
   interruptible: true
   retry:
     max: 2
@@ -107,7 +107,7 @@ variables:
   artifacts:
     paths:
       - $SERVICE_ARTIFACT_FOLDER/
-    expire_in: 1 hour
+    expire_in: 3 days
   only:
     refs:
       - merge_requests
