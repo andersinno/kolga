@@ -20,9 +20,9 @@ set_env_from_devops() {
 
 setup_buildkit() {
     if docker buildx &>/dev/null; then
-        printf "🐳 Setting up buildx environment: "
+        # printf "🐳 Setting up buildx environment: "
         docker buildx create --name kolgabk --use > /dev/null
         mkdir -p /tmp/buildx/cache
-        printf "kolgabk\n"
+        # printf "kolgabk\n"
     fi
 }
