@@ -6,10 +6,10 @@ from pathlib import Path
 import pytest
 from kubernetes.client.rest import ApiException
 
-from scripts.libs.kubernetes import Kubernetes
-from scripts.libs.project import Project
-from scripts.utils.general import get_deploy_name
-from scripts.utils.models import BasicAuthUser
+from kolga.libs.kubernetes import Kubernetes
+from kolga.libs.project import Project
+from kolga.utils.general import get_deploy_name
+from kolga.utils.models import BasicAuthUser
 
 DEFAULT_TRACK = os.environ.get("DEFAULT_TRACK", "stable")
 K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "testing")

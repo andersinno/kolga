@@ -1,8 +1,8 @@
 from hashlib import sha256
 from typing import Any, Dict, List
 
-from scripts.libs.docker import Docker
-from scripts.utils.general import (
+from kolga.libs.docker import Docker
+from kolga.utils.general import (
     env_var_safe_key,
     get_deploy_name,
     get_environment_vars_by_prefix,

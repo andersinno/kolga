@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import List, Mapping, Optional, Set
 
-from scripts.utils.general import get_project_secret_var
-from scripts.utils.models import HelmValues
+from kolga.utils.general import get_project_secret_var
+from kolga.utils.models import HelmValues
 
 
 class Service:

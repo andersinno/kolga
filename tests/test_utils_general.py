@@ -6,8 +6,8 @@ from uuid import uuid4
 
 import pytest
 
-from scripts.settings import settings
-from scripts.utils.general import (
+from kolga.settings import settings
+from kolga.utils.general import (
     DEPLOY_NAME_MAX_HELM_NAME_LENGTH,
     camel_case_split,
     get_deploy_name,

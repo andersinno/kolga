@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Any, Dict, Optional
 
-from scripts.settings import settings
+from kolga.settings import settings
 
 
 class override_settings:

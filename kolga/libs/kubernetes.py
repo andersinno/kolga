@@ -10,16 +10,16 @@ from kubernetes import client as k8s_client
 from kubernetes import config as k8s_config
 from kubernetes.client.rest import ApiException
 
-from scripts.libs.helm import Helm
-from scripts.libs.project import Project
-from scripts.libs.service import Service
-from scripts.settings import settings
-from scripts.utils.exceptions import (
+from kolga.libs.helm import Helm
+from kolga.libs.project import Project
+from kolga.libs.service import Service
+from kolga.settings import settings
+from kolga.utils.exceptions import (
     DeploymentFailed,
     ImproperlyConfigured,
     NoClusterConfigError,
 )
-from scripts.utils.general import (
+from kolga.utils.general import (
     camel_case_split,
     current_rfc3339_datetime,
     get_deploy_name,
@@ -30,8 +30,8 @@ from scripts.utils.general import (
     run_os_command,
     validate_file_secret_path,
 )
-from scripts.utils.logger import logger
-from scripts.utils.models import (
+from kolga.utils.logger import logger
+from kolga.utils.models import (
     BasicAuthUser,
     HelmValues,
     ReleaseStatus,

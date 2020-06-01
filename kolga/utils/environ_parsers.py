@@ -3,7 +3,7 @@ from typing import Any, List
 
 from environs import Env
 
-from scripts.utils.models import BasicAuthUser
+from kolga.utils.models import BasicAuthUser
 
 BASIC_AUTH_REGEX = re.compile(r"(?P<credential>[^:\s]+:[^:\s]+)+", re.IGNORECASE)
 

@@ -1,5 +1,5 @@
-from scripts.utils.general import run_os_command
-from scripts.utils.logger import logger
+from kolga.utils.general import run_os_command
+from kolga.utils.logger import logger
 
 
 class Git:

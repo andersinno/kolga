@@ -2,7 +2,7 @@ from typing import Optional
 
 import colorful as cf
 
-from scripts.utils.models import SubprocessResult
+from kolga.utils.models import SubprocessResult
 
 
 class Logger:

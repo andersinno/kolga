@@ -7,8 +7,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from environs import Env
 
-from scripts.utils.logger import logger
-from scripts.utils.models import BasicAuthUser
+from kolga.utils.logger import logger
+from kolga.utils.models import BasicAuthUser
 
 from .utils.environ_parsers import basicauth_parser, list_none_parser
 from .utils.exceptions import NoClusterConfigError

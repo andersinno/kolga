@@ -2,8 +2,8 @@ from typing import List
 
 import pytest
 
-from scripts.utils.environ_parsers import basicauth_parser
-from scripts.utils.models import BasicAuthUser
+from kolga.utils.environ_parsers import basicauth_parser
+from kolga.utils.models import BasicAuthUser
 
 
 @pytest.mark.parametrize(  # type: ignore
