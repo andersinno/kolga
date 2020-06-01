@@ -1,0 +1,20 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'Ubuntu 18.04'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: ExportVars
+    container: python:3.8
+    displayName: ExportVars
+    steps:
+      - script: export
+  - job: Build
+    container: andersinnovations/devops:azure-test
+    displayName: Build
+    steps:
+      - script: ls && ./devops create_images
