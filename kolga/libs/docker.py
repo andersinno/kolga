@@ -189,7 +189,7 @@ class Docker:
                 continue
             if stage.development:
                 logger.info(
-                    icon=f"ℹ️",
+                    icon="ℹ️",
                     title=f"Found test/development stage '{stage.name}', building that as well",
                 )
             built_images.append(

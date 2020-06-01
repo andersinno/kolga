@@ -90,7 +90,7 @@ def test_get_environment_vars_by_prefix() -> None:
     prefix = f"TEST_{str(uuid4())}_SECRET_"
 
     env_vars = {f"{prefix}PASSWORD": "pass", f"{prefix}LIZARD": "-1"}
-    secrets = {f"PASSWORD": "pass", f"LIZARD": "-1"}
+    secrets = {"PASSWORD": "pass", "LIZARD": "-1"}
 
     for key, secret in env_vars.items():
         os.environ[key] = secret
