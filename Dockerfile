@@ -141,5 +141,8 @@ COPY . /app
 # ===================================
 FROM app-base AS production
 # ===================================
+RUN apk add --no-cache bash sudo shadow nodejs
+LABEL "com.azure.dev.pipelines.agent.handler.node.path"="/usr/bin/node"
 
 COPY . /app
+CMD ["node"]

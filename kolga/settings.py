@@ -283,6 +283,25 @@ class Settings:
         raise NoClusterConfigError()
 
 
+class AzurePipelinesMapper:
+    MAPPING = {
+        "BUILD_SOURCEBRANCHNAME": "GIT_COMMIT_REF_NAME",  # TODO: Do this programmatically instead
+        "BUILD_SOURCEVERSION": "GIT_COMMIT_SHA",
+        "SYSTEM_TEAMPROJECT": "PROJECT_NAME",
+    }
+
+    def __str__(self) -> str:
+        return "Azure Pipelines"
+
+    @property
+    def is_active(self) -> bool:
+        return env.str("AGENT_NAME", "") == "Azure Pipelines 2"  # type: ignore
+
+    @property
+    def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
+        return ["/builds/"]
+
+
 class GitLabMapper:
     MAPPING = {
         "CI_COMMIT_REF_NAME": "GIT_COMMIT_REF_NAME",
