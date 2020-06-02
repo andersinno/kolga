@@ -173,7 +173,7 @@ class Settings:
         self.devops_root_path = Path(sys.argv[0]).resolve().parent
 
         self.active_ci: Optional[Any] = None
-        self.supported_cis: List[Any] = [GitLabMapper()]
+        self.supported_cis: List[Any] = [GitLabMapper(), AzurePipelinesMapper()]
         self._set_ci_environment()
         setattr(self, PROJECT_NAME_VAR, self._get_project_name())
 
@@ -295,7 +295,8 @@ class AzurePipelinesMapper:
 
     @property
     def is_active(self) -> bool:
-        return env.str("AGENT_NAME", "") == "Azure Pipelines 2"  # type: ignore
+        print(env.str("AZURE_HTTP_USER_AGENT", ""))
+        return bool(env.str("AZURE_HTTP_USER_AGENT", ""))
 
     @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
