@@ -3,18 +3,18 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, TypedDict
 from uuid import uuid4
 
-from scripts.libs.database import Database
-from scripts.libs.service import Service
-from scripts.settings import settings
-from scripts.utils.general import (
+from kolga.libs.database import Database
+from kolga.libs.service import Service
+from kolga.settings import settings
+from kolga.utils.general import (
     DATABASE_DEFAULT_PORT_MAPPING,
     MYSQL,
     get_deploy_name,
     get_project_secret_var,
     string_to_yaml,
 )
-from scripts.utils.models import HelmValues
-from scripts.utils.url import URL  # type: ignore
+from kolga.utils.models import HelmValues
+from kolga.utils.url import URL  # type: ignore
 
 
 class _TestFramework(TypedDict):

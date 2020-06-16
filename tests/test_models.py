@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.utils.models import DockerImageRef
+from kolga.utils.models import DockerImageRef
 
 
 @pytest.mark.parametrize(  # type: ignore

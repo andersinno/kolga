@@ -3,8 +3,8 @@ from typing import Generator
 
 import pytest
 
-from scripts.libs.helm import Helm
-from scripts.libs.kubernetes import Kubernetes
+from kolga.libs.helm import Helm
+from kolga.libs.kubernetes import Kubernetes
 
 
 @pytest.fixture()  # type: ignore

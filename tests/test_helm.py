@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from scripts.libs.helm import Helm
+from kolga.libs.helm import Helm
 
 
 @pytest.mark.parametrize(  # type: ignore

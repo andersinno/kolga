@@ -1,8 +1,8 @@
 import os
 
-from scripts.libs.helm import Helm
-from scripts.libs.kubernetes import Kubernetes
-from scripts.libs.services.mysql import MysqlService
+from kolga.libs.helm import Helm
+from kolga.libs.kubernetes import Kubernetes
+from kolga.libs.services.mysql import MysqlService
 
 DEFAULT_TRACK = os.environ.get("DEFAULT_TRACK", "stable")
 K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "testing")

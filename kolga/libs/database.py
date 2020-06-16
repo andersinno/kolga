@@ -1,8 +1,8 @@
 import re
 from uuid import uuid4
 
-from scripts.utils.general import DATABASE_DEFAULT_PORT_MAPPING, MYSQL
-from scripts.utils.url import URL  # type: ignore
+from kolga.utils.general import DATABASE_DEFAULT_PORT_MAPPING, MYSQL
+from kolga.utils.url import URL  # type: ignore
 
 
 class Database:

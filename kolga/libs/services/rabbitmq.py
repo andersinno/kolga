@@ -1,16 +1,16 @@
 from typing import Any, Dict, Mapping, TypedDict
 
-from scripts.libs.database import Database
-from scripts.libs.service import Service
-from scripts.settings import settings
-from scripts.utils.general import (
+from kolga.libs.database import Database
+from kolga.libs.service import Service
+from kolga.settings import settings
+from kolga.utils.general import (
     AMQP,
     DATABASE_DEFAULT_PORT_MAPPING,
     RABBITMQ,
     get_deploy_name,
 )
-from scripts.utils.models import HelmValues
-from scripts.utils.url import URL  # type: ignore
+from kolga.utils.models import HelmValues
+from kolga.utils.url import URL  # type: ignore
 
 
 class _Image(TypedDict):

@@ -6,10 +6,10 @@ from typing import Any, List, Optional
 
 import yaml
 
-from scripts.settings import settings
-from scripts.utils.general import kuberenetes_safe_name, run_os_command
-from scripts.utils.logger import logger
-from scripts.utils.models import HelmValues, SubprocessResult
+from kolga.settings import settings
+from kolga.utils.general import kuberenetes_safe_name, run_os_command
+from kolga.utils.logger import logger
+from kolga.utils.models import HelmValues, SubprocessResult
 
 
 class Helm:

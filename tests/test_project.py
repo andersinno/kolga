@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from scripts.libs.project import Project
+from kolga.libs.project import Project
 
 from .testcase import override_settings
 

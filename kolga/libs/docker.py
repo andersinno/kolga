@@ -2,8 +2,8 @@ import re
 from pathlib import Path
 from typing import Dict, List
 
-from scripts.utils.logger import logger
-from scripts.utils.models import DockerImage, ImageStage
+from kolga.utils.logger import logger
+from kolga.utils.models import DockerImage, ImageStage
 
 from ..settings import settings
 from ..utils.general import get_environment_vars_by_prefix, run_os_command
@@ -189,7 +189,7 @@ class Docker:
                 continue
             if stage.development:
                 logger.info(
-                    icon=f"ℹ️",
+                    icon="ℹ️",
                     title=f"Found test/development stage '{stage.name}', building that as well",
                 )
             built_images.append(

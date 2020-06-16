@@ -1,8 +1,8 @@
 import pytest
 
-from scripts.libs.database import Database
-from scripts.utils.general import DATABASE_DEFAULT_PORT_MAPPING, MYSQL, POSTGRES
-from scripts.utils.url import URL  # type: ignore
+from kolga.libs.database import Database
+from kolga.utils.general import DATABASE_DEFAULT_PORT_MAPPING, MYSQL, POSTGRES
+from kolga.utils.url import URL  # type: ignore
 
 
 @pytest.mark.parametrize(  # type: ignore

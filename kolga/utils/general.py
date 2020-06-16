@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 
 import environs
 
-from scripts.utils.models import SubprocessResult
+from kolga.utils.models import SubprocessResult
 
 env = environs.Env()
 
@@ -33,7 +33,7 @@ DEPLOY_NAME_MAX_TRACK_LENGTH = 10
 
 
 def get_project_secret_var(project_name: str, value: str = "") -> str:
-    from scripts.settings import settings
+    from kolga.settings import settings
 
     project = env_var_safe_key(project_name)
     value = env_var_safe_key(value)
@@ -120,7 +120,7 @@ def loads_json(string: str) -> Dict[str, Any]:
 
 
 def get_deploy_name(track: Optional[str] = None, postfix: Optional[str] = None) -> str:
-    from scripts.settings import settings
+    from kolga.settings import settings
 
     postfix = f"-{postfix}" if postfix else ""
     track_postfix = f"-{track}" if track and track != settings.DEFAULT_TRACK else ""

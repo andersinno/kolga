@@ -23,6 +23,6 @@ setup_buildkit() {
         printf "🐳 Setting up buildx environment: "
         docker buildx create --name kolgabk --use > /dev/null
         mkdir -p /tmp/buildx/cache
-        printf "kolgabk"
+        printf "kolgabk\n"
     fi
 }

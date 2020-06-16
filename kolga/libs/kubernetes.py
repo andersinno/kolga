@@ -10,16 +10,16 @@ from kubernetes import client as k8s_client
 from kubernetes import config as k8s_config
 from kubernetes.client.rest import ApiException
 
-from scripts.libs.helm import Helm
-from scripts.libs.project import Project
-from scripts.libs.service import Service
-from scripts.settings import settings
-from scripts.utils.exceptions import (
+from kolga.libs.helm import Helm
+from kolga.libs.project import Project
+from kolga.libs.service import Service
+from kolga.settings import settings
+from kolga.utils.exceptions import (
     DeploymentFailed,
     ImproperlyConfigured,
     NoClusterConfigError,
 )
-from scripts.utils.general import (
+from kolga.utils.general import (
     camel_case_split,
     current_rfc3339_datetime,
     get_deploy_name,
@@ -30,8 +30,8 @@ from scripts.utils.general import (
     run_os_command,
     validate_file_secret_path,
 )
-from scripts.utils.logger import logger
-from scripts.utils.models import (
+from kolga.utils.logger import logger
+from kolga.utils.models import (
     BasicAuthUser,
     HelmValues,
     ReleaseStatus,
@@ -366,7 +366,7 @@ class Kubernetes:
             A dict with the key `auth` and base64 content of a htpasswd file as value
         """
         logger.info(
-            icon=f"{self.ICON}  🔨", title=f"Generating basic auth data: ", end=""
+            icon=f"{self.ICON}  🔨", title="Generating basic auth data: ", end=""
         )
 
         if not basic_auth_users:
@@ -599,11 +599,11 @@ class Kubernetes:
         raise_exception = False
         if settings.K8S_CLUSTER_ISSUER:
             cert_issuer: str = settings.K8S_CLUSTER_ISSUER
-            logger.info(message=f" (settings): ", end="")
+            logger.info(message=" (settings): ", end="")
             raise_exception = True
         else:
             cert_issuer = f"certificate-letsencrypt-{track}"
-            logger.info(message=f" (track): ", end="")
+            logger.info(message=" (track): ", end="")
 
         os_command = ["kubectl", "get", "clusterissuer", cert_issuer]
         result = run_os_command(os_command, shell=True)
@@ -658,7 +658,7 @@ class Kubernetes:
         ]
 
         logger.info(
-            icon=f"{self.ICON}  📋️️ ", title=f"Getting logs for resource: ", end=""
+            icon=f"{self.ICON}  📋️️ ", title="Getting logs for resource: ", end=""
         )
 
         if labels:

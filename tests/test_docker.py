@@ -4,8 +4,8 @@ from typing import List
 
 import pytest
 
-from scripts.libs.docker import Docker
-from scripts.settings import settings
+from kolga.libs.docker import Docker
+from kolga.settings import settings
 
 
 def test_incorrect_dockerfile_path() -> None:

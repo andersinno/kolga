@@ -5,7 +5,7 @@ from typing import Optional
 
 import pytest
 
-from scripts.settings import settings
+from kolga.settings import settings
 
 
 def fake_track(invalid_value: str) -> str:
