@@ -3,7 +3,7 @@ include = '\.pyi?$|^/devops$'
 target_version = ["py38"]
 
 [tool.poetry]
-name = "ci-configuration"
+name = "kolga"
 version = "3.0.0"
 description = ""
 authors = ["Anders Innovations <admin@anders.fi>"]
