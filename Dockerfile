@@ -117,6 +117,7 @@ RUN apk add --no-cache --virtual .build-deps \
         apache2-utils \
     && ln -sf python3 /usr/bin/python \
     && ln -s pip3 /usr/bin/pip \
+    && python3 -m ensurepip \
     && poetry config virtualenvs.create false \
 	&& poetry install --no-dev --no-interaction \
 	&& pip install docker-compose \
