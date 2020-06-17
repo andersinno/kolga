@@ -68,7 +68,7 @@ spec:
               - {{ .Values.application.livenessFile }}
           {{ else }}
           livenessProbe:
-            initialDelaySeconds: 60
+            initialDelaySeconds: {{ template "probeInitialDelay" }}
             httpGet:
               path: /healthz
               port: {{ .Values.service.targetPort }}
@@ -81,7 +81,7 @@ spec:
               - {{ .Values.application.readinessFile }}
           {{ else }}
           readinessProbe:
-            initialDelaySeconds: 60
+            initialDelaySeconds: {{ template "probeInitialDelay" }}
             httpGet:
               path: /readiness
               port: {{ .Values.service.targetPort }}
