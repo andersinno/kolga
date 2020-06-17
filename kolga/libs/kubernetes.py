@@ -47,6 +47,7 @@ class _Application(TypedDict, total=False):
     initializeCommand: str
     livenessFile: str
     migrateCommand: str
+    probeInitialDelay: int
     readinessFile: str
     requestCpu: str
     requestRam: str
@@ -458,6 +459,9 @@ class Kubernetes:
         if project.file_secret_name:
             values["application"]["fileSecretName"] = project.file_secret_name
             values["application"]["fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
+
+        if project.probe_initial_delay:
+            values["application"]["probeInitialDelay"] = project.probe_initial_delay
 
         if project.request_cpu:
             values["application"]["requestCpu"] = project.request_cpu

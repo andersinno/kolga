@@ -50,6 +50,7 @@ supplies a predefined variables with the SHA.
 | K8S\_INGRESS\_MAX\_BODY\_SIZE | Set max body size for requests to the nginx ingress | 100m                         |            |
 | K8S\_INGRESS\_PREVENT\_ROBOTS | Add a basic robots.txt to disallow all robots       | False                        |            |
 | K8S\_NAMESPACE                | Kubernetes namespace to use                         |                              | GitLab     |
+| K8S\_PROBE\_INITIAL\_DELAY    | Seconds before health/ready checks starts           | 60                           |            |
 | K8S\_REPLICACOUNT             | Number of replicated Pods                           | 1                            |            |
 | K8S\_REQUEST\_CPU             | Request at least this much CPU (ex. 1000m)          |                              |            |
 | K8S\_REQUEST\_RAM             | Request at least this much RAM (ex. 512Mi)          |                              |            |
