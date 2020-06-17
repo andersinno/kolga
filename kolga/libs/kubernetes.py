@@ -84,6 +84,7 @@ class ApplicationDeploymentValues(HelmValues, total=False):
     releaseOverride: str
     replicaCount: int
     service: _Service
+    jobsOnly: bool
 
 
 class Kubernetes:
@@ -450,6 +451,7 @@ class Kubernetes:
                 "url": project.url,
                 "urls": [project.url, *project.additional_urls],
             },
+            "jobsOnly": settings.KOLGA_JOBS_ONLY,
         }
 
         if project.basic_auth_secret_name:
