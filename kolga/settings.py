@@ -106,6 +106,10 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_TEMP_STORAGE_PATH": [env.str, ""],
     "KUBECONFIG": [env.str, ""],
     "DEPENDS_ON_PROJECTS": [env.str, ""],
+    # ================================================
+    # PIPELINE
+    # ================================================
+    "KOLGA_JOBS_ONLY": [env.bool, False],
 }
 
 
@@ -164,6 +168,7 @@ class Settings:
     K8S_TEMP_STORAGE_PATH: str
     KUBECONFIG: str
     DEPENDS_ON_PROJECTS: str
+    KOLGA_JOBS_ONLY: bool
 
     def __init__(self) -> None:
         missing_vars = _VARIABLE_DEFINITIONS.keys() - self.__annotations__.keys()

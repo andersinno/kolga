@@ -1,3 +1,4 @@
+{{- if (not .Values.jobsOnly) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -111,3 +112,4 @@ spec:
             secretName: {{ .Values.application.fileSecretName }}
       {{- end }}
       {{- end }}
+{{- end }}
