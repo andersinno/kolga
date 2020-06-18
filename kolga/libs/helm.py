@@ -115,6 +115,8 @@ class Helm:
             icon=f"{self.ICON}  📄", title=f"Upgrading chart from '{chart}': ", end="",
         )
 
+        timeout = settings.K8S_PROBE_INITIAL_DELAY + 120  # Initial delay plus 2 minutes
+
         # Construct initial helm upgrade command
         install_arg = "--install" if install else ""
         helm_command = [
@@ -122,7 +124,7 @@ class Helm:
             "upgrade",
             "--atomic",
             "--timeout",
-            "180s",
+            f"{timeout}s",
             "--history-max",
             "30",
             install_arg,
