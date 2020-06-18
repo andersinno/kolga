@@ -46,9 +46,11 @@ class _Application(TypedDict, total=False):
     fileSecretPath: str
     initializeCommand: str
     livenessFile: str
+    livenessPath: str
     migrateCommand: str
     probeInitialDelay: int
     readinessFile: str
+    readinessPath: str
     requestCpu: str
     requestRam: str
     secretName: str
@@ -435,6 +437,8 @@ class Kubernetes:
             "application": {
                 "initializeCommand": project.initialize_command,
                 "migrateCommand": project.migrate_command,
+                "livenessPath": project.liveness_path,
+                "readinessPath": project.readiness_path,
                 "secretName": project.secret_name,
                 "track": track,
             },

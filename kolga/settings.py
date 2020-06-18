@@ -93,10 +93,12 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_CERTMANAGER_USE_OLD_API": [env.bool, False],
     "K8S_INGRESS_MAX_BODY_SIZE": [env.str, "100m"],
     "K8S_INGRESS_PREVENT_ROBOTS": [env.bool, False],
+    "K8S_LIVENESS_PATH": [env.str, "/healthz"],
     "K8S_NAMESPACE": [env.str, ""],
     "K8S_PROBE_INITIAL_DELAY": [env.int, 60],
     "K8S_FILE_SECRET_MOUNTPATH": [env.str, "/tmp/secrets"],
     "K8S_FILE_SECRET_PREFIX": [env.str, "K8S_FILE_SECRET_"],
+    "K8S_READINESS_PATH": [env.str, "/readiness"],
     "K8S_REQUEST_CPU": [env.str, ""],
     "K8S_REQUEST_RAM": [env.str, ""],
     "K8S_SECRET_PREFIX": [env.str, "K8S_SECRET_"],
@@ -155,10 +157,12 @@ class Settings:
     K8S_CERTMANAGER_USE_OLD_API: bool
     K8S_INGRESS_MAX_BODY_SIZE: str
     K8S_INGRESS_PREVENT_ROBOTS: bool
+    K8S_LIVENESS_PATH: str
     K8S_NAMESPACE: str
     K8S_PROBE_INITIAL_DELAY: str
     K8S_FILE_SECRET_MOUNTPATH: str
     K8S_FILE_SECRET_PREFIX: str
+    K8S_READINESS_PATH: str
     K8S_REQUEST_CPU: str
     K8S_REQUEST_RAM: str
     K8S_SECRET_PREFIX: str
