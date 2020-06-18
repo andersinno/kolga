@@ -71,7 +71,7 @@ spec:
           livenessProbe:
             initialDelaySeconds: {{ template "probeInitialDelay" }}
             httpGet:
-              path: /healthz
+              path: {{ .Values.application.livenessPath }}
               port: {{ .Values.service.targetPort }}
           {{- end }}
           {{- if .Values.application.readinessFile }}
@@ -84,7 +84,7 @@ spec:
           readinessProbe:
             initialDelaySeconds: {{ template "probeInitialDelay" }}
             httpGet:
-              path: /readiness
+              path: {{ .Values.application.readinessPath }}
               port: {{ .Values.service.targetPort }}
           {{- end }}
           {{- if or .Values.application.fileSecretName .Values.application.temporaryStoragePath }}

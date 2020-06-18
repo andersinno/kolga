@@ -20,7 +20,9 @@ PROJECT_ARG_SETTINGS_MAPPING = {
     "APP_MIGRATE_COMMAND": "migrate_command",
     "ENVIRONMENT_URL": "url",
     "K8S_ADDITIONAL_HOSTNAMES": "additional_urls",
+    "K8S_LIVENESS_PATH": "liveness_path",
     "K8S_PROBE_INITIAL_DELAY": "probe_initial_delay",
+    "K8S_READINESS_PATH": "readiness_path",
     "K8S_REPLICACOUNT": "replica_count",
     "K8S_REQUEST_CPU": "request_cpu",
     "K8S_REQUEST_RAM": "request_ram",
@@ -35,7 +37,9 @@ class Project:
     migrate_command: str
     url: str
     additional_urls: List[str]
+    liveness_path: str
     probe_initial_delay: int
+    readiness_path: str
     replica_count: int
     request_cpu: str
     request_ram: str
