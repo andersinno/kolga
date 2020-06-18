@@ -21,8 +21,3 @@ Get a hostname from URL
 {{- define "hostname" -}}
 {{- . | trimPrefix "http://" |  trimPrefix "https://" | trimSuffix "/" | quote -}}
 {{- end -}}
-
-{{- define "probeInitialDelay" -}}
-{{- $probeInitialDelay := default 60 .Values.application.probeInitialDelay -}}
-{{- printf "%s" $probeInitialDelay -}}
-{{- end -}}

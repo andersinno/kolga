@@ -69,7 +69,7 @@ spec:
               - {{ .Values.application.livenessFile }}
           {{ else }}
           livenessProbe:
-            initialDelaySeconds: {{ template "probeInitialDelay" }}
+            initialDelaySeconds: {{ .Values.application.probeInitialDelay }}
             httpGet:
               path: "{{ .Values.application.livenessPath }}"
               port: {{ .Values.service.targetPort }}
@@ -82,7 +82,7 @@ spec:
               - {{ .Values.application.readinessFile }}
           {{ else }}
           readinessProbe:
-            initialDelaySeconds: {{ template "probeInitialDelay" }}
+            initialDelaySeconds: {{ .Values.application.probeInitialDelay }}
             httpGet:
               path: "{{ .Values.application.readinessPath }}"
               port: {{ .Values.service.targetPort }}
