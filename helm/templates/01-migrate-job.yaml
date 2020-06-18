@@ -33,9 +33,6 @@ spec:
         - secretRef:
             name: {{ .Values.application.secretName }}
         {{- end }}
-        env:
-          - name: DATABASE_URL
-            value: {{ .Values.application.database_url | quote }}
         {{- if .Values.application.fileSecretName }}
         volumeMounts:
         {{- if .Values.application.fileSecretName }}
