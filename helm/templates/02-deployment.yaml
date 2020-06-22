@@ -85,6 +85,8 @@ spec:
           {{ else }}
           readinessProbe:
             initialDelaySeconds: {{ .Values.application.probeInitialDelay }}
+            failureThreshold: {{ .Values.application.probeFailureThreshold }}
+            periodSeconds: {{ .Values.application.probePeriod }}
             httpGet:
               path: "{{ .Values.application.readinessPath }}"
               port: {{ .Values.service.targetPort }}
