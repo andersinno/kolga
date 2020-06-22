@@ -48,7 +48,9 @@ class _Application(TypedDict, total=False):
     livenessFile: str
     livenessPath: str
     migrateCommand: str
+    probeFailureThreshold: int
     probeInitialDelay: int
+    probePeriod: int
     readinessFile: str
     readinessPath: str
     requestCpu: str
@@ -437,6 +439,9 @@ class Kubernetes:
             "application": {
                 "initializeCommand": project.initialize_command,
                 "migrateCommand": project.migrate_command,
+                "probeFailureThreshold": project.probe_failure_threshold,
+                "probeInitialDelay": project.probe_initial_delay,
+                "probePeriod": project.probe_period,
                 "livenessPath": project.liveness_path,
                 "readinessPath": project.readiness_path,
                 "secretName": project.secret_name,
@@ -465,9 +470,6 @@ class Kubernetes:
         if project.file_secret_name:
             values["application"]["fileSecretName"] = project.file_secret_name
             values["application"]["fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
-
-        if project.probe_initial_delay:
-            values["application"]["probeInitialDelay"] = project.probe_initial_delay
 
         if project.request_cpu:
             values["application"]["requestCpu"] = project.request_cpu

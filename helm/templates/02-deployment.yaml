@@ -70,6 +70,8 @@ spec:
           {{ else }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.application.probeInitialDelay }}
+            failureThreshold: {{ .Values.application.failureThreshold }}
+            periodSeconds: {{ .Values.application.periodSeconds }}
             httpGet:
               path: "{{ .Values.application.livenessPath }}"
               port: {{ .Values.service.targetPort }}

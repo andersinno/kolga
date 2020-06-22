@@ -95,7 +95,9 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_INGRESS_PREVENT_ROBOTS": [env.bool, False],
     "K8S_LIVENESS_PATH": [env.str, "/healthz"],
     "K8S_NAMESPACE": [env.str, ""],
+    "K8S_PROBE_FAILURE_THRESHOLD": [env.int, 3],
     "K8S_PROBE_INITIAL_DELAY": [env.int, 60],
+    "K8S_PROBE_PERIOD": [env.int, 10],
     "K8S_FILE_SECRET_MOUNTPATH": [env.str, "/tmp/secrets"],
     "K8S_FILE_SECRET_PREFIX": [env.str, "K8S_FILE_SECRET_"],
     "K8S_READINESS_PATH": [env.str, "/readiness"],
@@ -159,7 +161,9 @@ class Settings:
     K8S_INGRESS_PREVENT_ROBOTS: bool
     K8S_LIVENESS_PATH: str
     K8S_NAMESPACE: str
+    K8S_PROBE_FAILURE_THRESHOLD: int
     K8S_PROBE_INITIAL_DELAY: int
+    K8S_PROBE_PERIOD: int
     K8S_FILE_SECRET_MOUNTPATH: str
     K8S_FILE_SECRET_PREFIX: str
     K8S_READINESS_PATH: str
