@@ -38,7 +38,9 @@ class Project:
     url: str
     additional_urls: List[str]
     liveness_path: str
+    probe_failure_threshold: int
     probe_initial_delay: int
+    probe_period: int
     readiness_path: str
     replica_count: int
     request_cpu: str

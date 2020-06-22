@@ -48,7 +48,9 @@ class _Application(TypedDict, total=False):
     livenessFile: str
     livenessPath: str
     migrateCommand: str
+    probeFailureThreshold: int
     probeInitialDelay: int
+    probePeriod: int
     readinessFile: str
     readinessPath: str
     requestCpu: str
@@ -437,7 +439,9 @@ class Kubernetes:
             "application": {
                 "initializeCommand": project.initialize_command,
                 "migrateCommand": project.migrate_command,
+                "probeFailureThreshold": project.probe_failure_threshold,
                 "probeInitialDelay": project.probe_initial_delay,
+                "probePeriod": project.probe_period,
                 "livenessPath": project.liveness_path,
                 "readinessPath": project.readiness_path,
                 "secretName": project.secret_name,
