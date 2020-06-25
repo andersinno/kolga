@@ -1,8 +1,6 @@
 import re
 from typing import Any, List
 
-from environs import Env
-
 from kolga.utils.models import BasicAuthUser
 
 BASIC_AUTH_REGEX = re.compile(r"(?P<credential>[^:\s]+:[^:\s]+)+", re.IGNORECASE)
@@ -36,4 +34,4 @@ def list_none_parser(value: str) -> Any:
     if not value:
         return []
 
-    return Env.list(value)
+    return value.strip().replace(" ", "").split(",")
