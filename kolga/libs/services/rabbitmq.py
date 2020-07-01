@@ -30,8 +30,8 @@ class _Values(HelmValues):
 class RabbitmqService(Service):
     def __init__(
         self,
-        chart: str = "stable/rabbitmq",
-        chart_version: str = "6.16.6",
+        chart: str = "bitnami/rabbitmq",
+        chart_version: str = "7.4.1",
         username: str = settings.DATABASE_USER,
         password: str = settings.DATABASE_PASSWORD,
         vhost: str = "default",
