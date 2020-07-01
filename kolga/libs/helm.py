@@ -30,6 +30,7 @@ class Helm:
 
         # TODO: Remove once this is added by default and Helm 3 is stable
         self.add_repo("stable", "https://kubernetes-charts.storage.googleapis.com/")
+        self.add_repo("bitnami", "https://charts.bitnami.com/bitnami")
 
         self.update_repos()
 

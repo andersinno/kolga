@@ -80,7 +80,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "DATABASE_USER": [env.str, "user"],
     "MYSQL_VERSION_TAG": [env.str, "5.7"],
     "POSTGRES_IMAGE": [env.str, "docker.io/bitnami/postgresql:9.6"],
-    "RABBITMQ_VERSION_TAG": [env.str, "3.8.2"],
+    "RABBITMQ_VERSION_TAG": [env.str, "3.8.5"],
     "SERVICE_ARTIFACT_FOLDER": [env.str, ""],
     # ================================================
     # KUBERNETES
