@@ -24,14 +24,14 @@ class _RabbitMQ(TypedDict):
 
 class _Values(HelmValues):
     image: _Image
-    rabbitmq: _RabbitMQ
+    auth: _RabbitMQ
 
 
 class RabbitmqService(Service):
     def __init__(
         self,
         chart: str = "bitnami/rabbitmq",
-        chart_version: str = "7.4.1",
+        chart_version: str = "7.4.3",
         username: str = settings.DATABASE_USER,
         password: str = settings.DATABASE_PASSWORD,
         vhost: str = "default",
@@ -52,7 +52,7 @@ class RabbitmqService(Service):
         self.__databases: Dict[str, Database] = {}
         self.values: _Values = {
             "image": {"tag": self.rabbitmq_version},
-            "rabbitmq": {"password": self.password, "username": self.username},
+            "auth": {"password": self.password, "username": self.username},
         }
 
     def get_base_server_url(self) -> URL:
