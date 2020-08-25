@@ -79,5 +79,4 @@ before_script:
   - export PATH="$PATH:$PWD"
   - source utils/shell_utils.sh
   - set_docker_host
-  - setup_buildkit
   - echo 127.0.0.1 docker-registry >> /etc/hosts
