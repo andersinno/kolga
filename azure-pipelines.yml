@@ -1,6 +1,12 @@
 trigger:
 - azure-pipelines-dev
 
+resources:
+  containers:
+  - container: Kolga
+    image: devops/azure-kolga-demo:azure-pipelines-dev
+    endpoint: docker_anders_fi
+
 pool:
   vmImage: 'Ubuntu 18.04'
 
@@ -12,7 +18,7 @@ stages:
   displayName: Build image
   jobs:
   - job: Build
-    container: andersinnovations/devops:azure-test
+    container: Kolga
     displayName: Build
     steps:
       - script: pwd && export && ./devops create_images
