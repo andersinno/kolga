@@ -92,6 +92,7 @@ class Devops:
         g.update_submodules(depth=git_submodule_depth, jobs=git_submodule_jobs)
 
         d = Docker()
+        d.setup_buildkit()
         d.login()
         d.build_stages(push_images=True)
 
