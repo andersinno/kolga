@@ -41,6 +41,7 @@ stages:
     variables:
       BUILT_DOCKER_TEST_IMAGE: $[ dependencies.GetTestImageName.outputs['setVariable.BUILT_DOCKER_TEST_IMAGE'] ]
     steps:
+      - script: sudo chown $(whoami) /etc/hosts && echo 127.0.0.1 docker-registry >> /etc/hosts
       - script: make test
   - job: TestStyle
     container: KolgaDev
