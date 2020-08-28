@@ -20,7 +20,9 @@ def test_create_mysql_database(
 
     track = DEFAULT_TRACK
 
-    mysql_service = MysqlService(track=track, chart="testing/mysql")
+    mysql_service = MysqlService(
+        track=track, chart="testing/mysql", chart_version="1.6.6"
+    )
 
     kubernetes.deploy_service(
         service=mysql_service, namespace=test_namespace, track=track
