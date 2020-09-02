@@ -1,13 +1,14 @@
 trigger:
 - master
 
+# docker_anders_fi must be defined in Azure Service Connections
 resources:
   containers:
   - container: Kolga
-    image: devops/azure-kolga-demo:master
+    image: anders/ci-configuration:v3
     endpoint: docker_anders_fi
   - container: KolgaDev
-    image: devops/azure-kolga-demo:master-development
+    image: anders/ci-configuration:v3-development
     endpoint: docker_anders_fi
 
 pool:
