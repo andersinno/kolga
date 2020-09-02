@@ -3,10 +3,7 @@
 source utils/kubernetes_tools.sh
 source utils/shell_utils.sh
 
-setup_buildkit
-
-if [[ ! -z "$@" ]]; then
-    echo "Running with custom command: ${@}"
+if [[ -n "$@" ]]; then
     "$@"
 else
     setup_kubernetes
