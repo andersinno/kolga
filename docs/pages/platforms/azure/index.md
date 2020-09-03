@@ -20,6 +20,8 @@ To use the example configuration file, you need to create a Variable Group named
 
 KUBERNETES_CONFIG needs to be base64 encoded YAML [kubeconfig configuration](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/). That configuration given in this variable will be passed to kubectl. The configuration should point to the kubecluster where the application is being deployed, and the user defined in the configuration must have admin access to the namespace where the application is being deployed.
 
+The pipeline builds the images described by the Dockerfile and pushes them to a registry defined by CONTAINER_REGISTRY_REPO variable. The image name is taken from the variable DOCKER_IMAGE_NAME (see the example config below) and the complete name for the images will be ${CONTAINER_REGISTRY_REPO}/${DOCKER_IMAGE_NAME}.
+
 An example kubeconfig YAML template, with specific values stripped:
 
 ```yaml
@@ -45,7 +47,7 @@ users:
 
 ## **Service connections**
 
-To use the example configuration file as is, your Azure Pipelines project needs to have a Docker service connection defined by the name `docker_anders_fi`. It needs to point to a docker registry where the Kólga docker image is available, by name devops/azure-kolga-demo:master-development.
+To use the example configuration file as is, your Azure Pipelines project needs to have a Docker service connection defined by the name `docker_anders_fi`. It needs to point to a docker registry where the Kólga docker image is available. This image will be used as the container where Kólga is executed in the pipeline. The image name and tag are defined in the configuration file.
 
 ## **Example YAML file**
 
@@ -58,11 +60,13 @@ pool:
 
 variables:
 - group: kolga-vars
+- name: DOCKER_IMAGE_NAME
+  value: helloworld
 
 resources:
   containers:
   - container: Kolga
-    image: devops/azure-kolga-demo:master-development
+    image: anders/ci-configuration:v3
     endpoint: docker_anders_fi
 
 name:
@@ -74,7 +78,7 @@ stages:
       container: Kolga
       displayName: Build
       steps:
-        - bash: git clone --single-branch --branch azure-pipelines-dev https://github.com/andersinno/kolga.git $(Build.SourcesDirectory)/kolga
+        - bash: git clone --single-branch --branch v3 https://github.com/andersinno/kolga.git $(Build.SourcesDirectory)/kolga
           name: clone_kolga
         - bash: ./kolga/devops create_images
           name: build_app
@@ -91,10 +95,10 @@ stages:
       container: Kolga
       displayName: Deploy
       steps:
-        - bash: ls -la && git clone --single-branch --branch azure-pipelines-dev https://github.com/andersinno/kolga.git $(Build.SourcesDirectory)/kolga
+        - bash: ls -la && git clone --single-branch --branch v3 https://github.com/andersinno/kolga.git $(Build.SourcesDirectory)/kolga
           name: clone_kolga
         - bash: ls -la && echo $KUBERNETES_CONFIG | base64 -d > .kubeconfig
           name: create_kubeconfig
-        - bash: export KUBECONFIG="$(pwd)/.kubeconfig" && export && pwd && ls -la && source ./kolga/utils/shell_utils.sh && set_docker_host && ./kolga/devops deploy_application --track review
+        - bash: export KUBECONFIG="$(pwd)/.kubeconfig" && source ./kolga/utils/shell_utils.sh && set_docker_host && ./kolga/devops deploy_application --track review
           name: deploy
 ```
