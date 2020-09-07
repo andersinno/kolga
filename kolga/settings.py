@@ -188,7 +188,7 @@ class Settings:
         self.devops_root_path = Path(sys.argv[0]).resolve().parent
 
         self.active_ci: Optional[Any] = None
-        self.supported_cis: List[Any] = [GitLabMapper()]
+        self.supported_cis: List[Any] = [GitLabMapper(), GitHubActionsMapper()]
         self._set_ci_environment()
         setattr(self, PROJECT_NAME_VAR, self._get_project_name())
 
@@ -326,6 +326,25 @@ class GitLabMapper:
     @property
     def is_active(self) -> bool:
         return env.bool("GITLAB_CI", False)  # type: ignore
+
+    @property
+    def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
+        return ["/builds/"]
+
+
+class GitHubActionsMapper:
+    MAPPING = {
+        "GITHUB_REF": "GIT_COMMIT_REF_NAME",
+        "GITHUB_SHA": "GIT_COMMIT_SHA",
+        "GITHUB_REPOSITORY": "PROJECT_NAME",
+    }
+
+    def __str__(self) -> str:
+        return "GitHub Actions"
+
+    @property
+    def is_active(self) -> bool:
+        return env.bool("GITHUB_ACTIONS", False)  # type: ignore
 
     @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
