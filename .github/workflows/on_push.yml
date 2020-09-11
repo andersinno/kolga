@@ -1,0 +1,58 @@
+name: build and test
+
+on: [push]
+
+env:
+  CONTAINER_REGISTRY: docker.anders.fi
+  CONTAINER_REGISTRY_REPO: docker.anders.fi/devops/azure-kolga-demo
+  CONTAINER_REGISTRY_USER: azure-registry-user
+  CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+  DOCKER_IMAGE_NAME: ci-configuration
+  BUILD_HOST_IMAGE: docker.anders.fi/anders/ci-configuration:v3
+
+
+jobs:
+  on_push:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: login to Docker container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.CONTAINER_REGISTRY }}
+          username: ${{ env.CONTAINER_REGISTRY_USER }}
+          password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+
+      - name: pull Kólga Docker image
+        run: docker pull $BUILD_HOST_IMAGE
+
+      - name: use Kólga to build Kólga
+        id: build
+        run: |
+          env > ./.docker-env
+          docker run --env-file .docker-env --workdir /github/workspace --rm -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "$PWD":"/github/workspace" \
+            $BUILD_HOST_IMAGE bash -c './devops create_images && export BUILT_IMAGE=$(./devops docker_test_image) && echo "::set-env name=BUILT_DOCKER_TEST_IMAGE::$BUILT_IMAGE"'
+
+      - name: style tests
+        run: docker run $BUILT_DOCKER_TEST_IMAGE /bin/bash -c "make style-tests"
+        if: ${{ steps.build.outcome == 'success' && always() }}
+
+      - name: typing tests
+        run: docker run $BUILT_DOCKER_TEST_IMAGE /bin/bash -c "make typing-tests"
+        if: ${{ steps.build.outcome == 'success' && always() }}
+
+      - name: package tests
+        run: docker run $BUILT_DOCKER_TEST_IMAGE /bin/bash -c "make package-tests"
+        if: ${{ steps.build.outcome == 'success' && always() }}
+
+      - name: doc tests
+        run: docker run $BUILT_DOCKER_TEST_IMAGE /bin/bash -c "make docs"
+        if: ${{ steps.build.outcome == 'success' && always() }}
+
+      - name: functional tests
+        run: |
+          sudo chown $(whoami) /etc/hosts && echo 127.0.0.1 docker-registry >> /etc/hosts
+          make test
+        if: ${{ steps.build.outcome == 'success' && always() }}
