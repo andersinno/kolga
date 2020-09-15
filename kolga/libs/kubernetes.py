@@ -24,7 +24,6 @@ from kolga.utils.general import (
     current_rfc3339_datetime,
     get_deploy_name,
     get_environment_vars_by_prefix,
-    get_secret_name,
     kuberenetes_safe_name,
     loads_json,
     run_os_command,
@@ -403,11 +402,11 @@ class Kubernetes:
     def create_basic_auth_secret(
         self, namespace: str, track: str, project: Project
     ) -> None:
-        if not settings.K8S_INGRESS_BASIC_AUTH:
+        if not project.basic_auth_data:
             return None
 
-        secret_data = self._create_basic_auth_data()
-        secret_name = f"{get_secret_name(track)}-basicauth"
+        secret_data = self._create_basic_auth_data(project.basic_auth_data)
+        secret_name = project.basic_auth_secret_name
         self.create_secret(
             data=secret_data,
             namespace=namespace,

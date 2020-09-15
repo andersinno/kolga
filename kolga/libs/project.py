@@ -9,6 +9,7 @@ from kolga.utils.general import (
     get_environment_vars_by_prefixes,
     get_secret_name,
 )
+from kolga.utils.models import BasicAuthUser
 
 from ..settings import settings
 
@@ -20,6 +21,7 @@ PROJECT_ARG_SETTINGS_MAPPING = {
     "APP_MIGRATE_COMMAND": "migrate_command",
     "ENVIRONMENT_URL": "url",
     "K8S_ADDITIONAL_HOSTNAMES": "additional_urls",
+    "K8S_INGRESS_BASIC_AUTH": "basic_auth_data",
     "K8S_LIVENESS_PATH": "liveness_path",
     "K8S_PROBE_FAILURE_THRESHOLD": "probe_failure_threshold",
     "K8S_PROBE_INITIAL_DELAY": "probe_initial_delay",
@@ -39,6 +41,7 @@ class Project:
     migrate_command: str
     url: str
     additional_urls: List[str]
+    basic_auth_data: List[BasicAuthUser]
     liveness_path: str
     probe_failure_threshold: int
     probe_initial_delay: int
@@ -94,6 +97,9 @@ class Project:
             self.file_secret_name = get_secret_name(
                 track=track, postfix=file_secret_postfix
             )
+
+        if not self.basic_auth_secret_name and self.basic_auth_data:
+            self.basic_auth_secret_name = f"{self.secret_name}-basicauth"
 
         self.deploy_name = deploy_name
         if not deploy_name:
