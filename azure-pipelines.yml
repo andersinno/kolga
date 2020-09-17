@@ -1,0 +1,66 @@
+trigger:
+- master
+
+# docker_anders_fi must be defined in Azure Service Connections
+resources:
+  containers:
+  - container: Kolga
+    image: anders/ci-configuration:v3
+    endpoint: docker_anders_fi
+  - container: KolgaDev
+    image: anders/ci-configuration:v3-development
+    endpoint: docker_anders_fi
+
+pool:
+  vmImage: 'Ubuntu 18.04'
+
+variables:
+- group: kolga-vars
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    container: Kolga
+    displayName: Build
+    steps:
+      - script: ./devops create_images
+- stage: Test
+  displayName: Run tests
+  jobs:
+  - job: GetTestImageName
+    container: Kolga
+    displayName: TestImage
+    steps:
+      - script: echo '##vso[task.setvariable variable=BUILT_DOCKER_TEST_IMAGE;isOutput=true]'$(./devops docker_test_image|tail -1)
+        name: setVariable
+      - script: BUILT_DOCKER_TEST_IMAGE=$(setVariable.BUILT_DOCKER_TEST_IMAGE) ./devops test_setup
+  - job: Test
+    dependsOn: GetTestImageName
+    displayName: Test
+    variables:
+      BUILT_DOCKER_TEST_IMAGE: $[ dependencies.GetTestImageName.outputs['setVariable.BUILT_DOCKER_TEST_IMAGE'] ]
+    steps:
+      - script: sudo chown $(whoami) /etc/hosts && echo 127.0.0.1 docker-registry >> /etc/hosts
+      - script: make test
+  - job: TestStyle
+    container: KolgaDev
+    displayName: TestStyle
+    steps:
+      - script: make style-tests
+  - job: TestTyping
+    container: KolgaDev
+    displayName: TestTyping
+    steps:
+      - script: make typing-tests
+  - job: TestPackages
+    container: KolgaDev
+    displayName: TestPackages
+    steps:
+      - script: make package-tests
+  - job: TestDocs
+    container: KolgaDev
+    displayName: TestDocs
+    steps:
+      - script: make docs

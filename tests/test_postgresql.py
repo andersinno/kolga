@@ -12,7 +12,7 @@ K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "testing")
 # ======================================================================
 
 
-def test_create_mysql_database(
+def test_create_postgresql_database(
     kubernetes: Kubernetes, test_namespace: str, helm: Helm
 ) -> None:
     helm_test_repo_url = os.environ.get("TEST_HELM_REGISTRY", "http://localhost:8080")
@@ -20,7 +20,9 @@ def test_create_mysql_database(
 
     track = DEFAULT_TRACK
 
-    postgresql_service = PostgresqlService(track=track, chart="testing/postgresql")
+    postgresql_service = PostgresqlService(
+        track=track, chart="testing/postgresql", chart_version="9.3.3"
+    )
 
     kubernetes.deploy_service(
         service=postgresql_service, namespace=test_namespace, track=track

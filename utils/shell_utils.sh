@@ -17,12 +17,3 @@ set_env_from_devops() {
     exported_value=$2="$(devops "$1")"
     export "$exported_value"
 }
-
-setup_buildkit() {
-    if docker buildx &>/dev/null; then
-        printf "🐳 Setting up buildx environment: "
-        docker buildx create --name kolgabk --use > /dev/null
-        mkdir -p /tmp/buildx/cache
-        printf "kolgabk\n"
-    fi
-}
