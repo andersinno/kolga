@@ -42,10 +42,10 @@ RUN tar -xvf "$TARGET" -C /helm
 FROM build-base AS poetry
 # ===================================
 
-ARG POETRY_CHECKSUM=89745d7cf34dc17f90b08600163b031b6fbfec5126ebce3d84444856d62a0224
+ARG POETRY_CHECKSUM=e973b3badb95a916bfe250c22eeb7253130fd87312afa326eb02b8bdcea8f4a7
 ARG POETRY_TARGET=/tmp/get-poetry.py
 
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/1.0.0/get-poetry.py -o "$POETRY_TARGET"
+RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/1.1.2/get-poetry.py -o "$POETRY_TARGET"
 RUN sha256sum "$POETRY_TARGET"
 RUN echo "$POETRY_CHECKSUM *$POETRY_TARGET" | sha256sum -c -
 RUN python /tmp/get-poetry.py
