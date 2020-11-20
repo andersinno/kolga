@@ -109,6 +109,7 @@ class Devops:
 
     def deploy_application(self, track: str) -> None:
         from kolga.libs.kubernetes import Kubernetes
+        from kolga.libs.vault import Vault
         from kolga.libs.project import Project
 
         main_project = Project(track=track)
@@ -119,6 +120,9 @@ class Devops:
         namespace = k.create_namespace()
         k.create_default_network_policy()
 
+        v = Vault(track)
+        v.login()
+
         for project in projects:
             file_secrets_paths = k.create_file_secrets_from_environment(
                 namespace=namespace,
@@ -127,6 +131,8 @@ class Devops:
                 secret_name=project.file_secret_name,
             )
             secret_data = {}
+            if settings.VAULT_ADDR:
+                secret_data.update(v.get_secrets())
             secret_data.update(project.secret_data)
             secret_data.update(file_secrets_paths)
 

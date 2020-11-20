@@ -114,6 +114,14 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     # PIPELINE
     # ================================================
     "KOLGA_JOBS_ONLY": [env.bool, False],
+    # ================================================
+    # VAULT
+    # ================================================
+    "VAULT_ADDR": [env.str, ""],
+    "VAULT_JWT_AUTH_PATH": [env.str, "jwt"],
+    "VAULT_KV_SECRET_MOUNT_POINT": [env.str, "secrets"],
+    "VAULT_JWT": [env.str, ""],
+    "VAULT_TLS_ENABLED": [env.bool, True],
 }
 
 
@@ -177,6 +185,11 @@ class Settings:
     KUBECONFIG: str
     DEPENDS_ON_PROJECTS: str
     KOLGA_JOBS_ONLY: bool
+    VAULT_ADDR: str
+    VAULT_JWT_AUTH_PATH: str
+    VAULT_KV_SECRET_MOUNT_POINT: str
+    VAULT_TLS_ENABLED: bool
+    VAULT_JWT: str
 
     def __init__(self) -> None:
         missing_vars = _VARIABLE_DEFINITIONS.keys() - self.__annotations__.keys()
@@ -329,6 +342,7 @@ class GitLabMapper:
         "CI_DEFAULT_BRANCH": "GIT_DEFAULT_TARGET_BRANCH",
         "CI_ENVIRONMENT_SLUG": "ENVIRONMENT_SLUG",
         "CI_ENVIRONMENT_URL": "ENVIRONMENT_URL",
+        "CI_JOB_JWT": "VAULT_JWT",
         "CI_MERGE_REQUEST_TARGET_BRANCH_NAME": "GIT_TARGET_BRANCH",
         "CI_PROJECT_DIR": "PROJECT_DIR",
         "CI_PROJECT_NAME": "PROJECT_NAME",
