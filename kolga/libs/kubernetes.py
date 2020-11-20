@@ -532,6 +532,69 @@ class Kubernetes:
             title=f"Deployment can be accessed via {project.url}",
         )
 
+    def create_default_network_policy(
+        self, namespace: str = settings.K8S_NAMESPACE,
+    ) -> None:
+        """
+        Creates a default network policy which prevents traffic between namespaces.
+        ingress:
+          - from:
+            - namespaceSelector:
+                matchLabels:
+                  ingress: default
+            - podSelector: {}
+          podSelector: {}
+          policyTypes:
+          - Ingress
+        """
+
+        policy_name = "deny-traffic-from-other-namespaces"
+
+        v1 = k8s_client.NetworkingV1Api(self.client)
+
+        # Check if the policy already exists
+        ret = v1.list_namespaced_network_policy(namespace)
+        current_policies = [i.metadata.name for i in ret.items]
+
+        if policy_name not in current_policies:
+            logger.info(
+                icon=f"{self.ICON}  🔨",
+                title=f"Applying the default network policy to {namespace}: ",
+                end="",
+            )
+
+            v1_metadata = k8s_client.V1ObjectMeta(name=policy_name)
+            v1_network_policy_spec = k8s_client.V1NetworkPolicySpec(
+                ingress=[
+                    k8s_client.V1NetworkPolicyIngressRule(
+                        _from=[
+                            k8s_client.V1NetworkPolicyPeer(
+                                namespace_selector=k8s_client.V1LabelSelector(
+                                    match_labels={"ingress": "default"}
+                                ),
+                                pod_selector=k8s_client.V1LabelSelector(),
+                            )
+                        ]
+                    )
+                ],
+                pod_selector=k8s_client.V1LabelSelector(),
+            )
+
+            policy_body = k8s_client.V1NetworkPolicy(
+                api_version="networking.k8s.io/v1",
+                kind="NetworkPolicy",
+                metadata=v1_metadata,
+                spec=v1_network_policy_spec,
+            )
+
+            try:
+                v1.create_namespaced_network_policy(namespace, policy_body)
+            except ApiException as e:
+                self._handle_api_error(e)
+                raise e
+
+            logger.success()
+
     def delete(
         self,
         resource: str,

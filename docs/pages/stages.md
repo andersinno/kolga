@@ -248,3 +248,7 @@ The `deploy_application` command is share across all deployment stages, and is t
 ### CI specific configurations
 
 - **GitLab**
+
+## Network policy
+
+All applications are deployed in their own namespace in Kubernetes. Services can connect to other services in the same namespace but traffic coming from other namespaces is blocked by network policies.

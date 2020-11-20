@@ -150,3 +150,14 @@ def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
 
     with pytest.raises(Exception):
         kubernetes.get(resource="secret", name=test_namespace)
+
+
+def test_create_default_networkpolicy(
+    kubernetes: Kubernetes, test_namespace: str
+) -> None:
+    kubernetes.create_default_network_policy(namespace=K8S_NAMESPACE)
+    kubernetes.get(
+        resource="networkpolicy",
+        namespace=K8S_NAMESPACE,
+        name="deny-traffic-from-other-namespaces",
+    )

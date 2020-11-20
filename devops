@@ -117,6 +117,7 @@ class Devops:
         k = Kubernetes(track=track)
         k.setup_helm()
         namespace = k.create_namespace()
+        k.create_default_network_policy()
 
         for project in projects:
             file_secrets_paths = k.create_file_secrets_from_environment(
