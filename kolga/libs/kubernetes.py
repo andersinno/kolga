@@ -494,10 +494,6 @@ class Kubernetes:
                 "secretName": project.secret_name,
                 "track": track,
             },
-            "gitlab": {
-                "app": settings.PROJECT_PATH_SLUG,
-                "env": settings.ENVIRONMENT_SLUG,
-            },
             "image": project.image,
             "ingress": {
                 "maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE,
@@ -513,6 +509,12 @@ class Kubernetes:
             },
             "jobsOnly": settings.KOLGA_JOBS_ONLY,
         }
+
+        if settings.active_ci == "GITLAB_CI":
+            values["gitlab"] = {
+                "app": settings.PROJECT_PATH_SLUG,
+                "env": settings.ENVIRONMENT_SLUG,
+            }
 
         if project.basic_auth_secret_name:
             values["ingress"]["basicAuthSecret"] = project.basic_auth_secret_name
