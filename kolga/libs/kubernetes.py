@@ -571,9 +571,11 @@ class Kubernetes:
                             k8s_client.V1NetworkPolicyPeer(
                                 namespace_selector=k8s_client.V1LabelSelector(
                                     match_labels={"ingress": "default"}
-                                ),
+                                )
+                            ),
+                            k8s_client.V1NetworkPolicyPeer(
                                 pod_selector=k8s_client.V1LabelSelector(),
-                            )
+                            ),
                         ]
                     )
                 ],
