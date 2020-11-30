@@ -1,0 +1,14 @@
+{{- if .Values.application.pvc.enabled -}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "appname" . }}-pvc
+  namespace: {{ .Values.namespace }}
+spec:
+  storageClassName: "{{ .Values.application.pvc.storageClass }}"
+  accessModes:
+    - {{ .Values.application.pvc.accessMode }}
+  resources:
+    requests:
+      storage: "{{ .Values.application.pvc.size }}"
+{{- end -}}

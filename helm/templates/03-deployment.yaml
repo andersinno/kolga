@@ -102,6 +102,10 @@ spec:
               name: filesecrets
           {{- end }}
           {{- end }}
+          {{- if and .Values.application.pvc.enabled .Values.application.pvc.mountPath }}
+            - name: {{ template "appname" . }}-volume
+              mountPath: {{ .Values.application.pvc.mountPath }}
+          {{- end }}
       imagePullSecrets:
         - name: regcred
       {{- if or .Values.application.fileSecretName .Values.application.temporaryStoragePath }}
@@ -115,5 +119,10 @@ spec:
           secret:
             secretName: {{ .Values.application.fileSecretName }}
       {{- end }}
+      {{- end }}
+      {{- if and .Values.application.pvc.enabled .Values.application.pvc.mountPath }}
+        - name: {{ template "appname" . }}-volume
+          persistentVolumeClaim:
+            claimName: {{ template "appname" . }}-pvc
       {{- end }}
 {{- end }}

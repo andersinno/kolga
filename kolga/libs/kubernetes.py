@@ -38,6 +38,14 @@ from kolga.utils.models import (
 )
 
 
+class _Pvc(TypedDict, total=False):
+    accessMode: str
+    enabled: bool
+    mountPath: str
+    size: str
+    storageClass: str
+
+
 class _Application(TypedDict, total=False):
     database_host: str
     database_url: str
@@ -50,6 +58,7 @@ class _Application(TypedDict, total=False):
     probeFailureThreshold: int
     probeInitialDelay: int
     probePeriod: int
+    pvc: _Pvc
     readinessFile: str
     readinessPath: str
     requestCpu: str
@@ -469,6 +478,15 @@ class Kubernetes:
         if project.file_secret_name:
             values["application"]["fileSecretName"] = project.file_secret_name
             values["application"]["fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
+
+        if settings.K8S_PERSISTENT_STORAGE:
+            values["application"]["pvc"] = {
+                "accessMode": settings.K8S_PERSISTENT_STORAGE_ACCESS_MODE,
+                "enabled": settings.K8S_PERSISTENT_STORAGE,
+                "mountPath": settings.K8S_PERSISTENT_STORAGE_PATH,
+                "size": settings.K8S_PERSISTENT_STORAGE_SIZE,
+                "storageClass": settings.K8S_PERSISTENT_STORAGE_STORAGE_TYPE,
+            }
 
         if project.request_cpu:
             values["application"]["requestCpu"] = project.request_cpu

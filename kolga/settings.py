@@ -105,6 +105,11 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_REQUEST_RAM": [env.str, ""],
     "K8S_SECRET_PREFIX": [env.str, "K8S_SECRET_"],
     "K8S_LIVENESS_FILE": [env.str, ""],
+    "K8S_PERSISTENT_STORAGE": [env.bool, False],
+    "K8S_PERSISTENT_STORAGE_ACCESS_MODE": [env.str, "ReadWriteOnce"],
+    "K8S_PERSISTENT_STORAGE_PATH": [env.str, ""],
+    "K8S_PERSISTENT_STORAGE_SIZE": [env.str, "1Gi"],
+    "K8S_PERSISTENT_STORAGE_STORAGE_TYPE": [env.str, "standard"],
     "K8S_READINESS_FILE": [env.str, ""],
     "K8S_REPLICACOUNT": [env.int, 1],
     "K8S_TEMP_STORAGE_PATH": [env.str, ""],
@@ -169,6 +174,11 @@ class Settings:
     K8S_INGRESS_PREVENT_ROBOTS: bool
     K8S_LIVENESS_PATH: str
     K8S_NAMESPACE: str
+    K8S_PERSISTENT_STORAGE: bool
+    K8S_PERSISTENT_STORAGE_ACCESS_MODE: str
+    K8S_PERSISTENT_STORAGE_PATH: str
+    K8S_PERSISTENT_STORAGE_SIZE: str
+    K8S_PERSISTENT_STORAGE_STORAGE_TYPE: str
     K8S_PROBE_FAILURE_THRESHOLD: int
     K8S_PROBE_INITIAL_DELAY: int
     K8S_PROBE_PERIOD: int
