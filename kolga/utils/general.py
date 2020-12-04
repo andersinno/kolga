@@ -230,7 +230,10 @@ def string_to_yaml(string: str, indentation: int = 0, strip: bool = True) -> byt
 
 
 def truncate_with_hash(
-    s: str, max_length: int, hash_length: int = 2, separator: str = "-",
+    s: str,
+    max_length: int,
+    hash_length: int = 2,
+    separator: str = "-",
 ) -> str:
     if len(s) <= max_length:
         return s

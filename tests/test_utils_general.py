@@ -59,7 +59,10 @@ def test_camel_case_split(value: str, expected: str) -> None:
     ],
 )
 def test_get_deploy_name(
-    slug: str, track: str, postfix: Optional[str], expected: str,
+    slug: str,
+    track: str,
+    postfix: Optional[str],
+    expected: str,
 ) -> None:
     with mock.patch.object(settings, "ENVIRONMENT_SLUG", slug):
         deploy_name = get_deploy_name(track=track, postfix=postfix)

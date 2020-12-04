@@ -319,7 +319,11 @@ class Kubernetes:
         logger.success()
 
     def create_file_secrets_from_environment(
-        self, namespace: str, track: str, project: Project, secret_name: str,
+        self,
+        namespace: str,
+        track: str,
+        project: Project,
+        secret_name: str,
     ) -> Dict[str, str]:
         filesecrets = get_environment_vars_by_prefix(
             prefix=settings.K8S_FILE_SECRET_PREFIX
@@ -439,7 +443,10 @@ class Kubernetes:
         )
 
     def create_application_deployment(
-        self, project: Project, namespace: str, track: str,
+        self,
+        project: Project,
+        namespace: str,
+        track: str,
     ) -> None:
         helm_path = self.get_helm_path()
 
@@ -551,7 +558,8 @@ class Kubernetes:
         )
 
     def create_default_network_policy(
-        self, namespace: str = settings.K8S_NAMESPACE,
+        self,
+        namespace: str = settings.K8S_NAMESPACE,
     ) -> None:
         """
         Creates a default network policy which prevents traffic between namespaces.
