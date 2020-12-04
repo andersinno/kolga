@@ -5,7 +5,7 @@ import pytest
 from kolga.libs.helm import Helm
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "value, expected",
     [
         ("charts/testing", "testing"),  # Stable is a special case

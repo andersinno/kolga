@@ -23,7 +23,7 @@ def kubeconfig_key(track: Optional[str] = None) -> str:
     return f"KUBECONFIG{track_postfix}"
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "track, is_track_present, expected_variable",
     [
         ("", True, "KUBECONFIG"),

@@ -19,5 +19,5 @@ repos:
     rev: v0.790
     hooks:
     -   id: mypy
-        additional_dependencies: ["sphinx"]
+        additional_dependencies: ["sphinx", "pytest"]
         args: [--strict]

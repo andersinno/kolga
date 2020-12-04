@@ -6,7 +6,7 @@ from kolga.utils.environ_parsers import basicauth_parser
 from kolga.utils.models import BasicAuthUser
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "input, expected",
     [
         ("test:test", [BasicAuthUser(username="test", password="test")]),
