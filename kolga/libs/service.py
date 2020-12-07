@@ -1,7 +1,7 @@
 from pathlib import Path
-from typing import List, Mapping, Optional, Set
+from typing import Dict, List, Mapping, Optional, Set
 
-from kolga.utils.general import get_project_secret_var
+from kolga.utils.general import get_environment_vars_by_prefix, get_project_secret_var
 from kolga.utils.models import HelmValues
 
 
@@ -38,10 +38,14 @@ class Service:
         self.depends_on: Set["Service"] = depends_on or set()
         self._prerequisite_of: Set["Service"] = set()
         self._validate_chart()
+        self.service_specific_values = self._get_service_variables()
 
     def _validate_chart(self) -> None:
         if not self.chart and not self.chart_path:
             raise ValueError("Either chart or chart_name must be defined")
+
+    def _get_service_variables(self) -> Dict[str, str]:
+        return get_environment_vars_by_prefix(f"K8S_SERVICE_{self.name.upper()}_")
 
     def add_dependency(self, service: "Service") -> None:
         self.depends_on.add(service)
