@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 import uuid
 from glob import glob
 from pathlib import Path
@@ -292,6 +293,38 @@ class Settings:
                 continue
             setattr(self, name_to, ci_value)
 
+    def create_kubeconfig(self, track: str) -> Tuple[str, str]:
+        """
+        Create temporary kubernetes configuration based on contents of
+        KUBECONFIG_RAW or KUBECONFIG_RAW_<track>.
+
+        Args:
+            track: Current deployment track
+
+        Returns:
+            A tuple of kubeconfig and the variable name that was used
+        """
+        name = ""
+        key = ""
+
+        possible_keys = ["KUBECONFIG_RAW"]
+        if track:
+            possible_keys.append(f"KUBECONFIG_RAW_{track.upper()}")
+
+        for key in reversed(possible_keys):
+            kubeconfig = os.environ.get(key, "")
+            if not kubeconfig:
+                continue
+
+            fp, name = tempfile.mkstemp()
+            with os.fdopen(fp, "w") as f:
+                f.write(kubeconfig)
+            break
+
+            logger.info(message=f"Created a kubeconfig file using {key}")
+
+        return name, key
+
     def setup_kubeconfig(self, track: str) -> Tuple[str, str]:
         """
         Point KUBECONFIG environment variable to the correct kubeconfig
@@ -310,21 +343,28 @@ class Settings:
 
 
         """
-        possible_keys = ["KUBECONFIG"]
-        if track:
-            possible_keys.append(f"KUBECONFIG_{track.upper()}")
+        # Check if there is a configuration available in KUBECONFIG_RAW env variable
+        kubeconfig, key = self.create_kubeconfig(track)
 
-        for key in reversed(possible_keys):
-            kubeconfig = os.environ.get(key, "")
-            if not kubeconfig:
-                continue
-
-            self.KUBECONFIG = kubeconfig
-
-            # Set `KUBECONFIG` environment variable for subsequent `kubectl` calls.
+        if kubeconfig:
             os.environ["KUBECONFIG"] = kubeconfig
-
             return kubeconfig, key
+        else:
+            possible_keys = ["KUBECONFIG"]
+            if track:
+                possible_keys.append(f"KUBECONFIG_{track.upper()}")
+
+            for key in reversed(possible_keys):
+                kubeconfig = os.environ.get(key, "")
+                if not kubeconfig:
+                    continue
+
+                self.KUBECONFIG = kubeconfig
+
+                # Set `KUBECONFIG` environment variable for subsequent `kubectl` calls.
+                os.environ["KUBECONFIG"] = kubeconfig
+
+                return kubeconfig, key
 
         raise NoClusterConfigError()
 
