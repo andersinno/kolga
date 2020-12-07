@@ -15,7 +15,7 @@ DEFAULT_TRACK = os.environ.get("DEFAULT_TRACK", "stable")
 K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "testing")
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "value, expected", [("400", True), ("500", False), ("300", False), ("200", False)]
 )
 def test__is_client_error(value: str, expected: bool) -> None:
@@ -30,7 +30,7 @@ def test_labels_to_string() -> None:
     assert Kubernetes.labels_to_string(labels=test_labels) == expected_string
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "error, raises_exception",
     [(ApiException(), True), (ApiException(status="403"), False)],
 )

@@ -3,5 +3,5 @@
 set -e
 
 flake8
-isort -c
+isort . -c
 black . --check

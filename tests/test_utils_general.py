@@ -18,7 +18,7 @@ from kolga.utils.general import (
 DEFAULT_TRACK = os.environ.get("DEFAULT_TRACK", "stable")
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "value, expected",
     [
         ("lowerUpper", "Upper"),  # Not camel case
@@ -31,7 +31,7 @@ def test_camel_case_split(value: str, expected: str) -> None:
     assert camel_case_split(value) == expected
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "slug, track, postfix, expected",
     [
         ("testing", DEFAULT_TRACK, None, "testing"),  # DEFAULT_TRACK is a special case
@@ -59,7 +59,10 @@ def test_camel_case_split(value: str, expected: str) -> None:
     ],
 )
 def test_get_deploy_name(
-    slug: str, track: str, postfix: Optional[str], expected: str,
+    slug: str,
+    track: str,
+    postfix: Optional[str],
+    expected: str,
 ) -> None:
     with mock.patch.object(settings, "ENVIRONMENT_SLUG", slug):
         deploy_name = get_deploy_name(track=track, postfix=postfix)
@@ -73,7 +76,7 @@ def test_get_deploy_name(
         assert deploy_name == expected
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "track, expected",
     [
         (DEFAULT_TRACK, "testing-secret"),  # DEFAULT_TRACK is a special case

@@ -79,8 +79,8 @@ class Devops:
         getattr(self, command)(**args)
 
     def create_images(self, git_submodule_depth: int, git_submodule_jobs: int) -> None:
-        from kolga.libs.git import Git
         from kolga.libs.docker import Docker
+        from kolga.libs.git import Git
         from kolga.libs.project import Project
         from kolga.utils.general import (
             BUILT_DOCKER_TEST_IMAGE,
@@ -109,8 +109,8 @@ class Devops:
 
     def deploy_application(self, track: str) -> None:
         from kolga.libs.kubernetes import Kubernetes
-        from kolga.libs.vault import Vault
         from kolga.libs.project import Project
+        from kolga.libs.vault import Vault
 
         main_project = Project(track=track)
         projects = main_project.dependency_projects + [main_project]

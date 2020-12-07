@@ -14,7 +14,7 @@ def test_incorrect_dockerfile_path() -> None:
         Docker(dockerfile_path)
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "value, expected",
     [
         ("FROM python,3.6-slim AS base\n" "FROM base as testing", 2),
@@ -41,7 +41,7 @@ def test_get_stages_from_line(value: str, expected: int) -> None:
             assert len(d.get_stages()) == result
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "value, expected",
     [
         ("FROM python:3.6-slim AS APPBASE", ["APPBASE"]),
@@ -65,7 +65,7 @@ def test_get_stages_names(value: str, expected: List[str]) -> None:
         assert stage_names == expected
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "value, expected",
     [
         ("dash-test", "dash-test"),
@@ -77,7 +77,7 @@ def test_get_docker_git_ref_tag_values(value: str, expected: str) -> None:
     assert Docker.get_docker_git_ref_tag(value) == expected
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "stage, final_image, expected_amount",
     [("", False, 2), ("", True, 2), ("nonfinal", False, 2), ("final", True, 4)],
 )
@@ -89,7 +89,7 @@ def test_get_image_tags_amount(
     assert len(images_tags) == expected_amount
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "stage, final_image, expected_tags",
     [
         (

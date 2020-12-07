@@ -53,7 +53,9 @@ class Helm:
 
     def remove_repo(self, repo_name: str) -> None:
         logger.info(
-            icon=f"{self.ICON}  ➖", title=f"Removing Helm repo {repo_name}: ", end="",
+            icon=f"{self.ICON}  ➖",
+            title=f"Removing Helm repo {repo_name}: ",
+            end="",
         )
         result = run_os_command(["helm", "repo", "remove", repo_name])
         if not result.return_code:
@@ -115,7 +117,9 @@ class Helm:
             chart = str(chart_path)
 
         logger.info(
-            icon=f"{self.ICON}  📄", title=f"Upgrading chart from '{chart}': ", end="",
+            icon=f"{self.ICON}  📄",
+            title=f"Upgrading chart from '{chart}': ",
+            end="",
         )
 
         replica_timeout_multiplier = 2 if settings.K8S_REPLICACOUNT > 1 else 1

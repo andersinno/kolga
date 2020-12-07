@@ -5,7 +5,7 @@ from kolga.utils.general import DATABASE_DEFAULT_PORT_MAPPING, MYSQL, POSTGRES
 from kolga.utils.url import URL  # type: ignore
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "driver, database, hostname",
     [(MYSQL, "test", "localhost"), (POSTGRES, "test", "localhost")],
 )
