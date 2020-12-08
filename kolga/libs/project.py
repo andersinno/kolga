@@ -55,7 +55,7 @@ class Project:
 
     dependency_projects: List["Project"]
 
-    def __init__(
+    def __init__(  # nosec
         self,
         track: str,
         secret_name: str = "",

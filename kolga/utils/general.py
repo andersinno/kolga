@@ -1,7 +1,7 @@
 import json
 import os
 import re
-import subprocess
+import subprocess  # nosec
 from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
@@ -189,7 +189,9 @@ def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessRe
 
     command = command_list if not shell else " ".join(map(quote, command_list))
 
-    result = subprocess.run(command, encoding="UTF-8", capture_output=True, shell=shell)
+    result = subprocess.run(  # nosec
+        command, encoding="UTF-8", capture_output=True, shell=shell
+    )
 
     return SubprocessResult(
         out=result.stdout,

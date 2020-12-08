@@ -648,7 +648,7 @@ class Kubernetes:
             os_command += [name]
             logger.info(title=f" with name '{name}'", end="")
         logger.info(": ", end="")
-        result = run_os_command(os_command, shell=True)
+        result = run_os_command(os_command, shell=True)  # nosec
         if not result.return_code:
             logger.success()
         else:
@@ -708,7 +708,7 @@ class Kubernetes:
             logger.info(message=" (track): ", end="")
 
         os_command = ["kubectl", "get", "clusterissuer", cert_issuer]
-        result = run_os_command(os_command, shell=True)
+        result = run_os_command(os_command, shell=True)  # nosec
         if not result.return_code:
             logger.success(message=cert_issuer)
             return cert_issuer
@@ -735,7 +735,7 @@ class Kubernetes:
             resource=resource, name=name, labels=labels, namespace=namespace
         )
         logger.info(": ", end="")
-        result = run_os_command(os_command, shell=True)
+        result = run_os_command(os_command, shell=True)  # nosec
         if not result.return_code:
             logger.success()
         else:
@@ -772,7 +772,7 @@ class Kubernetes:
             os_command += [f"--since-time={since_time}"]
             logger.info(title=f" since {since_time}", end="")
 
-        result = run_os_command(os_command, shell=True)
+        result = run_os_command(os_command, shell=True)  # nosec
         if not result.return_code:
             logger.success()
             if print_result:
