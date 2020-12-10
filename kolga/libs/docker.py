@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 from kolga.utils.logger import logger
 from kolga.utils.models import DockerImage, ImageStage
@@ -111,15 +111,19 @@ class Docker:
         return git_commit_ref.translate(str.maketrans("_/", "--"))
 
     @staticmethod
-    def get_build_arguments() -> Dict[str, str]:
+    def get_build_arguments() -> List[str]:
         """
         Get build arguments from environment
 
         Returns:
-            Dict of build arguments
+            List of build arguments
         """
-
-        return get_environment_vars_by_prefix(settings.DOCKER_BUILD_ARG_PREFIX)
+        build_args: List[str] = []
+        for key, value in get_environment_vars_by_prefix(
+            settings.DOCKER_BUILD_ARG_PREFIX
+        ).items():
+            build_args.append(f"--build-arg={key}={value}")
+        return build_args
 
     def get_stage_names(self) -> List[str]:
         stage_names = []
@@ -243,6 +247,8 @@ class Docker:
             f"--target={stage}",
             "--progress=plain",
         ]
+
+        build_command.extend(self.get_build_arguments())
 
         if push_images:
             build_command.append("--push")
