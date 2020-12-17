@@ -28,6 +28,7 @@ class _Limits(TypedDict, total=False):
 
 
 class _Values(HelmValues):
+    fullnameOverride: str
     image: _Image
     postgresqlUsername: str
     postgresqlPassword: str
@@ -66,6 +67,7 @@ class PostgresqlService(Service):
 
         self.values: _Values = {
             "image": {"repository": image.repository},
+            "fullnameOverride": get_deploy_name(track=self.track, postfix=self.name),
             "postgresqlUsername": self.username,
             "postgresqlPassword": self.password,
             "postgresqlDatabase": self.database,
