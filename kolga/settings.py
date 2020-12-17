@@ -101,7 +101,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_PROBE_FAILURE_THRESHOLD": [env.int, 3],
     "K8S_PROBE_INITIAL_DELAY": [env.int, 60],
     "K8S_PROBE_PERIOD": [env.int, 10],
-    "K8S_FILE_SECRET_MOUNTPATH": [env.str, "/tmp/secrets"],
+    "K8S_FILE_SECRET_MOUNTPATH": [env.str, "/tmp/secrets"],  # nosec
     "K8S_FILE_SECRET_PREFIX": [env.str, "K8S_FILE_SECRET_"],
     "K8S_READINESS_PATH": [env.str, "/readiness"],
     "K8S_REQUEST_CPU": [env.str, ""],
