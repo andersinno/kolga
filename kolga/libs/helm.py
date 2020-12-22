@@ -28,10 +28,7 @@ class Helm:
         """
         logger.info(icon=f"{self.ICON}  🚀", title="Initializing Helm")
 
-        # TODO: Remove once this is added by default and Helm 3 is stable
-        self.add_repo(
-            "stable", "https://kubernetes-charts.storage.googleapis.com/", update=False
-        )
+        self.add_repo("stable", "https://charts.helm.sh/stable", update=False)
         self.add_repo("bitnami", "https://charts.bitnami.com/bitnami", update=False)
 
         self.update_repos()
