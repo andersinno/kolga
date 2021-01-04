@@ -80,6 +80,7 @@ class _Ingress(TypedDict, total=False):
     disabled: bool
     maxBodySize: str
     preventRobots: bool
+    whitelistIP: str
 
 
 class _Service(TypedDict, total=False):
@@ -516,6 +517,9 @@ class Kubernetes:
 
         if settings.K8S_INGRESS_DISABLED:
             values["ingress"]["disabled"] = True
+
+        if settings.K8S_INGRESS_WHITELIST_IPS:
+            values["ingress"]["whitelistIP"] = settings.K8S_INGRESS_WHITELIST_IPS
 
         if settings.K8S_LIVENESS_FILE:
             values["application"]["livenessFile"] = settings.K8S_LIVENESS_FILE
