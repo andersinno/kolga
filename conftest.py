@@ -2,6 +2,7 @@ import os
 from typing import Generator
 
 import pytest
+from _pytest.nodes import Item
 
 from kolga.libs.helm import Helm
 from kolga.libs.kubernetes import Kubernetes
@@ -29,13 +30,13 @@ def test_namespace(kubernetes: Kubernetes) -> Generator[str, None, None]:
     kubernetes.delete_namespace()
 
 
-def pytest_sessionstart(session: pytest.Session) -> None:
-    """
-    Called after the Session object has been created and
-    before performing collection and entering the run test loop.
-    """
-    if os.environ.get("TEST_CLUSTER_ACTIVE", 0) not in [1, "1", True, "True"]:
-        raise Exception(
-            "Kubernetes test cluster sanity check failed. Please make sure "
-            "you are using a testing cluster and not production"
-        )
+def pytest_runtest_setup(item: Item) -> None:
+    if item.get_closest_marker("k8s") and os.environ.get(
+        "TEST_CLUSTER_ACTIVE", False
+    ) not in [1, "1", True, "True"]:
+        pytest.skip("test requires TEST_CLUSTER_ACTIVE to be true")
+
+    if item.get_closest_marker("docker") and os.environ.get(
+        "TEST_CLUSTER_ACTIVE", False
+    ) not in [1, "1", True, "True"]:
+        pytest.skip("test requires TEST_DOCKER_ACTIVE to be true")
