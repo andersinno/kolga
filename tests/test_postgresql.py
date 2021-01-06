@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 from kolga.libs.helm import Helm
 from kolga.libs.kubernetes import Kubernetes
 from kolga.libs.services.postresql import PostgresqlService
@@ -12,6 +14,7 @@ K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "testing")
 # ======================================================================
 
 
+@pytest.mark.k8s
 def test_create_postgresql_database(
     kubernetes: Kubernetes, test_namespace: str, helm: Helm
 ) -> None:
