@@ -105,8 +105,8 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_FILE_SECRET_MOUNTPATH": [env.str, "/tmp/secrets"],  # nosec
     "K8S_FILE_SECRET_PREFIX": [env.str, "K8S_FILE_SECRET_"],
     "K8S_READINESS_PATH": [env.str, "/readiness"],
-    "K8S_REQUEST_CPU": [env.str, ""],
-    "K8S_REQUEST_RAM": [env.str, ""],
+    "K8S_REQUEST_CPU": [env.str, "50m"],
+    "K8S_REQUEST_RAM": [env.str, "128Mi"],
     "K8S_SECRET_PREFIX": [env.str, "K8S_SECRET_"],
     "K8S_LIVENESS_FILE": [env.str, ""],
     "K8S_PERSISTENT_STORAGE": [env.bool, False],
