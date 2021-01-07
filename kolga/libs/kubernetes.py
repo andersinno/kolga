@@ -355,7 +355,16 @@ class Kubernetes:
         for name, filename in filesecrets.items():
             path = Path(filename)
             if not validate_file_secret_path(path, valid_prefixes):
-                logger.warning(f'Not a valid file path: "{path}". Skipping.')
+                # TODO: This needs refactoring. Variable names do not match the contents.
+
+                # If path-variable doesn't contain a valid path, we expect it to contain
+                # the value for the secret file and we can use it directly.
+                logger.warning(
+                    f'Not a valid file path: "{path}". Using contents as a secret value.'
+                )
+                # Here we expect that filename-variable contains the secret
+                filecontents[name] = b64encode(filename.encode("UTF-8")).decode("UTF-8")
+                mapping[name] = f"{settings.K8S_FILE_SECRET_MOUNTPATH}/{name}"
                 continue
             try:
                 filecontents[name] = self._b64_encode_file(path)
