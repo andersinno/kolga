@@ -19,5 +19,5 @@ repos:
     rev: v0.790
     hooks:
     -   id: mypy
-        additional_dependencies: ["sphinx", "pytest", "sentry-sdk"]
+        additional_dependencies: ["sphinx", "pytest", "sentry-sdk", "slack_sdk"]
         args: [--strict]
