@@ -54,3 +54,45 @@ class override_settings:
     def disable(self) -> None:
         for key, old_value in self.old_values.items():
             setattr(settings, key, old_value)
+
+
+class load_plugin:
+    """
+    Decorator for loading a plugin
+    """
+
+    def decorate_callable(self, func: Any) -> Any:
+        @wraps(func)
+        def inner(*args: Any, **kwargs: Any) -> Any:
+            with self:
+                return func(*args, **kwargs)
+
+        return inner
+
+    def __call__(self, decorated: Any) -> Any:
+        if callable(decorated):
+            return self.decorate_callable(decorated)
+        raise TypeError("Cannot decorate object of type %s" % type(decorated))
+
+    def __init__(self, *args: Any) -> None:
+        self.plugins = args
+        super().__init__()
+
+    def __enter__(self) -> None:
+        return self.enable()
+
+    def __exit__(
+        self,
+        exc_type: Optional[Any],
+        exc_value: Optional[Any],
+        traceback: Optional[Any],
+    ) -> None:
+        self.disable()
+
+    def enable(self) -> None:
+        for plugin in self.plugins:
+            settings._load_plugin(plugin)
+
+    def disable(self) -> None:
+        for plugin in self.plugins:
+            settings._unload_plugin(plugin)
