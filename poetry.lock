@@ -480,7 +480,7 @@ python-versions = ">=2.6"
 version = "5.5.1"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "plugin and hook calling mechanisms for python"
 name = "pluggy"
 optional = false
@@ -917,7 +917,7 @@ version = "0.57.0"
 six = "*"
 
 [metadata]
-content-hash = "a0b01170a12dffa2d9f698f2eb4610ebd255c9859abf45496e75f9abc8137173"
+content-hash = "66fb264b68b40707f42061e21bbfa67af3f6628bdbe57e2df1b5d83ba3d654f0"
 python-versions = "^3.8"
 
 [metadata.files]
