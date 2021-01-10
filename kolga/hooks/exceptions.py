@@ -1,0 +1,2 @@
+class PluginMissingConfiguration(Exception):
+    pass

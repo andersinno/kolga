@@ -6,11 +6,15 @@ from glob import glob
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+import pluggy  # type: ignore
 from environs import Env
 
 from kolga.utils.logger import logger
 from kolga.utils.models import BasicAuthUser
 
+from .hooks.exceptions import PluginMissingConfiguration
+from .hooks.hookspec import KolgaHookSpec
+from .plugins import KOLGA_CORE_PLUGINS
 from .utils.environ_parsers import basicauth_parser, list_none_parser
 from .utils.exceptions import NoClusterConfigError
 
@@ -248,6 +252,46 @@ class Settings:
 
         if self.active_ci:
             self._map_ci_variables()
+
+        self.plugin_manager = self._setup_pluggy()
+
+    def _setup_pluggy(self) -> pluggy.PluginManager:
+        pm: pluggy.PluginManager = pluggy.PluginManager("kolga")
+        pm.add_hookspecs(KolgaHookSpec)
+
+        return pm
+
+    def load_plugins(self) -> None:
+        loading_plugins = False
+
+        for plugin in KOLGA_CORE_PLUGINS:
+            plugin_loaded, message = self._load_plugin(plugin)
+            if not loading_plugins and plugin_loaded:
+                logger.info(
+                    icon="🔌",
+                    title="Loading plugins:",
+                )
+                loading_plugins = True
+            if plugin_loaded:
+                logger.info(f"{plugin.verbose_name}: {message}")
+            # TODO: Implement verbose logging where the plugin loading error would be shown
+
+    def _load_plugin(self, plugin: Any) -> Tuple[bool, str]:
+        try:
+            self.plugin_manager.register(plugin(env), name=plugin.name)
+        except PluginMissingConfiguration as e:
+            return False, f"⚠️  {e}"
+        return True, "✅"
+
+    def _unload_plugin(self, plugin: Any) -> Any:
+        # We need to first fetch the instance of the plugin in order to unregister it.
+        # If we do not do this, Pluggy will not properly unregister as it will try
+        # to do it on the class and not the instance, which will not hard-fail, but
+        # will only partially unregister the plugin, leaving it still to be called
+        # by hooks.
+        _to_be_unregistered_plugin = self.plugin_manager.get_plugin(plugin.name)
+
+        return self.plugin_manager.unregister(_to_be_unregistered_plugin)
 
     def _set_attributes(self) -> None:
         from .utils.general import env_var_safe_key

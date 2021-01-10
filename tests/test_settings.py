@@ -1,10 +1,12 @@
 import os
 from random import sample
 from string import ascii_lowercase
-from typing import Optional
+from typing import Optional, Type
+from unittest import mock
 
 import pytest
 
+from kolga.hooks.plugins import PluginBase
 from kolga.settings import settings
 
 
@@ -82,3 +84,14 @@ def test_setup_kubeconfig_raw_with_track() -> None:
     value, key = settings.setup_kubeconfig("STABLE")
 
     assert key == "KUBECONFIG_RAW_STABLE"
+
+
+@mock.patch.dict(
+    "os.environ",
+    {
+        "TEST_PLUGIN_VARIABLE": "odins_raven",
+    },
+)
+def test_load_unload_plugins(test_plugin: Type[PluginBase]) -> None:
+    assert settings._load_plugin(plugin=test_plugin)[0] is True
+    assert settings._unload_plugin(plugin=test_plugin)
