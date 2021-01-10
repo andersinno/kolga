@@ -15,6 +15,7 @@ colorful = "^0.5.4"
 environs = "^7.0"
 hvac = "^0.10.5"
 pluggy = "^0.13.1"
+slack_sdk = "^3.3.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
