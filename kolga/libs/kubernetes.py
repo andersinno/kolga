@@ -360,7 +360,7 @@ class Kubernetes:
                 # If path-variable doesn't contain a valid path, we expect it to contain
                 # the value for the secret file and we can use it directly.
                 logger.warning(
-                    f'Not a valid file path: "{path}". Using contents as a secret value.'
+                    f'Not a valid file path for a file "{name}". Using contents as a secret value.'
                 )
                 # Here we expect that filename-variable contains the secret
                 filecontents[name] = b64encode(filename.encode("UTF-8")).decode("UTF-8")
