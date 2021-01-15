@@ -45,12 +45,19 @@ class _Pvc(TypedDict, total=False):
     size: str
     storageClass: str
 
+class _Hpa(TypedDict, total=False):
+    enabled: bool
+    minReplicas: int
+    maxReplicas: int
+    avgCpuUtilization: int
+    avgRamUtilization: int
 
 class _Application(TypedDict, total=False):
     database_host: str
     database_url: str
     fileSecretName: str
     fileSecretPath: str
+    hpa: _Hpa
     initializeCommand: str
     livenessFile: str
     livenessPath: str

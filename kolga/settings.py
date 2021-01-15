@@ -90,6 +90,11 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     # ================================================
     "K8S_ADDITIONAL_HOSTNAMES": [env.list_none, []],
     "K8S_CLUSTER_ISSUER": [env.str, ""],
+    "K8S_HPA_ENABLED": [env.bool, False],
+    "K8S_HPA_MAX_REPLICAS": [env.int, 3],
+    "K8S_HPA_MIN_REPLICAS": [env.int, 1],
+    "K8S_HPA_MAX_CPU_AVG": [env.int, 75],
+    "K8S_HPA_MAX_RAM_AVG": [env.int, 0],
     "K8S_INGRESS_BASE_DOMAIN": [env.str, ""],
     "K8S_INGRESS_BASIC_AUTH": [env.basicauth, []],
     "K8S_INGRESS_DISABLED": [env.bool, False],
@@ -172,6 +177,11 @@ class Settings:
     SERVICE_ARTIFACT_FOLDER: str
     K8S_ADDITIONAL_HOSTNAMES: List[str]
     K8S_CLUSTER_ISSUER: str
+    K8S_HPA_ENABLED: bool
+    K8S_HPA_MAX_REPLICAS: int
+    K8S_HPA_MIN_REPLICAS: int
+    K8S_HPA_MAX_CPU_AVG: int
+    K8S_HPA_MAX_RAM_AVG: int
     K8S_INGRESS_BASE_DOMAIN: str
     K8S_INGRESS_BASIC_AUTH: List[BasicAuthUser]
     K8S_INGRESS_DISABLED: bool
