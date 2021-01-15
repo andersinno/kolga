@@ -484,7 +484,10 @@ class Kubernetes:
                 "env": settings.ENVIRONMENT_SLUG,
             },
             "image": project.image,
-            "ingress": {"maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE},
+            "ingress": {
+                "maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE,
+                "secretName": project.ingress_secret_name
+            },
             "namespace": namespace,
             "releaseOverride": f"{settings.ENVIRONMENT_SLUG}-{kuberenetes_safe_name(project.name)}",
             "replicaCount": project.replica_count,

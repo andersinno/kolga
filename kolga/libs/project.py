@@ -22,6 +22,7 @@ PROJECT_ARG_SETTINGS_MAPPING = {
     "ENVIRONMENT_URL": "url",
     "K8S_ADDITIONAL_HOSTNAMES": "additional_urls",
     "K8S_INGRESS_BASIC_AUTH": "basic_auth_data",
+    "K8S_INGRESS_SECRET_NAME": "ingress_secret_name",
     "K8S_LIVENESS_PATH": "liveness_path",
     "K8S_PROBE_FAILURE_THRESHOLD": "probe_failure_threshold",
     "K8S_PROBE_INITIAL_DELAY": "probe_initial_delay",
@@ -65,6 +66,7 @@ class Project:
         urls: str = "",
         is_dependent_project: bool = False,
         deploy_name: str = "",
+        ingress_secret_name: str = "",
         **kwargs: str,
     ) -> None:
         # Set variables from arguments and if they do not exist,
@@ -83,6 +85,7 @@ class Project:
         self.basic_auth_secret_name = basic_auth_secret_name
         self.urls = urls
         self.is_dependent_project = is_dependent_project
+        self.ingress_secret_name = ingress_secret_name
 
         if not image:
             docker = Docker()
@@ -104,6 +107,9 @@ class Project:
         self.deploy_name = deploy_name
         if not deploy_name:
             self.deploy_name = get_deploy_name(track=track, postfix=postfix)
+
+        if not self.ingress_secret_name:
+            self.ingress_secret_name = f"{self.deploy_name}-ingress-tls"
 
         self.dependency_projects = (
             [] if is_dependent_project else self.get_dependency_projects(self.track)

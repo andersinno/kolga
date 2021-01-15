@@ -102,6 +102,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_CERTMANAGER_USE_OLD_API": [env.bool, False],
     "K8S_INGRESS_MAX_BODY_SIZE": [env.str, "100m"],
     "K8S_INGRESS_PREVENT_ROBOTS": [env.bool, False],
+    "K8S_INGRESS_SECRET_NAME": [env.str, ""],
     "K8S_INGRESS_WHITELIST_IPS": [env.str, ""],
     "K8S_LIVENESS_PATH": [env.str, "/healthz"],
     "K8S_NAMESPACE": [env.str, ""],
@@ -190,6 +191,7 @@ class Settings:
     K8S_CERTMANAGER_USE_OLD_API: bool
     K8S_INGRESS_MAX_BODY_SIZE: str
     K8S_INGRESS_PREVENT_ROBOTS: bool
+    K8S_INGRESS_SECRET_NAME: str
     K8S_INGRESS_WHITELIST_IPS: str
     K8S_LIVENESS_PATH: str
     K8S_NAMESPACE: str

@@ -9,7 +9,6 @@ app_image:
   pullPolicy: Always
 
 ingress:
-  secretName: ai-qa-cert
   path: /
   certManagerAnnotationPrefix: cert-manager.io
 
