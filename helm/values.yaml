@@ -19,3 +19,8 @@ application:
     storageClass: "standard"
     accessMode: "ReadWriteOnce"
     size: "1Gi"
+
+hpa:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3

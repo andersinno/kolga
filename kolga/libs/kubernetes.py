@@ -45,12 +45,19 @@ class _Pvc(TypedDict, total=False):
     size: str
     storageClass: str
 
+class _Hpa(TypedDict, total=False):
+    enabled: bool
+    minReplicas: int
+    maxReplicas: int
+    avgCpuUtilization: int
+    avgRamUtilization: int
 
 class _Application(TypedDict, total=False):
     database_host: str
     database_url: str
     fileSecretName: str
     fileSecretPath: str
+    hpa: _Hpa
     initializeCommand: str
     livenessFile: str
     livenessPath: str
@@ -80,6 +87,7 @@ class _Ingress(TypedDict, total=False):
     disabled: bool
     maxBodySize: str
     preventRobots: bool
+    whitelistIP: str
 
 
 class _Service(TypedDict, total=False):
@@ -354,7 +362,16 @@ class Kubernetes:
         for name, filename in filesecrets.items():
             path = Path(filename)
             if not validate_file_secret_path(path, valid_prefixes):
-                logger.warning(f'Not a valid file path: "{path}". Skipping.')
+                # TODO: This needs refactoring. Variable names do not match the contents.
+
+                # If path-variable doesn't contain a valid path, we expect it to contain
+                # the value for the secret file and we can use it directly.
+                logger.warning(
+                    f'Not a valid file path for a file "{name}". Using contents as a secret value.'
+                )
+                # Here we expect that filename-variable contains the secret
+                filecontents[name] = b64encode(filename.encode("UTF-8")).decode("UTF-8")
+                mapping[name] = f"{settings.K8S_FILE_SECRET_MOUNTPATH}/{name}"
                 continue
             try:
                 filecontents[name] = self._b64_encode_file(path)
@@ -517,11 +534,23 @@ class Kubernetes:
         if settings.K8S_INGRESS_DISABLED:
             values["ingress"]["disabled"] = True
 
+        if settings.K8S_INGRESS_WHITELIST_IPS:
+            values["ingress"]["whitelistIP"] = settings.K8S_INGRESS_WHITELIST_IPS
+
         if settings.K8S_LIVENESS_FILE:
             values["application"]["livenessFile"] = settings.K8S_LIVENESS_FILE
 
         if settings.K8S_READINESS_FILE:
             values["application"]["readinessFile"] = settings.K8S_READINESS_FILE
+
+        if settings.K8S_HPA_ENABLED:
+            values["hpa"]["enabled"] = settings.K8S_HPA_ENABLED
+            values["hpa"]["minReplicas"] = settings.K8S_HPA_MIN_REPLICAS
+            values["hpa"]["maxReplicas"] = settings.K8S_HPA_MAX_REPLICAS
+            if settings.K8S_HPA_MAX_CPU_AVG:
+                values["hpa"]["avgCpuUtilization"] = settings.K8S_HPA_MAX_CPU_AVG
+            if settings.K8S_HPA_MAX_RAM_AVG:
+                values["hpa"]["avgRamUtilization"] = settings.K8S_HPA_MAX_RAM_AVG
 
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
