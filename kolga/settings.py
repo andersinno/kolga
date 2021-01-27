@@ -113,6 +113,8 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_READINESS_PATH": [env.str, "/readiness"],
     "K8S_REQUEST_CPU": [env.str, "50m"],
     "K8S_REQUEST_RAM": [env.str, "128Mi"],
+    "K8S_LIMIT_CPU": [env.str, ""],
+    "K8S_LIMIT_RAM": [env.str, ""],
     "K8S_SECRET_PREFIX": [env.str, "K8S_SECRET_"],
     "K8S_LIVENESS_FILE": [env.str, ""],
     "K8S_PERSISTENT_STORAGE": [env.bool, False],
@@ -206,6 +208,8 @@ class Settings:
     K8S_READINESS_PATH: str
     K8S_REQUEST_CPU: str
     K8S_REQUEST_RAM: str
+    K8S_LIMIT_CPU: str
+    K8S_LIMIT_RAM: str
     K8S_SECRET_PREFIX: str
     K8S_LIVENESS_FILE: str
     K8S_READINESS_FILE: str
