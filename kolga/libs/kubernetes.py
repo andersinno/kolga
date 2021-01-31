@@ -536,6 +536,11 @@ class Kubernetes:
 
         if settings.K8S_INGRESS_WHITELIST_IPS:
             values["ingress"]["whitelistIP"] = settings.K8S_INGRESS_WHITELIST_IPS
+        
+        if settings.K8S_INGRESS_ANNOTATIONS:
+            for annotation in settings.K8S_INGRESS_ANNOTATIONS:
+                key, value = annotation.split("=",1)
+                values["ingress"]["annotations"][key] = value
 
         if settings.K8S_LIVENESS_FILE:
             values["application"]["livenessFile"] = settings.K8S_LIVENESS_FILE

@@ -95,6 +95,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "K8S_HPA_MIN_REPLICAS": [env.int, 1],
     "K8S_HPA_MAX_CPU_AVG": [env.int, 75],
     "K8S_HPA_MAX_RAM_AVG": [env.int, 0],
+    "K8S_INGRESS_ANNOTATIONS": [env.list_none, []],
     "K8S_INGRESS_BASE_DOMAIN": [env.str, ""],
     "K8S_INGRESS_BASIC_AUTH": [env.basicauth, []],
     "K8S_INGRESS_DISABLED": [env.bool, False],
@@ -182,6 +183,7 @@ class Settings:
     K8S_HPA_MIN_REPLICAS: int
     K8S_HPA_MAX_CPU_AVG: int
     K8S_HPA_MAX_RAM_AVG: int
+    K8S_INGRESS_ANNOTATIONS: List[str]
     K8S_INGRESS_BASE_DOMAIN: str
     K8S_INGRESS_BASIC_AUTH: List[BasicAuthUser]
     K8S_INGRESS_DISABLED: bool
