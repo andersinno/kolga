@@ -518,6 +518,12 @@ class Kubernetes:
         if project.request_ram:
             values["application"]["requestRam"] = project.request_ram
 
+        if project.limit_cpu:
+            values["application"]["limitCpu"] = project.limit_cpu
+
+        if project.limit_ram:
+            values["application"]["limitRam"] = project.limit_ram
+
         if project.temp_storage_path:
             values["application"]["temporaryStoragePath"] = project.temp_storage_path
 

@@ -62,8 +62,10 @@ supplies a predefined variables with the SHA.
 | K8S\_PROBE\_INITIAL\_DELAY    | Seconds before health/ready checks starts           | 60                           |            |
 | K8S\_PROBE\_PERIOD            | How long between probe checks                       | 10                           |            |
 | K8S\_REPLICACOUNT             | Number of replicated Pods                           | 1                            |            |
-| K8S\_REQUEST\_CPU             | Request at least this much CPU (ex. 1000m)          |                              |            |
-| K8S\_REQUEST\_RAM             | Request at least this much RAM (ex. 512Mi)          |                              |            |
+| K8S\_REQUEST\_CPU             | Request at least this much CPU (ex. 1000m)          | 50m                          |            |
+| K8S\_REQUEST\_RAM             | Request at least this much RAM (ex. 512Mi)          | 128Mi                        |            |
+| K8S\_LIMIT\_CPU               | Limit max CPU (ex. 1000m)                           |                              |            |
+| K8S\_LIMIT\_RAM               | Limit max RAM (ex. 512Mi)                           |                              |            |
 | K8S\_SECRET\_PREFIX           | Application environment variable prefix             | K8S\_SECRET\_                |            |
 | K8S\_TEMP\_STORAGE\_PATH      | Temporary volume mount storage path                 |                              |            |
 | KOLGA\_JOBS\_ONLY             | Run only job deployments                            | False                        |            |
