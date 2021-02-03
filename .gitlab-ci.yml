@@ -68,6 +68,11 @@ test-docs:
       - docs/_build
     expire_in: 1 week
 
+test-sast:
+  extends: .code-tests
+  script:
+    - make sast-tests
+
 test:
   extends: .test
   only:

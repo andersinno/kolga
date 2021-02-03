@@ -23,7 +23,7 @@ def kubeconfig_key(track: Optional[str] = None) -> str:
     return f"KUBECONFIG{track_postfix}"
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "track, is_track_present, expected_variable",
     [
         ("", True, "KUBECONFIG"),
@@ -48,3 +48,37 @@ def test_setup_kubeconfig_with_track(
 
     assert settings.setup_kubeconfig(track) == (expected_value, expected_variable)
     assert settings.KUBECONFIG == os.environ["KUBECONFIG"] == expected_value
+
+
+def test_setup_kubeconfig_raw() -> None:
+    os.environ.update({"KUBECONFIG_RAW": "This value is from KUBECONFIG_RAW"})
+
+    value, key = settings.setup_kubeconfig("fake_track")
+
+    result = open(value, "r").read()
+
+    assert key == "KUBECONFIG_RAW"
+    assert "This value is from KUBECONFIG_RAW" == result
+
+
+# KUBECONFIG_RAW is available but empty. Setup should fall back to KUBECONFIG
+def test_setup_kubeconfig_raw_empty() -> None:
+    os.environ.update({"KUBECONFIG_RAW": "", "KUBECONFIG": "Value from KUBECONFIG"})
+
+    value, key = settings.setup_kubeconfig("fake_track")
+
+    assert key == "KUBECONFIG"
+    assert value == "Value from KUBECONFIG"
+
+
+def test_setup_kubeconfig_raw_with_track() -> None:
+    os.environ.update(
+        {
+            "KUBECONFIG_RAW": "This value is from KUBECONFIG_RAW",
+            "KUBECONFIG_RAW_STABLE": "This value is from KUBECONFIG_RAW_STABLE",
+        }
+    )
+
+    value, key = settings.setup_kubeconfig("STABLE")
+
+    assert key == "KUBECONFIG_RAW_STABLE"

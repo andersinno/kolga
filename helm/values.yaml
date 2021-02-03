@@ -9,6 +9,17 @@ app_image:
   pullPolicy: Always
 
 ingress:
-  secretName: ai-qa-cert
   path: /
   certManagerAnnotationPrefix: cert-manager.io
+
+application:
+  pvc:
+    enabled: false
+    storageClass: "standard"
+    accessMode: "ReadWriteOnce"
+    size: "1Gi"
+
+hpa:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3

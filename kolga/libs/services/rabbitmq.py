@@ -8,6 +8,7 @@ from kolga.utils.general import (
     DATABASE_DEFAULT_PORT_MAPPING,
     RABBITMQ,
     get_deploy_name,
+    get_project_secret_var,
 )
 from kolga.utils.models import HelmValues
 from kolga.utils.url import URL  # type: ignore
@@ -67,10 +68,49 @@ class RabbitmqService(Service):
             password=self.password,
         )
 
-    def get_artifacts(self) -> Mapping[str, str]:
-        server_url = self.get_base_server_url()
+    def _get_default_broker_values(
+        self, url: URL, service_name: str = ""
+    ) -> Dict[str, str]:
+        """
+        Return a set of default extra values that are non-user definable
 
+        Currently there is only support for the user to set a single value when
+        adding a service. This adds some default values in order for the application
+        to be able to get every part of the database URL separately.
+
+        Args:
+            url: The URL of the database as a single string
+            service_name: Prefixes for each value
+
+        Returns:
+
+        """
         return {
-            self.get_service_secret_artifact_name(service=service): str(server_url)
-            for service in self._prerequisite_of
+            get_project_secret_var(project_name=service_name, value="BROKER_URL"): str(
+                url
+            ),
+            get_project_secret_var(project_name=service_name, value="BROKER_HOST"): str(
+                url.host
+            ),
+            get_project_secret_var(project_name=service_name, value="BROKER_PORT"): str(
+                url.port
+            ),
+            get_project_secret_var(
+                project_name=service_name, value="BROKER_USERNAME"
+            ): str(url.username),
+            get_project_secret_var(
+                project_name=service_name, value="BROKER_PASSWORD"
+            ): str(url.password),
         }
+
+    def get_artifacts(self) -> Mapping[str, str]:
+        artifacts = {}
+        for service in self._prerequisite_of:
+            main_artifact_name = self.get_service_secret_artifact_name(service=service)
+            artifacts[main_artifact_name] = str(self.get_base_server_url())
+            artifacts.update(
+                self._get_default_broker_values(
+                    url=self.get_base_server_url(), service_name=service.name
+                )
+            )
+        return artifacts

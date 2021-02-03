@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 from kolga.utils.logger import logger
 from kolga.utils.models import DockerImage, ImageStage
@@ -28,7 +28,11 @@ class Docker:
             self.image_repo = f"{self.image_repo}/{settings.DOCKER_IMAGE_NAME}"
         self.image_tag = f"{self.image_repo}:{settings.GIT_COMMIT_SHA}"
 
-        self.cache_repo = f"{self.image_repo}/{settings.BUILDKIT_CACHE_REPO}"
+        self.cache_repo = f"{self.image_repo}/{settings.BUILDKIT_CACHE_IMAGE_NAME}"
+        if settings.BUILDKIT_CACHE_REPO:
+            self.cache_repo = (
+                f"{settings.BUILDKIT_CACHE_REPO}/{settings.BUILDKIT_CACHE_IMAGE_NAME}"
+            )
 
         if not self.dockerfile.exists():
             raise FileNotFoundError(f"No Dockerfile found at {self.dockerfile}")
@@ -107,15 +111,19 @@ class Docker:
         return git_commit_ref.translate(str.maketrans("_/", "--"))
 
     @staticmethod
-    def get_build_arguments() -> Dict[str, str]:
+    def get_build_arguments() -> List[str]:
         """
         Get build arguments from environment
 
         Returns:
-            Dict of build arguments
+            List of build arguments
         """
-
-        return get_environment_vars_by_prefix(settings.DOCKER_BUILD_ARG_PREFIX)
+        build_args: List[str] = []
+        for key, value in get_environment_vars_by_prefix(
+            settings.DOCKER_BUILD_ARG_PREFIX
+        ).items():
+            build_args.append(f"--build-arg={key}={value}")
+        return build_args
 
     def get_stage_names(self) -> List[str]:
         stage_names = []
@@ -220,7 +228,11 @@ class Docker:
         return built_images
 
     def build_stage(
-        self, stage: str = "", final_image: bool = False, push_images: bool = True
+        self,
+        stage: str = "",
+        final_image: bool = False,
+        push_images: bool = True,
+        disable_cache: bool = settings.BUILDKIT_CACHE_DISABLE,
     ) -> DockerImage:
         logger.info(icon=f"{self.ICON} 🔨", title=f"Building stage '{stage}': ")
 
@@ -236,16 +248,19 @@ class Docker:
             "--progress=plain",
         ]
 
+        build_command.extend(self.get_build_arguments())
+
         if push_images:
             build_command.append("--push")
 
-        cache_to = self.create_cache_tag(postfix=postfix)
-        logger.info(title=f"\t ℹ️ Cache to: {cache_to}")
-        build_command.append(f"--cache-to=type=registry,ref={cache_to},mode=max")
+        if not disable_cache:
+            cache_to = self.create_cache_tag(postfix=postfix)
+            logger.info(title=f"\t ℹ️ Cache to: {cache_to}")
+            build_command.append(f"--cache-to=type=registry,ref={cache_to},mode=max")
 
-        for cache_tag in cache_tags:
-            logger.info(title=f"\t ℹ️ Cache from: {cache_tag}")
-            build_command.append(f"--cache-from=type=registry,ref={cache_tag}")
+            for cache_tag in cache_tags:
+                logger.info(title=f"\t ℹ️ Cache from: {cache_tag}")
+                build_command.append(f"--cache-from=type=registry,ref={cache_tag}")
 
         tags = self.get_image_tags(stage, final_image=final_image)
 

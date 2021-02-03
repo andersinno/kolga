@@ -38,11 +38,26 @@ from kolga.utils.models import (
 )
 
 
+class _Pvc(TypedDict, total=False):
+    accessMode: str
+    enabled: bool
+    mountPath: str
+    size: str
+    storageClass: str
+
+class _Hpa(TypedDict, total=False):
+    enabled: bool
+    minReplicas: int
+    maxReplicas: int
+    avgCpuUtilization: int
+    avgRamUtilization: int
+
 class _Application(TypedDict, total=False):
     database_host: str
     database_url: str
     fileSecretName: str
     fileSecretPath: str
+    hpa: _Hpa
     initializeCommand: str
     livenessFile: str
     livenessPath: str
@@ -50,6 +65,7 @@ class _Application(TypedDict, total=False):
     probeFailureThreshold: int
     probeInitialDelay: int
     probePeriod: int
+    pvc: _Pvc
     readinessFile: str
     readinessPath: str
     requestCpu: str
@@ -71,6 +87,7 @@ class _Ingress(TypedDict, total=False):
     disabled: bool
     maxBodySize: str
     preventRobots: bool
+    whitelistIP: str
 
 
 class _Service(TypedDict, total=False):
@@ -310,7 +327,11 @@ class Kubernetes:
         logger.success()
 
     def create_file_secrets_from_environment(
-        self, namespace: str, track: str, project: Project, secret_name: str,
+        self,
+        namespace: str,
+        track: str,
+        project: Project,
+        secret_name: str,
     ) -> Dict[str, str]:
         filesecrets = get_environment_vars_by_prefix(
             prefix=settings.K8S_FILE_SECRET_PREFIX
@@ -341,7 +362,16 @@ class Kubernetes:
         for name, filename in filesecrets.items():
             path = Path(filename)
             if not validate_file_secret_path(path, valid_prefixes):
-                logger.warning(f'Not a valid file path: "{path}". Skipping.')
+                # TODO: This needs refactoring. Variable names do not match the contents.
+
+                # If path-variable doesn't contain a valid path, we expect it to contain
+                # the value for the secret file and we can use it directly.
+                logger.warning(
+                    f'Not a valid file path for a file "{name}". Using contents as a secret value.'
+                )
+                # Here we expect that filename-variable contains the secret
+                filecontents[name] = b64encode(filename.encode("UTF-8")).decode("UTF-8")
+                mapping[name] = f"{settings.K8S_FILE_SECRET_MOUNTPATH}/{name}"
                 continue
             try:
                 filecontents[name] = self._b64_encode_file(path)
@@ -430,7 +460,10 @@ class Kubernetes:
         )
 
     def create_application_deployment(
-        self, project: Project, namespace: str, track: str,
+        self,
+        project: Project,
+        namespace: str,
+        track: str,
     ) -> None:
         helm_path = self.get_helm_path()
 
@@ -451,7 +484,10 @@ class Kubernetes:
                 "env": settings.ENVIRONMENT_SLUG,
             },
             "image": project.image,
-            "ingress": {"maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE},
+            "ingress": {
+                "maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE,
+                "secretName": project.ingress_secret_name
+            },
             "namespace": namespace,
             "releaseOverride": f"{settings.ENVIRONMENT_SLUG}-{kuberenetes_safe_name(project.name)}",
             "replicaCount": project.replica_count,
@@ -470,11 +506,26 @@ class Kubernetes:
             values["application"]["fileSecretName"] = project.file_secret_name
             values["application"]["fileSecretPath"] = settings.K8S_FILE_SECRET_MOUNTPATH
 
+        if settings.K8S_PERSISTENT_STORAGE:
+            values["application"]["pvc"] = {
+                "accessMode": settings.K8S_PERSISTENT_STORAGE_ACCESS_MODE,
+                "enabled": settings.K8S_PERSISTENT_STORAGE,
+                "mountPath": settings.K8S_PERSISTENT_STORAGE_PATH,
+                "size": settings.K8S_PERSISTENT_STORAGE_SIZE,
+                "storageClass": settings.K8S_PERSISTENT_STORAGE_STORAGE_TYPE,
+            }
+
         if project.request_cpu:
             values["application"]["requestCpu"] = project.request_cpu
 
         if project.request_ram:
             values["application"]["requestRam"] = project.request_ram
+
+        if project.limit_cpu:
+            values["application"]["limitCpu"] = project.limit_cpu
+
+        if project.limit_ram:
+            values["application"]["limitRam"] = project.limit_ram
 
         if project.temp_storage_path:
             values["application"]["temporaryStoragePath"] = project.temp_storage_path
@@ -492,11 +543,28 @@ class Kubernetes:
         if settings.K8S_INGRESS_DISABLED:
             values["ingress"]["disabled"] = True
 
+        if settings.K8S_INGRESS_WHITELIST_IPS:
+            values["ingress"]["whitelistIP"] = settings.K8S_INGRESS_WHITELIST_IPS
+        
+        if settings.K8S_INGRESS_ANNOTATIONS:
+            for annotation in settings.K8S_INGRESS_ANNOTATIONS:
+                key, value = annotation.split("=",1)
+                values["ingress"]["annotations"][key] = value
+
         if settings.K8S_LIVENESS_FILE:
             values["application"]["livenessFile"] = settings.K8S_LIVENESS_FILE
 
         if settings.K8S_READINESS_FILE:
             values["application"]["readinessFile"] = settings.K8S_READINESS_FILE
+
+        if settings.K8S_HPA_ENABLED:
+            values["hpa"]["enabled"] = settings.K8S_HPA_ENABLED
+            values["hpa"]["minReplicas"] = settings.K8S_HPA_MIN_REPLICAS
+            values["hpa"]["maxReplicas"] = settings.K8S_HPA_MAX_REPLICAS
+            if settings.K8S_HPA_MAX_CPU_AVG:
+                values["hpa"]["avgCpuUtilization"] = settings.K8S_HPA_MAX_CPU_AVG
+            if settings.K8S_HPA_MAX_RAM_AVG:
+                values["hpa"]["avgRamUtilization"] = settings.K8S_HPA_MAX_RAM_AVG
 
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
@@ -533,7 +601,8 @@ class Kubernetes:
         )
 
     def create_default_network_policy(
-        self, namespace: str = settings.K8S_NAMESPACE,
+        self,
+        namespace: str = settings.K8S_NAMESPACE,
     ) -> None:
         """
         Creates a default network policy which prevents traffic between namespaces.
@@ -571,9 +640,11 @@ class Kubernetes:
                             k8s_client.V1NetworkPolicyPeer(
                                 namespace_selector=k8s_client.V1LabelSelector(
                                     match_labels={"ingress": "default"}
-                                ),
+                                )
+                            ),
+                            k8s_client.V1NetworkPolicyPeer(
                                 pod_selector=k8s_client.V1LabelSelector(),
-                            )
+                            ),
                         ]
                     )
                 ],
@@ -620,7 +691,7 @@ class Kubernetes:
             os_command += [name]
             logger.info(title=f" with name '{name}'", end="")
         logger.info(": ", end="")
-        result = run_os_command(os_command, shell=True)
+        result = run_os_command(os_command, shell=True)  # nosec
         if not result.return_code:
             logger.success()
         else:
@@ -680,7 +751,7 @@ class Kubernetes:
             logger.info(message=" (track): ", end="")
 
         os_command = ["kubectl", "get", "clusterissuer", cert_issuer]
-        result = run_os_command(os_command, shell=True)
+        result = run_os_command(os_command, shell=True)  # nosec
         if not result.return_code:
             logger.success(message=cert_issuer)
             return cert_issuer
@@ -707,7 +778,7 @@ class Kubernetes:
             resource=resource, name=name, labels=labels, namespace=namespace
         )
         logger.info(": ", end="")
-        result = run_os_command(os_command, shell=True)
+        result = run_os_command(os_command, shell=True)  # nosec
         if not result.return_code:
             logger.success()
         else:
@@ -744,7 +815,7 @@ class Kubernetes:
             os_command += [f"--since-time={since_time}"]
             logger.info(title=f" since {since_time}", end="")
 
-        result = run_os_command(os_command, shell=True)
+        result = run_os_command(os_command, shell=True)  # nosec
         if not result.return_code:
             logger.success()
             if print_result:

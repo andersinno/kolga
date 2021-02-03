@@ -7,12 +7,12 @@ from kolga.libs.helm import Helm
 from kolga.libs.kubernetes import Kubernetes
 
 
-@pytest.fixture()  # type: ignore
+@pytest.fixture()
 def kubernetes() -> Kubernetes:
     return Kubernetes()
 
 
-@pytest.fixture()  # type: ignore
+@pytest.fixture()
 def helm() -> Generator[Helm, None, None]:
     helm = Helm()
     yield helm
@@ -22,7 +22,7 @@ def helm() -> Generator[Helm, None, None]:
         pass
 
 
-@pytest.fixture()  # type: ignore
+@pytest.fixture()
 def test_namespace(kubernetes: Kubernetes) -> Generator[str, None, None]:
     namespace = kubernetes.create_namespace()
     yield namespace

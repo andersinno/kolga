@@ -30,6 +30,12 @@ metadata:
         return 200 "User-agent: *\nDisallow: /\n";
       }
     {{- end }}
+    {{- if .Values.ingress.whitelistIP  }}
+    nginx.ingress.kubernetes.io/whitelist-source-range: {{ .Values.ingress.whitelistIP }}
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   tls:
     - hosts:

@@ -36,8 +36,9 @@ spec:
           - secretRef:
                 name: {{ .Values.application.secretName }}
           {{- end }}
-          {{- if or .Values.application.requestCpu .Values.application.requestRam }}
+          {{- if or .Values.application.requestCpu .Values.application.requestRam .Values.application.limitCpu .Values.application.limitRam}}
           resources:
+            {{- if or .Values.application.requestCpu .Values.application.requestRam}}
             requests:
               {{- if .Values.application.requestCpu }}
               cpu: "{{ .Values.application.requestCpu }}"
@@ -45,6 +46,16 @@ spec:
               {{- if .Values.application.requestRam }}
               memory: "{{ .Values.application.requestRam }}"
               {{- end }}
+            {{- end }}
+            {{- if or .Values.application.limitCpu .Values.application.limitRam}}
+            limits:
+              {{- if .Values.application.limitCpu }}
+              cpu: "{{ .Values.application.limitCpu }}"
+              {{- end }}
+              {{- if .Values.application.limitRam }}
+              memory: "{{ .Values.application.limitRam }}"
+              {{- end }}
+            {{- end }}
           {{- end }}
           env:
             - name: POD_IP
@@ -102,6 +113,10 @@ spec:
               name: filesecrets
           {{- end }}
           {{- end }}
+          {{- if and .Values.application.pvc.enabled .Values.application.pvc.mountPath }}
+            - name: {{ template "appname" . }}-volume
+              mountPath: {{ .Values.application.pvc.mountPath }}
+          {{- end }}
       imagePullSecrets:
         - name: regcred
       {{- if or .Values.application.fileSecretName .Values.application.temporaryStoragePath }}
@@ -115,5 +130,10 @@ spec:
           secret:
             secretName: {{ .Values.application.fileSecretName }}
       {{- end }}
+      {{- end }}
+      {{- if and .Values.application.pvc.enabled .Values.application.pvc.mountPath }}
+        - name: {{ template "appname" . }}-volume
+          persistentVolumeClaim:
+            claimName: {{ template "appname" . }}-pvc
       {{- end }}
 {{- end }}

@@ -28,10 +28,7 @@ class Helm:
         """
         logger.info(icon=f"{self.ICON}  🚀", title="Initializing Helm")
 
-        # TODO: Remove once this is added by default and Helm 3 is stable
-        self.add_repo(
-            "stable", "https://kubernetes-charts.storage.googleapis.com/", update=False
-        )
+        self.add_repo("stable", "https://charts.helm.sh/stable", update=False)
         self.add_repo("bitnami", "https://charts.bitnami.com/bitnami", update=False)
 
         self.update_repos()
@@ -53,7 +50,9 @@ class Helm:
 
     def remove_repo(self, repo_name: str) -> None:
         logger.info(
-            icon=f"{self.ICON}  ➖", title=f"Removing Helm repo {repo_name}: ", end="",
+            icon=f"{self.ICON}  ➖",
+            title=f"Removing Helm repo {repo_name}: ",
+            end="",
         )
         result = run_os_command(["helm", "repo", "remove", repo_name])
         if not result.return_code:
@@ -115,7 +114,9 @@ class Helm:
             chart = str(chart_path)
 
         logger.info(
-            icon=f"{self.ICON}  📄", title=f"Upgrading chart from '{chart}': ", end="",
+            icon=f"{self.ICON}  📄",
+            title=f"Upgrading chart from '{chart}': ",
+            end="",
         )
 
         replica_timeout_multiplier = 2 if settings.K8S_REPLICACOUNT > 1 else 1

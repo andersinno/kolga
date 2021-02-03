@@ -19,10 +19,10 @@ def process_tables(app: Sphinx, docname: str, source: List[str]) -> None:
     This function is called by sphinx for each document. `source` is a 1-item list. To update the document, replace
     element 0 in `source`.
     """
-    import markdown  # type: ignore
+    import markdown
 
     md = markdown.Markdown(extensions=["markdown.extensions.tables"])
-    table_processor = markdown.extensions.tables.TableProcessor(md.parser)
+    table_processor = markdown.extensions.tables.TableProcessor(md.parser)  # type: ignore
 
     raw_markdown = source[0]
     blocks = re.split(r"\n{2,}", raw_markdown)

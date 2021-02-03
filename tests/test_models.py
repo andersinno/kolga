@@ -3,7 +3,7 @@ import pytest
 from kolga.utils.models import DockerImageRef
 
 
-@pytest.mark.parametrize(  # type: ignore
+@pytest.mark.parametrize(
     "ref, registry, repository, tag",
     (
         (

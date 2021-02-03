@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 import uuid
 from glob import glob
 from pathlib import Path
@@ -43,7 +44,9 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     # ================================================
     # DOCKER
     # ================================================
-    "BUILDKIT_CACHE_REPO": [env.str, "cache"],
+    "BUILDKIT_CACHE_IMAGE_NAME": [env.str, "cache"],
+    "BUILDKIT_CACHE_REPO": [env.str, ""],
+    "BUILDKIT_CACHE_DISABLE": [env.bool, False],
     "CONTAINER_REGISTRY": [env.str, "docker.anders.fi"],
     "CONTAINER_REGISTRY_PASSWORD": [env.str, ""],
     "CONTAINER_REGISTRY_REPO": [env.str, ""],
@@ -87,24 +90,39 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     # ================================================
     "K8S_ADDITIONAL_HOSTNAMES": [env.list_none, []],
     "K8S_CLUSTER_ISSUER": [env.str, ""],
+    "K8S_HPA_ENABLED": [env.bool, False],
+    "K8S_HPA_MAX_REPLICAS": [env.int, 3],
+    "K8S_HPA_MIN_REPLICAS": [env.int, 1],
+    "K8S_HPA_MAX_CPU_AVG": [env.int, 75],
+    "K8S_HPA_MAX_RAM_AVG": [env.int, 0],
+    "K8S_INGRESS_ANNOTATIONS": [env.list_none, []],
     "K8S_INGRESS_BASE_DOMAIN": [env.str, ""],
     "K8S_INGRESS_BASIC_AUTH": [env.basicauth, []],
     "K8S_INGRESS_DISABLED": [env.bool, False],
     "K8S_CERTMANAGER_USE_OLD_API": [env.bool, False],
     "K8S_INGRESS_MAX_BODY_SIZE": [env.str, "100m"],
     "K8S_INGRESS_PREVENT_ROBOTS": [env.bool, False],
+    "K8S_INGRESS_SECRET_NAME": [env.str, ""],
+    "K8S_INGRESS_WHITELIST_IPS": [env.str, ""],
     "K8S_LIVENESS_PATH": [env.str, "/healthz"],
     "K8S_NAMESPACE": [env.str, ""],
     "K8S_PROBE_FAILURE_THRESHOLD": [env.int, 3],
     "K8S_PROBE_INITIAL_DELAY": [env.int, 60],
     "K8S_PROBE_PERIOD": [env.int, 10],
-    "K8S_FILE_SECRET_MOUNTPATH": [env.str, "/tmp/secrets"],
+    "K8S_FILE_SECRET_MOUNTPATH": [env.str, "/tmp/secrets"],  # nosec
     "K8S_FILE_SECRET_PREFIX": [env.str, "K8S_FILE_SECRET_"],
     "K8S_READINESS_PATH": [env.str, "/readiness"],
-    "K8S_REQUEST_CPU": [env.str, ""],
-    "K8S_REQUEST_RAM": [env.str, ""],
+    "K8S_REQUEST_CPU": [env.str, "50m"],
+    "K8S_REQUEST_RAM": [env.str, "128Mi"],
+    "K8S_LIMIT_CPU": [env.str, ""],
+    "K8S_LIMIT_RAM": [env.str, ""],
     "K8S_SECRET_PREFIX": [env.str, "K8S_SECRET_"],
     "K8S_LIVENESS_FILE": [env.str, ""],
+    "K8S_PERSISTENT_STORAGE": [env.bool, False],
+    "K8S_PERSISTENT_STORAGE_ACCESS_MODE": [env.str, "ReadWriteOnce"],
+    "K8S_PERSISTENT_STORAGE_PATH": [env.str, ""],
+    "K8S_PERSISTENT_STORAGE_SIZE": [env.str, "1Gi"],
+    "K8S_PERSISTENT_STORAGE_STORAGE_TYPE": [env.str, "standard"],
     "K8S_READINESS_FILE": [env.str, ""],
     "K8S_REPLICACOUNT": [env.int, 1],
     "K8S_TEMP_STORAGE_PATH": [env.str, ""],
@@ -129,7 +147,9 @@ class Settings:
     PROJECT_NAME: str
     PROJECT_DIR: str
     PROJECT_PATH_SLUG: str
+    BUILDKIT_CACHE_IMAGE_NAME: str
     BUILDKIT_CACHE_REPO: str
+    BUILDKIT_CACHE_DISABLE: bool
     CONTAINER_REGISTRY: str
     CONTAINER_REGISTRY_PASSWORD: str
     CONTAINER_REGISTRY_REPO: str
@@ -161,14 +181,27 @@ class Settings:
     SERVICE_ARTIFACT_FOLDER: str
     K8S_ADDITIONAL_HOSTNAMES: List[str]
     K8S_CLUSTER_ISSUER: str
+    K8S_HPA_ENABLED: bool
+    K8S_HPA_MAX_REPLICAS: int
+    K8S_HPA_MIN_REPLICAS: int
+    K8S_HPA_MAX_CPU_AVG: int
+    K8S_HPA_MAX_RAM_AVG: int
+    K8S_INGRESS_ANNOTATIONS: List[str]
     K8S_INGRESS_BASE_DOMAIN: str
     K8S_INGRESS_BASIC_AUTH: List[BasicAuthUser]
     K8S_INGRESS_DISABLED: bool
     K8S_CERTMANAGER_USE_OLD_API: bool
     K8S_INGRESS_MAX_BODY_SIZE: str
     K8S_INGRESS_PREVENT_ROBOTS: bool
+    K8S_INGRESS_SECRET_NAME: str
+    K8S_INGRESS_WHITELIST_IPS: str
     K8S_LIVENESS_PATH: str
     K8S_NAMESPACE: str
+    K8S_PERSISTENT_STORAGE: bool
+    K8S_PERSISTENT_STORAGE_ACCESS_MODE: str
+    K8S_PERSISTENT_STORAGE_PATH: str
+    K8S_PERSISTENT_STORAGE_SIZE: str
+    K8S_PERSISTENT_STORAGE_STORAGE_TYPE: str
     K8S_PROBE_FAILURE_THRESHOLD: int
     K8S_PROBE_INITIAL_DELAY: int
     K8S_PROBE_PERIOD: int
@@ -177,6 +210,8 @@ class Settings:
     K8S_READINESS_PATH: str
     K8S_REQUEST_CPU: str
     K8S_REQUEST_RAM: str
+    K8S_LIMIT_CPU: str
+    K8S_LIMIT_RAM: str
     K8S_SECRET_PREFIX: str
     K8S_LIVENESS_FILE: str
     K8S_READINESS_FILE: str
@@ -278,6 +313,38 @@ class Settings:
                 continue
             setattr(self, name_to, ci_value)
 
+    def create_kubeconfig(self, track: str) -> Tuple[str, str]:
+        """
+        Create temporary kubernetes configuration based on contents of
+        KUBECONFIG_RAW or KUBECONFIG_RAW_<track>.
+
+        Args:
+            track: Current deployment track
+
+        Returns:
+            A tuple of kubeconfig and the variable name that was used
+        """
+        name = ""
+        key = ""
+
+        possible_keys = ["KUBECONFIG_RAW"]
+        if track:
+            possible_keys.append(f"KUBECONFIG_RAW_{track.upper()}")
+
+        for key in reversed(possible_keys):
+            kubeconfig = os.environ.get(key, "")
+            if not kubeconfig:
+                continue
+
+            fp, name = tempfile.mkstemp()
+            with os.fdopen(fp, "w") as f:
+                f.write(kubeconfig)
+            break
+
+            logger.info(message=f"Created a kubeconfig file using {key}")
+
+        return name, key
+
     def setup_kubeconfig(self, track: str) -> Tuple[str, str]:
         """
         Point KUBECONFIG environment variable to the correct kubeconfig
@@ -296,21 +363,28 @@ class Settings:
 
 
         """
-        possible_keys = ["KUBECONFIG"]
-        if track:
-            possible_keys.append(f"KUBECONFIG_{track.upper()}")
+        # Check if there is a configuration available in KUBECONFIG_RAW env variable
+        kubeconfig, key = self.create_kubeconfig(track)
 
-        for key in reversed(possible_keys):
-            kubeconfig = os.environ.get(key, "")
-            if not kubeconfig:
-                continue
-
-            self.KUBECONFIG = kubeconfig
-
-            # Set `KUBECONFIG` environment variable for subsequent `kubectl` calls.
+        if kubeconfig:
             os.environ["KUBECONFIG"] = kubeconfig
-
             return kubeconfig, key
+        else:
+            possible_keys = ["KUBECONFIG"]
+            if track:
+                possible_keys.append(f"KUBECONFIG_{track.upper()}")
+
+            for key in reversed(possible_keys):
+                kubeconfig = os.environ.get(key, "")
+                if not kubeconfig:
+                    continue
+
+                self.KUBECONFIG = kubeconfig
+
+                # Set `KUBECONFIG` environment variable for subsequent `kubectl` calls.
+                os.environ["KUBECONFIG"] = kubeconfig
+
+                return kubeconfig, key
 
         raise NoClusterConfigError()
 

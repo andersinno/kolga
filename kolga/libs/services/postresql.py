@@ -18,11 +18,22 @@ class _Image(TypedDict, total=False):
     tag: str
 
 
+class _RequestLimits(TypedDict, total=False):
+    memory: str
+    cpu: str
+
+
+class _Limits(TypedDict, total=False):
+    requests: _RequestLimits
+
+
 class _Values(HelmValues):
+    fullnameOverride: str
     image: _Image
     postgresqlUsername: str
     postgresqlPassword: str
     postgresqlDatabase: str
+    resources: _Limits
 
 
 class PostgresqlService(Service):
@@ -32,7 +43,7 @@ class PostgresqlService(Service):
 
     def __init__(
         self,
-        chart: str = "stable/postgresql",
+        chart: str = "bitnami/postgresql",
         chart_version: str = "7.7.2",
         username: str = settings.DATABASE_USER,
         password: str = settings.DATABASE_PASSWORD,
@@ -50,11 +61,19 @@ class PostgresqlService(Service):
         self.password = password
         self.database = database
         image = DockerImageRef.parse_string(settings.POSTGRES_IMAGE)
+
+        self.memory_request = self.service_specific_values.get("MEMORY_REQUEST", "50Mi")
+        self.cpu_request = self.service_specific_values.get("CPU_REQUEST", "50m")
+
         self.values: _Values = {
             "image": {"repository": image.repository},
+            "fullnameOverride": get_deploy_name(track=self.track, postfix=self.name),
             "postgresqlUsername": self.username,
             "postgresqlPassword": self.password,
             "postgresqlDatabase": self.database,
+            "resources": {
+                "requests": {"memory": self.memory_request, "cpu": self.cpu_request},
+            },
         }
 
         if image.registry is not None:
