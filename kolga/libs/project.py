@@ -54,6 +54,8 @@ class Project:
     replica_count: int
     request_cpu: str
     request_ram: str
+    limit_cpu: str
+    limit_ram: str
     service_port: int
     temp_storage_path: str
 

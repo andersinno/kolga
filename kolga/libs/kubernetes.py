@@ -70,6 +70,8 @@ class _Application(TypedDict, total=False):
     readinessPath: str
     requestCpu: str
     requestRam: str
+    limitCpu: str
+    limitRam: str
     secretName: str
     temporaryStoragePath: str
     track: str
@@ -80,13 +82,23 @@ class _GitLab(TypedDict, total=False):
     env: str
 
 
+class _HPA(TypedDict, total=False):
+    enabled: bool
+    minReplicas: int
+    maxReplicas: int
+    avgCpuUtilization: int
+    avgRamUtilization: int
+
+
 class _Ingress(TypedDict, total=False):
+    annotations: Dict[str, str]
     basicAuthSecret: str
     certManagerAnnotationPrefix: str
     clusterIssuer: str
     disabled: bool
     maxBodySize: str
     preventRobots: bool
+    secretName: str
     whitelistIP: str
 
 
@@ -99,6 +111,7 @@ class _Service(TypedDict, total=False):
 class ApplicationDeploymentValues(HelmValues, total=False):
     application: _Application
     gitlab: _GitLab
+    hpa: _HPA
     ingress: _Ingress
     image: str
     namespace: str
@@ -486,7 +499,7 @@ class Kubernetes:
             "image": project.image,
             "ingress": {
                 "maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE,
-                "secretName": project.ingress_secret_name
+                "secretName": project.ingress_secret_name,
             },
             "namespace": namespace,
             "releaseOverride": f"{settings.ENVIRONMENT_SLUG}-{kuberenetes_safe_name(project.name)}",
@@ -547,6 +560,7 @@ class Kubernetes:
             values["ingress"]["whitelistIP"] = settings.K8S_INGRESS_WHITELIST_IPS
         
         if settings.K8S_INGRESS_ANNOTATIONS:
+            values["ingress"]["annotations"] = {}
             for annotation in settings.K8S_INGRESS_ANNOTATIONS:
                 key, value = annotation.split("=",1)
                 values["ingress"]["annotations"][key] = value
