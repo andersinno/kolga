@@ -45,12 +45,14 @@ class _Pvc(TypedDict, total=False):
     size: str
     storageClass: str
 
+
 class _Hpa(TypedDict, total=False):
     enabled: bool
     minReplicas: int
     maxReplicas: int
     avgCpuUtilization: int
     avgRamUtilization: int
+
 
 class _Application(TypedDict, total=False):
     database_host: str
@@ -558,11 +560,11 @@ class Kubernetes:
 
         if settings.K8S_INGRESS_WHITELIST_IPS:
             values["ingress"]["whitelistIP"] = settings.K8S_INGRESS_WHITELIST_IPS
-        
+
         if settings.K8S_INGRESS_ANNOTATIONS:
             values["ingress"]["annotations"] = {}
             for annotation in settings.K8S_INGRESS_ANNOTATIONS:
-                key, value = annotation.split("=",1)
+                key, value = annotation.split("=", 1)
                 values["ingress"]["annotations"][key] = value
 
         if settings.K8S_LIVENESS_FILE:
