@@ -446,9 +446,10 @@ class GitLabMapper:
 
 class GitHubActionsMapper:
     MAPPING = {
+        "GITHUB_BASE_REF": "GIT_TARGET_BRANCH",
         "GITHUB_REF": "GIT_COMMIT_REF_NAME",
-        "GITHUB_SHA": "GIT_COMMIT_SHA",
         "GITHUB_REPOSITORY": "PROJECT_NAME",
+        "GITHUB_SHA": "GIT_COMMIT_SHA",
     }
 
     def __str__(self) -> str:
