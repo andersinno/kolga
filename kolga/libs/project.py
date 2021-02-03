@@ -46,6 +46,7 @@ class Project:
     url: str
     additional_urls: List[str]
     basic_auth_data: List[BasicAuthUser]
+    ingress_secret_name: str
     liveness_path: str
     probe_failure_threshold: int
     probe_initial_delay: int
@@ -71,7 +72,6 @@ class Project:
         urls: str = "",
         is_dependent_project: bool = False,
         deploy_name: str = "",
-        ingress_secret_name: str = "",
         **kwargs: str,
     ) -> None:
         # Set variables from arguments and if they do not exist,
@@ -90,7 +90,6 @@ class Project:
         self.basic_auth_secret_name = basic_auth_secret_name
         self.urls = urls
         self.is_dependent_project = is_dependent_project
-        self.ingress_secret_name = ingress_secret_name
 
         if self.url:
             self.url = limit_url_length(self.url)
