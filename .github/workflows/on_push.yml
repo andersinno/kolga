@@ -3,12 +3,13 @@ name: build and test
 on: [push]
 
 env:
-  CONTAINER_REGISTRY: docker.anders.fi
-  CONTAINER_REGISTRY_REPO: docker.anders.fi/devops/azure-kolga-demo
+  CONTAINER_REGISTRY: ghcr.io
+  CONTAINER_REGISTRY_REPO: ghcr.io/andersinno/${{ github.event.repository.name }}
   CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
   CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
   DOCKER_IMAGE_NAME: ci-configuration
   BUILD_HOST_IMAGE: docker.anders.fi/anders/ci-configuration:v3
+  BUILT_DOCKER_TEST_IMAGE: ghcr.io/andersinno/${{ github.event.repository.name }}/ci-configuration:${{ github.sha }}-development
 
 
 jobs:
@@ -33,22 +34,23 @@ jobs:
         run: |
           env > ./.docker-env
           docker run --env-file .docker-env --workdir /github/workspace --rm -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "$PWD":"/github/workspace" \
-            $BUILD_HOST_IMAGE bash -c './devops create_images && export BUILT_IMAGE=$(./devops docker_test_image) && echo "::set-env name=BUILT_DOCKER_TEST_IMAGE::$BUILT_IMAGE"'
+            $BUILD_HOST_IMAGE bash -c './devops create_images && export BUILT_IMAGE=$(./devops docker_test_image)'
+        shell: bash
 
       - name: style tests
-        run: docker run $BUILT_DOCKER_TEST_IMAGE /bin/bash -c "make style-tests"
+        run: docker run ${{ env.BUILT_DOCKER_TEST_IMAGE }} /bin/bash -c "make style-tests"
         if: ${{ steps.build.outcome == 'success' && always() }}
 
       - name: typing tests
-        run: docker run $BUILT_DOCKER_TEST_IMAGE /bin/bash -c "make typing-tests"
+        run: docker run ${{ env.BUILT_DOCKER_TEST_IMAGE }} /bin/bash -c "make typing-tests"
         if: ${{ steps.build.outcome == 'success' && always() }}
 
       - name: package tests
-        run: docker run $BUILT_DOCKER_TEST_IMAGE /bin/bash -c "make package-tests"
+        run: docker run ${{ env.BUILT_DOCKER_TEST_IMAGE }} /bin/bash -c "make package-tests"
         if: ${{ steps.build.outcome == 'success' && always() }}
 
       - name: doc tests
-        run: docker run $BUILT_DOCKER_TEST_IMAGE /bin/bash -c "make docs"
+        run: docker run ${{ env.BUILT_DOCKER_TEST_IMAGE }} /bin/bash -c "make docs"
         if: ${{ steps.build.outcome == 'success' && always() }}
 
       - name: functional tests
