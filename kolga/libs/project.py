@@ -8,6 +8,7 @@ from kolga.utils.general import (
     get_environment_vars_by_prefix,
     get_environment_vars_by_prefixes,
     get_secret_name,
+    limit_url_length,
 )
 from kolga.utils.models import BasicAuthUser
 
@@ -88,6 +89,9 @@ class Project:
         self.urls = urls
         self.is_dependent_project = is_dependent_project
         self.ingress_secret_name = ingress_secret_name
+
+        if self.url:
+            self.url = limit_url_length(self.url)
 
         if not image:
             docker = Docker()

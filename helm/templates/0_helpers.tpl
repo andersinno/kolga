@@ -2,17 +2,18 @@
 
 {{/*
 Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+We truncate the name at 52 chars because some Kubernetes name fields are limited to this
+(by the DNS naming spec) and we may postfix the name with "-initialize" (extra 11 chars).
 */}}
 
 {{- define "trackableappname" -}}
 {{- $trackableName := printf "%s-%s" (include "appname" .) .Values.application.track -}}
-{{- $trackableName | trimSuffix "-stable" | trunc 63 | trimSuffix "-" -}}
+{{- $trackableName | trimSuffix "-stable" | trunc 52 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "appname" -}}
 {{- $releaseName := default .Release.Name .Values.releaseOverride -}}
-{{- printf "%s" $releaseName | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s" $releaseName | trunc 52 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
