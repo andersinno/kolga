@@ -5,7 +5,7 @@ on: [push]
 env:
   CONTAINER_REGISTRY: ghcr.io
   CONTAINER_REGISTRY_REPO: ghcr.io/andersinno/${{ github.event.repository.name }}
-  CONTAINER_REGISTRY_USER: andersinno
+  CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
   CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
   DOCKER_IMAGE_NAME: ci-configuration
   BUILD_HOST_IMAGE: docker.anders.fi/anders/ci-configuration:v3
