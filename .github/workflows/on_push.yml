@@ -7,7 +7,7 @@ env:
   CONTAINER_REGISTRY_REPO: ghcr.io/andersinno
   CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
   CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-  DOCKER_IMAGE_NAME: ci-configuration
+  DOCKER_IMAGE_NAME: kolga
   BUILD_HOST_IMAGE: ghcr.io/andersinno/kolga:v3
   BUILT_DOCKER_TEST_IMAGE: ghcr.io/andersinno/kolga:${{ github.sha }}-development
 
