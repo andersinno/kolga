@@ -510,7 +510,7 @@ class Kubernetes:
             "jobsOnly": settings.KOLGA_JOBS_ONLY,
         }
 
-        if settings.active_ci == "GITLAB_CI":
+        if str(settings.active_ci) == "GitLab CI":
             values["gitlab"] = {
                 "app": settings.PROJECT_PATH_SLUG,
                 "env": settings.ENVIRONMENT_SLUG,
