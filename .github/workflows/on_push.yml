@@ -8,8 +8,8 @@ env:
   CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
   CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
   DOCKER_IMAGE_NAME: ci-configuration
-  BUILD_HOST_IMAGE: docker.anders.fi/anders/ci-configuration:v3
-  BUILT_DOCKER_TEST_IMAGE: ghcr.io/andersinno/${{ github.event.repository.name }}/ci-configuration:${{ github.sha }}-development
+  BUILD_HOST_IMAGE: ghcr.io/andersinno/kolga:v3
+  BUILT_DOCKER_TEST_IMAGE: ghcr.io/andersinno/kolga:${{ github.sha }}-development
 
 
 jobs:
