@@ -1,6 +1,7 @@
 from functools import wraps
 from typing import Any, Dict, Optional
 
+from kolga.plugins.exception import TestCouldNotLoadPlugin
 from kolga.settings import settings
 
 
@@ -91,7 +92,9 @@ class load_plugin:
 
     def enable(self) -> None:
         for plugin in self.plugins:
-            settings._load_plugin(plugin)
+            status, message = settings._load_plugin(plugin)
+            if not status:
+                raise TestCouldNotLoadPlugin(message)
 
     def disable(self) -> None:
         for plugin in self.plugins:
