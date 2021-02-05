@@ -159,11 +159,13 @@ def test_test_image_tag() -> None:
 # =====================================================
 
 
+@pytest.mark.docker
 def test_login() -> None:
     d = Docker()
     d.login()
 
 
+@pytest.mark.docker
 def test_incorrect_login() -> None:
     d = Docker()
     with pytest.raises(Exception):

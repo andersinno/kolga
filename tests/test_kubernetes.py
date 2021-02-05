@@ -62,6 +62,7 @@ def test__b64_encode_file() -> None:
         assert Kubernetes._b64_encode_file(path=path) == expected
 
 
+@pytest.mark.k8s
 def test__create_basic_auth_data(kubernetes: Kubernetes) -> None:
     basic_auth_users = [
         BasicAuthUser(username="test", password="test"),
@@ -85,20 +86,24 @@ def test__create_basic_auth_data(kubernetes: Kubernetes) -> None:
 # =====================================================
 
 
+@pytest.mark.k8s
 def test_create_client(kubernetes: Kubernetes) -> None:
     assert kubernetes
 
 
+@pytest.mark.k8s
 def test_create_namespace_env(kubernetes: Kubernetes, test_namespace: str) -> None:
     assert test_namespace == K8S_NAMESPACE
 
 
+@pytest.mark.k8s
 def test_create_namespace_named(kubernetes: Kubernetes) -> None:
     namespace = "testing-2"
     assert kubernetes.create_namespace(namespace) == namespace
     kubernetes.delete_namespace(namespace)
 
 
+@pytest.mark.k8s
 def test_create_secret_stable(kubernetes: Kubernetes, test_namespace: str) -> None:
     track = DEFAULT_TRACK
     data = {"test_secret": "1234"}
@@ -113,6 +118,7 @@ def test_create_secret_stable(kubernetes: Kubernetes, test_namespace: str) -> No
     kubernetes.get(resource="secret", namespace=K8S_NAMESPACE, name=project.secret_name)
 
 
+@pytest.mark.k8s
 def test_create_secret_qa(kubernetes: Kubernetes, test_namespace: str) -> None:
     track = "qa"
     project = Project(track=track)
@@ -126,6 +132,7 @@ def test_create_secret_qa(kubernetes: Kubernetes, test_namespace: str) -> None:
     kubernetes.get(resource="secret", namespace=K8S_NAMESPACE, name=project.secret_name)
 
 
+@pytest.mark.k8s
 def test_delete_namespace(kubernetes: Kubernetes, test_namespace: str) -> None:
     kubernetes.delete(
         resource="namespace", name=test_namespace, namespace=K8S_NAMESPACE
@@ -134,6 +141,7 @@ def test_delete_namespace(kubernetes: Kubernetes, test_namespace: str) -> None:
         kubernetes.get(resource="namespace", name=test_namespace)
 
 
+@pytest.mark.k8s
 def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
     track = DEFAULT_TRACK
     deploy_name = get_deploy_name(track=track)
@@ -152,6 +160,7 @@ def test_delete_all(kubernetes: Kubernetes, test_namespace: str) -> None:
         kubernetes.get(resource="secret", name=test_namespace)
 
 
+@pytest.mark.k8s
 def test_create_default_networkpolicy(
     kubernetes: Kubernetes, test_namespace: str
 ) -> None:
