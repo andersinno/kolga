@@ -144,6 +144,17 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "VAULT_KV_SECRET_MOUNT_POINT": [env.str, "secrets"],
     "VAULT_JWT": [env.str, ""],
     "VAULT_TLS_ENABLED": [env.bool, True],
+    # ================================================
+    # JOB
+    # ================================================
+    "JOB_ACTOR": [env.str, ""],
+    # ================================================
+    # MERGE/PULL-REQUEST
+    # ================================================
+    "PR_ASSIGNEES": [env.str, ""],
+    "PR_ID": [env.str, ""],
+    "PR_TITLE": [env.str, ""],
+    "PR_URL": [env.str, ""],
 }
 
 
@@ -229,6 +240,11 @@ class Settings:
     VAULT_KV_SECRET_MOUNT_POINT: str
     VAULT_TLS_ENABLED: bool
     VAULT_JWT: str
+    JOB_ACTOR: str
+    PR_ASSIGNEES: str
+    PR_ID: str
+    PR_TITLE: str
+    PR_URL: str
 
     def __init__(self) -> None:
         missing_vars = _VARIABLE_DEFINITIONS.keys() - self.__annotations__.keys()
