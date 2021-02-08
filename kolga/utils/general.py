@@ -3,6 +3,7 @@ import os
 import re
 import subprocess  # nosec
 from datetime import datetime, timezone
+from functools import reduce
 from hashlib import sha256
 from pathlib import Path
 from shlex import quote
@@ -267,3 +268,25 @@ def truncate_with_hash(
         raise ValueError("Cannot truncate value with given constraints")
 
     return s
+
+
+def deep_get(dictionary: Dict[Any, Any], keys: str, default: Any = None) -> Any:
+    """
+    Get dictionary values using "dot" notation as in JavaScript
+
+    Args:
+        dictionary: A dictionary to search in
+        keys: A dot-delimited string of the key-path
+        default: Default value to return in case of no match
+
+    Returns:
+        Return the value that is found at "key" or "default" if no value is found
+
+    """
+    return reduce(
+        # For each value in `keys` get the dictionary value or return default
+        lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
+        # Split up the `keys` variable to a list of values
+        keys.split("."),
+        dictionary,
+    )
