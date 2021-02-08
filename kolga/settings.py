@@ -324,6 +324,7 @@ class Settings:
         for ci in self.supported_cis:
             if ci.is_active:
                 self.active_ci = ci
+                ci.initialize()
                 break
 
     def _get_project_name(self) -> str:
@@ -449,7 +450,12 @@ class Settings:
         raise NoClusterConfigError()
 
 
-class AzurePipelinesMapper:
+class BaseCI:
+    def initialize(self) -> None:
+        pass
+
+
+class AzurePipelinesMapper(BaseCI):
     MAPPING = {
         "BUILD_SOURCEBRANCHNAME": "GIT_COMMIT_REF_NAME",  # TODO: Do this programmatically instead
         "BUILD_SOURCEVERSION": "GIT_COMMIT_SHA",
@@ -469,7 +475,7 @@ class AzurePipelinesMapper:
         return ["/builds/"]
 
 
-class GitLabMapper:
+class GitLabMapper(BaseCI):
     MAPPING = {
         "CI_COMMIT_REF_NAME": "GIT_COMMIT_REF_NAME",
         "CI_COMMIT_SHA": "GIT_COMMIT_SHA",
@@ -504,7 +510,7 @@ class GitLabMapper:
         return ["/builds/"]
 
 
-class GitHubActionsMapper:
+class GitHubActionsMapper(BaseCI):
     MAPPING = {
         "GITHUB_BASE_REF": "GIT_TARGET_BRANCH",
         "GITHUB_REF": "GIT_COMMIT_REF_NAME",
