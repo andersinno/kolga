@@ -101,6 +101,10 @@ WORKDIR /app
 COPY poetry.lock /app/poetry.lock
 COPY pyproject.toml /app/pyproject.toml
 
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH
+
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
         python3-dev \
@@ -117,6 +121,8 @@ RUN apk add --no-cache --virtual .build-deps \
         openssl-dev \
         libffi-dev \
         apache2-utils \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile minimal \
+    && chmod -R a+w $RUSTUP_HOME $CARGO_HOME \
     && ln -sf python3 /usr/bin/python \
     && ln -s pip3 /usr/bin/pip \
     && python3 -m ensurepip \
@@ -124,7 +130,8 @@ RUN apk add --no-cache --virtual .build-deps \
 	&& poetry install --no-dev --no-interaction \
 	&& pip install docker-compose \
 	&& apk del .build-deps \
-	&& apk del .fetch-deps
+	&& apk del .fetch-deps \
+    && rustup self uninstall -y
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
