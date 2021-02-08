@@ -190,6 +190,8 @@ variables:
   environment:
     name: qa/staging
     url: https://$CI_PROJECT_PATH_SLUG-qa.$KUBE_INGRESS_BASE_DOMAIN
+    kubernetes:
+      namespace: $K8S_STAGING_NAMESPACE
   variables:
     K8S_INGRESS_PREVENT_ROBOTS: 1
   only:
@@ -208,6 +210,8 @@ variables:
   environment:
     name: production
     url: https://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    kubernetes:
+      namespace: $K8S_STABLE_NAMESPACE
   variables:
     POSTGRES_ENABLED: 0
   only:
