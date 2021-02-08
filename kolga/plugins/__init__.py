@@ -1,3 +1,7 @@
 from typing import Any, List
 
-KOLGA_CORE_PLUGINS: List[Any] = []
+from kolga.plugins.sentry.sentry import KolgaSentryPlugin
+
+KOLGA_CORE_PLUGINS: List[Any] = [
+    KolgaSentryPlugin,
+]
