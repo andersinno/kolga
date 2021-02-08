@@ -1,13 +1,16 @@
+import json
 import os
+import tempfile
+from pathlib import Path
 from random import sample
 from string import ascii_lowercase
-from typing import Optional, Type
+from typing import Any, Dict, Optional, Type
 from unittest import mock
 
 import pytest
 
 from kolga.hooks.plugins import PluginBase
-from kolga.settings import settings
+from kolga.settings import GitHubActionsMapper, settings
 
 
 def fake_track(invalid_value: str) -> str:
@@ -86,12 +89,66 @@ def test_setup_kubeconfig_raw_with_track() -> None:
     assert key == "KUBECONFIG_RAW_STABLE"
 
 
-@mock.patch.dict(
-    "os.environ",
-    {
-        "TEST_PLUGIN_VARIABLE": "odins_raven",
-    },
-)
+@mock.patch.dict("os.environ", {"TEST_PLUGIN_VARIABLE": "odins_raven"})
 def test_load_unload_plugins(test_plugin: Type[PluginBase]) -> None:
     assert settings._load_plugin(plugin=test_plugin)[0] is True
     assert settings._unload_plugin(plugin=test_plugin)
+
+
+@mock.patch.dict("os.environ", {"GITHUB_EVENT_NAME": "pull_request"})
+def test_gh_event_data_set() -> None:
+    event_data: Dict[Any, Any] = {
+        "action": "opened",
+        "number": 2,
+        "pull_request": {
+            "url": "https://api.github.com/repos/Codertocat/Hello-World/pulls/2",
+            "number": 2,
+            "title": "Update the README with new information.",
+        },
+    }
+
+    gh_mapper = GitHubActionsMapper()
+
+    with tempfile.NamedTemporaryFile() as f:
+        encoded_string = str.encode(json.dumps(event_data), encoding="UTF-8")
+        f.write(encoded_string)
+        f.seek(0)
+        absolute_path = Path(f.name).absolute()
+        with mock.patch.dict(os.environ, {"GITHUB_EVENT_PATH": str(absolute_path)}):
+            gh_mapper.initialize()
+
+            assert os.environ.get("GITHUB_PR_URL", None) == str(
+                event_data["pull_request"]["url"]
+            )
+            assert os.environ.get("GITHUB_PR_TITLE", None) == str(
+                event_data["pull_request"]["title"]
+            )
+            assert os.environ.get("GITHUB_PR_ID", None) == str(
+                event_data["pull_request"]["number"]
+            )
+
+
+def test_gh_pull_request_variable_set() -> None:
+    # The test data is a subset of the full specification example:
+    # https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads#pull_request
+    event_data: Dict[Any, Any] = {
+        "action": "opened",
+        "number": 2,
+        "pull_request": {
+            "url": "https://api.github.com/repos/Codertocat/Hello-World/pulls/2",
+            "number": 2,
+            "title": "Update the README with new information.",
+        },
+    }
+
+    GitHubActionsMapper._set_pull_request_variables(event_data)
+
+    assert os.environ.get("GITHUB_PR_URL", None) == str(
+        event_data["pull_request"]["url"]
+    )
+    assert os.environ.get("GITHUB_PR_TITLE", None) == str(
+        event_data["pull_request"]["title"]
+    )
+    assert os.environ.get("GITHUB_PR_ID", None) == str(
+        event_data["pull_request"]["number"]
+    )
