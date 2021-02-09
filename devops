@@ -8,6 +8,9 @@ from kolga.settings import settings
 
 class Devops:
     def __init__(self) -> None:
+
+        settings.load_plugins()
+
         self.parser = argparse.ArgumentParser(description="Anders Devops")
         subparsers = self.parser.add_subparsers(
             dest="command", metavar="<command>", required=True

@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import tempfile
@@ -6,13 +7,18 @@ from glob import glob
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+import pluggy  # type: ignore
 from environs import Env
 
 from kolga.utils.logger import logger
 from kolga.utils.models import BasicAuthUser
 
+from .hooks.exceptions import PluginMissingConfiguration
+from .hooks.hookspec import KolgaHookSpec
+from .plugins import KOLGA_CORE_PLUGINS
 from .utils.environ_parsers import basicauth_parser, list_none_parser
 from .utils.exceptions import NoClusterConfigError
+from .utils.general import deep_get
 
 service_artifacts_folder = os.environ.get("SERVICE_ARTIFACT_FOLDER", None)
 build_artifacts_folder = os.environ.get("BUILD_ARTIFACT_FOLDER", None)
@@ -140,6 +146,17 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "VAULT_KV_SECRET_MOUNT_POINT": [env.str, "secrets"],
     "VAULT_JWT": [env.str, ""],
     "VAULT_TLS_ENABLED": [env.bool, True],
+    # ================================================
+    # JOB
+    # ================================================
+    "JOB_ACTOR": [env.str, ""],
+    # ================================================
+    # MERGE/PULL-REQUEST
+    # ================================================
+    "PR_ASSIGNEES": [env.str, ""],
+    "PR_ID": [env.str, ""],
+    "PR_TITLE": [env.str, ""],
+    "PR_URL": [env.str, ""],
 }
 
 
@@ -225,6 +242,11 @@ class Settings:
     VAULT_KV_SECRET_MOUNT_POINT: str
     VAULT_TLS_ENABLED: bool
     VAULT_JWT: str
+    JOB_ACTOR: str
+    PR_ASSIGNEES: str
+    PR_ID: str
+    PR_TITLE: str
+    PR_URL: str
 
     def __init__(self) -> None:
         missing_vars = _VARIABLE_DEFINITIONS.keys() - self.__annotations__.keys()
@@ -249,6 +271,46 @@ class Settings:
         if self.active_ci:
             self._map_ci_variables()
 
+        self.plugin_manager = self._setup_pluggy()
+
+    def _setup_pluggy(self) -> pluggy.PluginManager:
+        pm: pluggy.PluginManager = pluggy.PluginManager("kolga")
+        pm.add_hookspecs(KolgaHookSpec)
+
+        return pm
+
+    def load_plugins(self) -> None:
+        loading_plugins = False
+
+        for plugin in KOLGA_CORE_PLUGINS:
+            plugin_loaded, message = self._load_plugin(plugin)
+            if not loading_plugins and plugin_loaded:
+                logger.info(
+                    icon="🔌",
+                    title="Loading plugins:",
+                )
+                loading_plugins = True
+            if plugin_loaded:
+                logger.info(f"{plugin.verbose_name}: {message}")
+            # TODO: Implement verbose logging where the plugin loading error would be shown
+
+    def _load_plugin(self, plugin: Any) -> Tuple[bool, str]:
+        try:
+            self.plugin_manager.register(plugin(env), name=plugin.name)
+        except PluginMissingConfiguration as e:
+            return False, f"⚠️  {e}"
+        return True, "✅"
+
+    def _unload_plugin(self, plugin: Any) -> Any:
+        # We need to first fetch the instance of the plugin in order to unregister it.
+        # If we do not do this, Pluggy will not properly unregister as it will try
+        # to do it on the class and not the instance, which will not hard-fail, but
+        # will only partially unregister the plugin, leaving it still to be called
+        # by hooks.
+        _to_be_unregistered_plugin = self.plugin_manager.get_plugin(plugin.name)
+
+        return self.plugin_manager.unregister(_to_be_unregistered_plugin)
+
     def _set_attributes(self) -> None:
         from .utils.general import env_var_safe_key
 
@@ -264,6 +326,7 @@ class Settings:
         for ci in self.supported_cis:
             if ci.is_active:
                 self.active_ci = ci
+                ci.initialize()
                 break
 
     def _get_project_name(self) -> str:
@@ -389,7 +452,12 @@ class Settings:
         raise NoClusterConfigError()
 
 
-class AzurePipelinesMapper:
+class BaseCI:
+    def initialize(self) -> None:
+        pass
+
+
+class AzurePipelinesMapper(BaseCI):
     MAPPING = {
         "BUILD_SOURCEBRANCHNAME": "GIT_COMMIT_REF_NAME",  # TODO: Do this programmatically instead
         "BUILD_SOURCEVERSION": "GIT_COMMIT_SHA",
@@ -409,7 +477,7 @@ class AzurePipelinesMapper:
         return ["/builds/"]
 
 
-class GitLabMapper:
+class GitLabMapper(BaseCI):
     MAPPING = {
         "CI_COMMIT_REF_NAME": "GIT_COMMIT_REF_NAME",
         "CI_COMMIT_SHA": "GIT_COMMIT_SHA",
@@ -425,11 +493,16 @@ class GitLabMapper:
         "CI_REGISTRY_IMAGE": "CONTAINER_REGISTRY_REPO",
         "CI_REGISTRY_PASSWORD": "CONTAINER_REGISTRY_PASSWORD",
         "CI_REGISTRY_USER": "CONTAINER_REGISTRY_USER",
+        "GITLAB_USER_NAME": "JOB_ACTOR",
         "KUBE_INGRESS_BASE_DOMAIN": "K8S_INGRESS_BASE_DOMAIN",
         "KUBE_INGRESS_PREVENT_ROBOTS": "K8S_INGRESS_PREVENT_ROBOTS",
         "KUBE_NAMESPACE": "K8S_NAMESPACE",
         "KUBE_CLUSTER_ISSUER": "K8S_CLUSTER_ISSUER",
         "KUBECONFIG": "KUBECONFIG",
+        "CI_MERGE_REQUEST_ASSIGNEES": "PR_ASSIGNEES",
+        "CI_MERGE_REQUEST_TITLE": "PR_TITLE",
+        "CI_MERGE_REQUEST_PROJECT_URL": "PR_URL",
+        "CI_MERGE_REQUEST_ID": "PR_ID",
     }
 
     def __str__(self) -> str:
@@ -444,16 +517,23 @@ class GitLabMapper:
         return ["/builds/"]
 
 
-class GitHubActionsMapper:
+class GitHubActionsMapper(BaseCI):
     MAPPING = {
         "GITHUB_BASE_REF": "GIT_TARGET_BRANCH",
         "GITHUB_REF": "GIT_COMMIT_REF_NAME",
         "GITHUB_REPOSITORY": "PROJECT_NAME",
         "GITHUB_SHA": "GIT_COMMIT_SHA",
+        "GITHUB_ACTOR": "JOB_ACTOR",
+        "GITHUB_PR_URL": "PR_URL",
+        "GITHUB_PR_TITLE": "PR_URL",
+        "GITHUB_PR_ID": "PR_ID",
     }
 
     def __str__(self) -> str:
         return "GitHub Actions"
+
+    def initialize(self) -> None:
+        self._set_event_data_variables()
 
     @property
     def is_active(self) -> bool:
@@ -462,6 +542,45 @@ class GitHubActionsMapper:
     @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
         return ["/builds/"]
+
+    def _set_event_data_variables(self) -> None:
+        """
+        Set environment variables based on event data
+
+        Events in GitHub has a lot of metadata, it is not exposed
+        through environment variables however. This function takes the
+        metadata, that is stored in a json file, extracts some values, and
+        sets them as environment variables that the main settings class then
+        can use to configure Kólga.
+
+        Returns: Return None, but sets environment variables based on the event data.
+        """
+        event_name: str = env.str("GITHUB_EVENT_NAME", "")
+        event_data_path = Path(env.str("GITHUB_EVENT_PATH", ""))
+
+        # Check if we have a function that can handle the event
+        setter_function = getattr(self, f"_set_{event_name}_variables", None)
+        if not event_name or not setter_function or not event_data_path.exists():
+            return None
+
+        try:
+            with event_data_path.open() as event_data_file:
+                event_data = json.load(event_data_file)
+        except (OSError, IOError, ValueError):
+            return None
+
+        setter_function(event_data)
+
+    @staticmethod
+    def _set_pull_request_variables(event_data: Dict[str, Any]) -> None:
+        if pr_url := deep_get(event_data, "pull_request.url"):
+            os.environ["GITHUB_PR_URL"] = str(pr_url)
+
+        if pr_title := deep_get(event_data, "pull_request.title"):
+            os.environ["GITHUB_PR_TITLE"] = str(pr_title)
+
+        if pr_number := deep_get(event_data, "pull_request.number"):
+            os.environ["GITHUB_PR_ID"] = str(pr_number)
 
 
 settings = Settings()

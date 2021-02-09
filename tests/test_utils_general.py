@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Optional
+from typing import Any, Dict, Optional
 from unittest import mock
 from uuid import uuid4
 
@@ -10,6 +10,7 @@ from kolga.settings import settings
 from kolga.utils.general import (
     DEPLOY_NAME_MAX_HELM_NAME_LENGTH,
     camel_case_split,
+    deep_get,
     get_deploy_name,
     get_environment_vars_by_prefix,
     get_secret_name,
@@ -99,3 +100,21 @@ def test_get_environment_vars_by_prefix() -> None:
         os.environ[key] = secret
 
     assert get_environment_vars_by_prefix(prefix) == secrets
+
+
+@pytest.mark.parametrize(
+    "dictionary, keys, expected_value",
+    [
+        ({"test": True}, "test", True),
+        ({"test", True}, "test.novalue", None),
+        ({"test": True}, "novalue.level_one", None),
+        ({"test": True}, "", None),
+        ({"test": {"level_one": True}}, "test.level_one", True),
+        ({"test": {"level_one": True}}, "test.level_two", None),
+        ({"test": {"level_one": True}}, "test", {"level_one": True}),
+    ],
+)
+def test_deep_get(
+    dictionary: Dict[Any, Any], keys: str, expected_value: Optional[bool]
+) -> None:
+    assert deep_get(dictionary, keys) == expected_value

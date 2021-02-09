@@ -1,0 +1,2 @@
+class TestCouldNotLoadPlugin(Exception):
+    pass

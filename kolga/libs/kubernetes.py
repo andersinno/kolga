@@ -613,6 +613,9 @@ class Kubernetes:
             )
             raise DeploymentFailed()
 
+        settings.plugin_manager.hook.project_deployment_complete(
+            project=project, track=track, namespace=namespace
+        )
         logger.info(
             icon=f"{self.ICON}  📄",
             title=f"Deployment can be accessed via {project.url}",
