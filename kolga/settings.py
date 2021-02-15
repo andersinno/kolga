@@ -266,10 +266,10 @@ class Settings:
         self._set_ci_environment()
         setattr(self, PROJECT_NAME_VAR, self._get_project_name())
 
-        self._set_attributes()
-
         if self.active_ci:
             self._map_ci_variables()
+
+        self._set_attributes()
 
         self.plugin_manager = self._setup_pluggy()
 
@@ -312,14 +312,31 @@ class Settings:
         return self.plugin_manager.unregister(_to_be_unregistered_plugin)
 
     def _set_attributes(self) -> None:
+        """
+        Read and set settings from environment variables
+
+        Strategy:
+        1. If a value is set in the environment, use it
+        2. If a value is set in a project prefixed environment variable use it
+        3. If the attribute is already set, use the pre-existing value
+        4. Should all else fail, use the default value
+        """
         from .utils.general import env_var_safe_key
 
-        self.PROJECT_NAME_SAFE = env_var_safe_key(self.PROJECT_NAME)
+        safe_name = self.PROJECT_NAME_SAFE = env_var_safe_key(self.PROJECT_NAME)
         for variable, (parser, default_value) in _VARIABLE_DEFINITIONS.items():
             value = parser(variable, None)
             if value is None:
-                project_prefixed_variable_name = f"{self.PROJECT_NAME_SAFE}_{variable}"
-                value = parser(project_prefixed_variable_name, default_value)
+                project_prefixed_variable_name = f"{safe_name}_{variable}"
+                value = parser(project_prefixed_variable_name, None)
+
+            if value is None:
+                if hasattr(self, variable):
+                    # Don't override an already-set value with default
+                    continue
+                else:
+                    value = default_value
+
             setattr(self, variable, value)
 
     def _set_ci_environment(self) -> None:
@@ -345,36 +362,21 @@ class Settings:
     def _map_ci_variables(self) -> None:
         """
         Map CI variables to settings
-
-        Strategy:
-        1. If a value is set in the env, use it
-        2. If a value is not set in the env and a CI value is set, use the CI value
-        3. If a value is not set in the env and not in the CI, use the default value
         """
-        if not self.active_ci:
+        mapper = self.active_ci
+        if not mapper:
             return None
-        for name_from, name_to in self.active_ci.MAPPING.items():
+
+        for name_from, name_to in mapper.MAPPING.items():
             if name_to not in _VARIABLE_DEFINITIONS:
                 logger.warning(
                     message=f"CI variable mapping failed, no setting called {name_to}"
                 )
 
-            has_set_value = name_to if name_to in os.environ else None
-            if not has_set_value:
-                has_set_value = (
-                    f"{self.PROJECT_NAME_SAFE}_{name_to}"
-                    if f"{self.PROJECT_NAME_SAFE}_{name_to}" in os.environ
-                    else None
-                )
-
-            if has_set_value:
-                continue
-
-            parser, default_value = _VARIABLE_DEFINITIONS[name_to]
+            parser, _ = _VARIABLE_DEFINITIONS[name_to]
             ci_value = parser(name_from, None)
-            if not ci_value:
-                continue
-            setattr(self, name_to, ci_value)
+            if ci_value is not None:
+                setattr(self, name_to, ci_value)
 
     def create_kubeconfig(self, track: str) -> Tuple[str, str]:
         """
