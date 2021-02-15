@@ -362,19 +362,33 @@ class Settings:
     def _map_ci_variables(self) -> None:
         """
         Map CI variables to settings
+
+        If the source name starts with '=', get the value from mapper's
+        attribute. Otwerwise read the value from environment.
         """
         mapper = self.active_ci
         if not mapper:
             return None
 
+        ci_value = None
         for name_from, name_to in mapper.MAPPING.items():
             if name_to not in _VARIABLE_DEFINITIONS:
                 logger.warning(
                     message=f"CI variable mapping failed, no setting called {name_to}"
                 )
 
-            parser, _ = _VARIABLE_DEFINITIONS[name_to]
-            ci_value = parser(name_from, None)
+            if name_from.startswith("="):
+                name_from = name_from[1:]
+                try:
+                    ci_value = getattr(mapper, name_from)
+                except AttributeError:
+                    logger.error(
+                        message=f"CI variable mapping failed, no mapper attribute called {name_from}"
+                    )
+            else:
+                parser, _ = _VARIABLE_DEFINITIONS[name_to]
+                ci_value = parser(name_from, None)
+
             if ci_value is not None:
                 setattr(self, name_to, ci_value)
 
