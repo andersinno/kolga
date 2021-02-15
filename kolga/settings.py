@@ -535,15 +535,16 @@ class GitLabMapper(BaseCI):
 
 class GitHubActionsMapper(BaseCI):
     MAPPING = {
+        "GITHUB_ACTOR": "JOB_ACTOR",
         "GITHUB_BASE_REF": "GIT_TARGET_BRANCH",
         "GITHUB_REF": "GIT_COMMIT_REF_NAME",
         "GITHUB_REPOSITORY": "PROJECT_NAME",
         "GITHUB_SHA": "GIT_COMMIT_SHA",
-        "GITHUB_ACTOR": "JOB_ACTOR",
-        "GITHUB_PR_URL": "PR_URL",
-        "GITHUB_PR_TITLE": "PR_URL",
-        "GITHUB_PR_ID": "PR_ID",
+        "=PR_ID": "PR_ID",
+        "=PR_TITLE": "PR_URL",
+        "=PR_URL": "PR_URL",
     }
+    _EVENT_DATA: Optional[Dict[str, Any]]
 
     def __str__(self) -> str:
         return "GitHub Actions"
@@ -556,47 +557,42 @@ class GitHubActionsMapper(BaseCI):
         return env.bool("GITHUB_ACTIONS", False)  # type: ignore
 
     @property
+    def PR_ID(self) -> Optional[str]:
+        if pr_url := deep_get(self._EVENT_DATA, "pull_request.number"):
+            return str(pr_url)
+        return None
+
+    @property
+    def PR_TITLE(self) -> Optional[str]:
+        if pr_title := deep_get(self._EVENT_DATA, "pull_request.title"):
+            return str(pr_title)
+        return None
+
+    @property
+    def PR_URL(self) -> Optional[str]:
+        if pr_number := deep_get(self._EVENT_DATA, "pull_request.url"):
+            return str(pr_number)
+        return None
+
+    @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
         return ["/builds/"]
 
     def _set_event_data_variables(self) -> None:
         """
-        Set environment variables based on event data
+        Read event data from filesystem
 
         Events in GitHub has a lot of metadata, it is not exposed
         through environment variables however. This function takes the
-        metadata, that is stored in a json file, extracts some values, and
-        sets them as environment variables that the main settings class then
-        can use to configure Kólga.
-
-        Returns: Return None, but sets environment variables based on the event data.
+        metadata, that is stored in a json file, parses it, and stores
+        it in a member variable for later use.
         """
-        event_name: str = env.str("GITHUB_EVENT_NAME", "")
-        event_data_path = Path(env.str("GITHUB_EVENT_PATH", ""))
-
-        # Check if we have a function that can handle the event
-        setter_function = getattr(self, f"_set_{event_name}_variables", None)
-        if not event_name or not setter_function or not event_data_path.exists():
-            return None
-
+        event_data_path = env.path("GITHUB_EVENT_PATH", "")
         try:
             with event_data_path.open() as event_data_file:
-                event_data = json.load(event_data_file)
-        except (OSError, IOError, ValueError):
-            return None
-
-        setter_function(event_data)
-
-    @staticmethod
-    def _set_pull_request_variables(event_data: Dict[str, Any]) -> None:
-        if pr_url := deep_get(event_data, "pull_request.url"):
-            os.environ["GITHUB_PR_URL"] = str(pr_url)
-
-        if pr_title := deep_get(event_data, "pull_request.title"):
-            os.environ["GITHUB_PR_TITLE"] = str(pr_title)
-
-        if pr_number := deep_get(event_data, "pull_request.number"):
-            os.environ["GITHUB_PR_ID"] = str(pr_number)
+                self._EVENT_DATA = json.load(event_data_file)
+        except (FileNotFoundError, IOError, OSError, ValueError):
+            self._EVENT_DATA = None
 
 
 settings = Settings()
