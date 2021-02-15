@@ -6,6 +6,7 @@ import uuid
 from glob import glob
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 import pluggy  # type: ignore
 from environs import Env
@@ -47,6 +48,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     PROJECT_NAME_VAR: [env.str, ""],
     "PROJECT_DIR": [env.str, ""],
     "PROJECT_PATH_SLUG": [env.str, ""],
+    "PROJECT_QUALIFIED_ID": [env.str, ""],
     # ================================================
     # DOCKER
     # ================================================
@@ -164,6 +166,7 @@ class Settings:
     PROJECT_NAME: str
     PROJECT_DIR: str
     PROJECT_PATH_SLUG: str
+    PROJECT_QUALIFIED_ID: str
     BUILDKIT_CACHE_IMAGE_NAME: str
     BUILDKIT_CACHE_REPO: str
     BUILDKIT_CACHE_DISABLE: bool
@@ -475,10 +478,11 @@ class BaseCI:
 
 class AzurePipelinesMapper(BaseCI):
     MAPPING = {
+        "BUILD_DEFINITIONNAME": "DOCKER_IMAGE_NAME",
         "BUILD_SOURCEBRANCHNAME": "GIT_COMMIT_REF_NAME",  # TODO: Do this programmatically instead
         "BUILD_SOURCEVERSION": "GIT_COMMIT_SHA",
         "SYSTEM_TEAMPROJECT": "PROJECT_NAME",
-        "BUILD_DEFINITIONNAME": "DOCKER_IMAGE_NAME",
+        "=PROJECT_QUALIFIED_ID": "PROJECT_QUALIFIED_ID",
     }
 
     def __str__(self) -> str:
@@ -487,6 +491,15 @@ class AzurePipelinesMapper(BaseCI):
     @property
     def is_active(self) -> bool:
         return bool(env.str("AZURE_HTTP_USER_AGENT", ""))
+
+    @property
+    def PROJECT_QUALIFIED_ID(self) -> Optional[str]:
+        repo_uri = env.str("BUILD_REPOSITORY_URI", None)
+        if repo_uri is None:
+            return None
+
+        parsed = urlparse(repo_uri)
+        return f"{parsed.netloc}{parsed.path}"
 
     @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
@@ -501,7 +514,11 @@ class GitLabMapper(BaseCI):
         "CI_ENVIRONMENT_SLUG": "ENVIRONMENT_SLUG",
         "CI_ENVIRONMENT_URL": "ENVIRONMENT_URL",
         "CI_JOB_JWT": "VAULT_JWT",
+        "CI_MERGE_REQUEST_ASSIGNEES": "PR_ASSIGNEES",
+        "CI_MERGE_REQUEST_ID": "PR_ID",
+        "CI_MERGE_REQUEST_PROJECT_URL": "PR_URL",
         "CI_MERGE_REQUEST_TARGET_BRANCH_NAME": "GIT_TARGET_BRANCH",
+        "CI_MERGE_REQUEST_TITLE": "PR_TITLE",
         "CI_PROJECT_DIR": "PROJECT_DIR",
         "CI_PROJECT_NAME": "PROJECT_NAME",
         "CI_PROJECT_PATH_SLUG": "PROJECT_PATH_SLUG",
@@ -510,15 +527,12 @@ class GitLabMapper(BaseCI):
         "CI_REGISTRY_PASSWORD": "CONTAINER_REGISTRY_PASSWORD",
         "CI_REGISTRY_USER": "CONTAINER_REGISTRY_USER",
         "GITLAB_USER_NAME": "JOB_ACTOR",
+        "KUBE_CLUSTER_ISSUER": "K8S_CLUSTER_ISSUER",
+        "KUBECONFIG": "KUBECONFIG",
         "KUBE_INGRESS_BASE_DOMAIN": "K8S_INGRESS_BASE_DOMAIN",
         "KUBE_INGRESS_PREVENT_ROBOTS": "K8S_INGRESS_PREVENT_ROBOTS",
         "KUBE_NAMESPACE": "K8S_NAMESPACE",
-        "KUBE_CLUSTER_ISSUER": "K8S_CLUSTER_ISSUER",
-        "KUBECONFIG": "KUBECONFIG",
-        "CI_MERGE_REQUEST_ASSIGNEES": "PR_ASSIGNEES",
-        "CI_MERGE_REQUEST_TITLE": "PR_TITLE",
-        "CI_MERGE_REQUEST_PROJECT_URL": "PR_URL",
-        "CI_MERGE_REQUEST_ID": "PR_ID",
+        "=PROJECT_QUALIFIED_ID": "PROJECT_QUALIFIED_ID",
     }
 
     def __str__(self) -> str:
@@ -529,20 +543,30 @@ class GitLabMapper(BaseCI):
         return env.bool("GITLAB_CI", False)  # type: ignore
 
     @property
+    def PROJECT_QUALIFIED_ID(self) -> Optional[str]:
+        project_path = env.str("CI_PROJECT_PATH", None)
+        server_url = env.str("CI_SERVER_URL", None)
+        if None in (project_path, server_url):
+            return None
+
+        return f"{urlparse(server_url).netloc}/{project_path}"
+
+    @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
         return ["/builds/"]
 
 
 class GitHubActionsMapper(BaseCI):
     MAPPING = {
+        "GITHUB_ACTOR": "JOB_ACTOR",
         "GITHUB_BASE_REF": "GIT_TARGET_BRANCH",
+        "GITHUB_PR_ID": "PR_ID",
+        "GITHUB_PR_TITLE": "PR_URL",
+        "GITHUB_PR_URL": "PR_URL",
         "GITHUB_REF": "GIT_COMMIT_REF_NAME",
         "GITHUB_REPOSITORY": "PROJECT_NAME",
         "GITHUB_SHA": "GIT_COMMIT_SHA",
-        "GITHUB_ACTOR": "JOB_ACTOR",
-        "GITHUB_PR_URL": "PR_URL",
-        "GITHUB_PR_TITLE": "PR_URL",
-        "GITHUB_PR_ID": "PR_ID",
+        "=PROJECT_QUALIFIED_ID": "PROJECT_QUALIFIED_ID",
     }
 
     def __str__(self) -> str:
@@ -554,6 +578,15 @@ class GitHubActionsMapper(BaseCI):
     @property
     def is_active(self) -> bool:
         return env.bool("GITHUB_ACTIONS", False)  # type: ignore
+
+    @property
+    def PROJECT_QUALIFIED_ID(self) -> Optional[str]:
+        project_path = env.str("GITHUB_REPOSITORY", None)
+        server_url = env.str("GITHUB_SERVER_URL", None)
+        if None in (project_path, server_url):
+            return None
+
+        return f"{urlparse(server_url).netloc}/{project_path}"
 
     @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
