@@ -4,28 +4,108 @@ import tempfile
 from pathlib import Path
 from random import sample
 from string import ascii_lowercase
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Set, Type
 from unittest import mock
 
 import pytest
 
+import kolga
 from kolga.hooks.plugins import PluginBase
-from kolga.settings import GitHubActionsMapper, settings
+from kolga.settings import GitHubActionsMapper, Settings, settings
 
 
 def fake_track(invalid_value: str) -> str:
-    ret = invalid_value
-    n_chars = len(invalid_value) if invalid_value else 8
+    if invalid_value:
+        n_chars = len(invalid_value)
+        unsuitables = {invalid_value}
+    else:
+        n_chars = 8
+        unsuitables = set()
 
-    while ret == invalid_value:
+    return generate_random_string(n_chars, unsuitables)
+
+
+def generate_random_string(n_chars: int, unsuitables: Optional[Set[str]] = None) -> str:
+    if unsuitables is None:
+        unsuitables = set()
+
+    while True:
         ret = "".join(sample(ascii_lowercase, n_chars))
-
-    return ret
+        if ret not in unsuitables:
+            return ret
 
 
 def kubeconfig_key(track: Optional[str] = None) -> str:
     track_postfix = f"_{track.upper()}" if track is not None else ""
     return f"KUBECONFIG{track_postfix}"
+
+
+@pytest.mark.parametrize(
+    "variables_to_set, expected_key",
+    [
+        (
+            # Env takes precedence over everything else
+            ["GIT_COMMIT_SHA", "TESTING_GIT_COMMIT_SHA", "CI_COMMIT_SHA"],
+            "GIT_COMMIT_SHA",
+        ),
+        (
+            # Project prefixed env var
+            ["-GIT_COMMIT_SHA", "TESTING_GIT_COMMIT_SHA", "CI_COMMIT_SHA"],
+            "TESTING_GIT_COMMIT_SHA",
+        ),
+        (
+            # CI mapper is used if value is not in env
+            ["-GIT_COMMIT_SHA", "CI_COMMIT_SHA"],
+            "CI_COMMIT_SHA",
+        ),
+        (
+            # Default value is used if all else fails
+            ["-GIT_COMMIT_SHA"],
+            None,
+        ),
+    ],
+)
+def test_set_variables(
+    variables_to_set: Dict[str, str],
+    expected_key: Optional[str],
+    attr_name: str = "GIT_COMMIT_SHA",
+    value_length: int = 12,
+) -> None:
+    default_value = generate_random_string(value_length)
+    used_values = {default_value}
+
+    # Patch environment
+    with mock.patch.dict("os.environ", {"GITLAB_CI": "1"}):
+        for key in variables_to_set:
+            if key[0] == "-":
+                # Remove key from environment
+                try:
+                    del os.environ[key[1:]]
+                except KeyError:
+                    pass
+            else:
+                # Set a random value for an environment variable
+                value = generate_random_string(value_length, used_values)
+                os.environ[key] = value
+                used_values.add(value)
+
+        # Patch variable definitions
+        parser, _ = kolga.settings._VARIABLE_DEFINITIONS[attr_name]
+        with mock.patch.dict(
+            "kolga.settings._VARIABLE_DEFINITIONS", {attr_name: [parser, default_value]}
+        ):
+            settings = Settings()
+
+        # Get values
+        if expected_key is None:
+            expected_value = default_value
+        else:
+            expected_value = os.environ[expected_key]
+        value = getattr(settings, attr_name)
+
+    assert (
+        value == expected_value
+    ), f"settings.{attr_name} != os.environ[{expected_key}]."
 
 
 @pytest.mark.parametrize(
