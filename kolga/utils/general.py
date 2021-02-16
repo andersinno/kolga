@@ -270,7 +270,9 @@ def truncate_with_hash(
     return s
 
 
-def deep_get(dictionary: Dict[Any, Any], keys: str, default: Any = None) -> Any:
+def deep_get(
+    dictionary: Optional[Dict[Any, Any]], keys: str, default: Any = None
+) -> Any:
     """
     Get dictionary values using "dot" notation as in JavaScript
 
@@ -288,5 +290,5 @@ def deep_get(dictionary: Dict[Any, Any], keys: str, default: Any = None) -> Any:
         lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
         # Split up the `keys` variable to a list of values
         keys.split("."),
-        dictionary,
+        dictionary or {},
     )
