@@ -18,7 +18,7 @@ from .hooks.hookspec import KolgaHookSpec
 from .plugins import KOLGA_CORE_PLUGINS
 from .utils.environ_parsers import basicauth_parser, list_none_parser
 from .utils.exceptions import NoClusterConfigError
-from .utils.general import deep_get
+from .utils.general import deep_get, kubernetes_safe_name
 
 service_artifacts_folder = os.environ.get("SERVICE_ARTIFACT_FOLDER", None)
 build_artifacts_folder = os.environ.get("BUILD_ARTIFACT_FOLDER", None)
@@ -46,6 +46,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     # ================================================
     PROJECT_NAME_VAR: [env.str, ""],
     "PROJECT_DIR": [env.str, ""],
+    "PROJECT_ID": [env.str, ""],
     "PROJECT_PATH_SLUG": [env.str, ""],
     # ================================================
     # DOCKER
@@ -163,6 +164,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
 class Settings:
     PROJECT_NAME: str
     PROJECT_DIR: str
+    PROJECT_ID: str
     PROJECT_PATH_SLUG: str
     BUILDKIT_CACHE_IMAGE_NAME: str
     BUILDKIT_CACHE_REPO: str
@@ -476,6 +478,7 @@ class BaseCI:
 class AzurePipelinesMapper(BaseCI):
     MAPPING = {
         "BUILD_DEFINITIONNAME": "DOCKER_IMAGE_NAME",
+        "BUILD_REPOSITORY_ID": "PROJECT_ID",
         "BUILD_SOURCEBRANCHNAME": "GIT_COMMIT_REF_NAME",  # TODO: Do this programmatically instead
         "BUILD_SOURCEVERSION": "GIT_COMMIT_SHA",
         "SYSTEM_TEAMPROJECT": "PROJECT_NAME",
@@ -507,6 +510,7 @@ class GitLabMapper(BaseCI):
         "CI_MERGE_REQUEST_TARGET_BRANCH_NAME": "GIT_TARGET_BRANCH",
         "CI_MERGE_REQUEST_TITLE": "PR_TITLE",
         "CI_PROJECT_DIR": "PROJECT_DIR",
+        "CI_PROJECT_ID ": "PROJECT_ID",
         "CI_PROJECT_NAME": "PROJECT_NAME",
         "CI_PROJECT_PATH_SLUG": "PROJECT_PATH_SLUG",
         "CI_REGISTRY": "CONTAINER_REGISTRY",
@@ -543,6 +547,7 @@ class GitHubActionsMapper(BaseCI):
         "=PR_ID": "PR_ID",
         "=PR_TITLE": "PR_TITLE",
         "=PR_URL": "PR_URL",
+        "=PROJECT_ID": "PROJECT_ID",
     }
     _EVENT_DATA: Optional[Dict[str, Any]]
 
@@ -573,6 +578,13 @@ class GitHubActionsMapper(BaseCI):
         if pr_number := deep_get(self._EVENT_DATA, "pull_request.url"):
             return str(pr_number)
         return None
+
+    @property
+    def PROJECT_ID(self) -> Optional[str]:
+        repository = env.str("GITHUB_REPOSITORY", None)
+        if not repository:
+            return None
+        return kubernetes_safe_name(repository)
 
     @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:

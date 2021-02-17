@@ -259,6 +259,16 @@ class Kubernetes:
             )
         return helm_path
 
+    @staticmethod
+    def get_namespace_labels() -> Dict[str, str]:
+        # TODO: Un-hardcode this label
+        labels = {"app": "kubed"}
+
+        if settings.PROJECT_ID:
+            labels["kolga.io/project_id"] = settings.PROJECT_ID
+
+        return labels
+
     def create_namespace(self, namespace: str = settings.K8S_NAMESPACE) -> str:
         """
         Create a Kubernetes namespace
@@ -289,7 +299,10 @@ class Kubernetes:
             logger.success()
             return namespace
 
-        v1_metadata = k8s_client.V1ObjectMeta(name=namespace, labels={"app": "kubed"})
+        v1_metadata = k8s_client.V1ObjectMeta(
+            labels=self.get_namespace_labels(),
+            name=namespace,
+        )
         v1_namespace = k8s_client.V1Namespace(metadata=v1_metadata)
         try:
             v1.create_namespace(v1_namespace)
