@@ -325,7 +325,7 @@ class Settings:
         """
         from .utils.general import env_var_safe_key
 
-        safe_name = self.PROJECT_NAME_SAFE = env_var_safe_key(self.PROJECT_NAME)
+        safe_name = env_var_safe_key(self.PROJECT_NAME)
         for variable, (parser, default_value) in _VARIABLE_DEFINITIONS.items():
             value = parser(variable, None)
             if value is None:
