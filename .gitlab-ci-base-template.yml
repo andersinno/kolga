@@ -104,6 +104,7 @@ variables:
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     on_stop: stop_review
+    auto_stop_in: 2 weeks
   artifacts:
     paths:
       - $SERVICE_ARTIFACT_FOLDER/
@@ -125,6 +126,7 @@ variables:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     url: https://$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
     on_stop: stop_review
+    auto_stop_in: 2 weeks
   variables:
     K8S_INGRESS_PREVENT_ROBOTS: 1
   only:
