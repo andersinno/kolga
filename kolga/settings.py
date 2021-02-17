@@ -353,9 +353,10 @@ class Settings:
         project_name: str = parser(PROJECT_NAME_VAR, default_value)
 
         if not project_name and self.active_ci:
-            for (name_from, name_to) in self.active_ci.MAPPING.items():
-                if name_to == PROJECT_NAME_VAR:
-                    project_name = os.environ.get(name_from, "")
+            name_from = self.active_ci.MAPPING.get(PROJECT_NAME_VAR)
+            if name_from:
+                # TODO: Use parser and add support for generated properties
+                project_name = os.environ.get(name_from, "")
 
         if not project_name:
             raise AssertionError("No project name could be found!")
@@ -373,7 +374,7 @@ class Settings:
             return None
 
         ci_value = None
-        for name_from, name_to in mapper.MAPPING.items():
+        for name_to, name_from in mapper.MAPPING.items():
             if name_to not in _VARIABLE_DEFINITIONS:
                 logger.warning(
                     message=f"CI variable mapping failed, no setting called {name_to}"
@@ -477,11 +478,11 @@ class BaseCI:
 
 class AzurePipelinesMapper(BaseCI):
     MAPPING = {
-        "BUILD_DEFINITIONNAME": "DOCKER_IMAGE_NAME",
-        "BUILD_REPOSITORY_ID": "PROJECT_ID",
-        "BUILD_SOURCEBRANCHNAME": "GIT_COMMIT_REF_NAME",  # TODO: Do this programmatically instead
-        "BUILD_SOURCEVERSION": "GIT_COMMIT_SHA",
-        "SYSTEM_TEAMPROJECT": "PROJECT_NAME",
+        "DOCKER_IMAGE_NAME": "BUILD_DEFINITIONNAME",
+        "GIT_COMMIT_REF_NAME": "BUILD_SOURCEBRANCHNAME",  # TODO: Do this programmatically instead
+        "GIT_COMMIT_SHA": "BUILD_SOURCEVERSION",
+        "PROJECT_ID": "BUILD_REPOSITORY_ID",
+        "PROJECT_NAME": "SYSTEM_TEAMPROJECT",
     }
 
     def __str__(self) -> str:
@@ -498,31 +499,30 @@ class AzurePipelinesMapper(BaseCI):
 
 class GitLabMapper(BaseCI):
     MAPPING = {
-        "CI_COMMIT_REF_NAME": "GIT_COMMIT_REF_NAME",
-        "CI_COMMIT_SHA": "GIT_COMMIT_SHA",
-        "CI_DEFAULT_BRANCH": "GIT_DEFAULT_TARGET_BRANCH",
-        "CI_ENVIRONMENT_SLUG": "ENVIRONMENT_SLUG",
-        "CI_ENVIRONMENT_URL": "ENVIRONMENT_URL",
-        "CI_JOB_JWT": "VAULT_JWT",
-        "CI_MERGE_REQUEST_ASSIGNEES": "PR_ASSIGNEES",
-        "CI_MERGE_REQUEST_ID": "PR_ID",
-        "CI_MERGE_REQUEST_PROJECT_URL": "PR_URL",
-        "CI_MERGE_REQUEST_TARGET_BRANCH_NAME": "GIT_TARGET_BRANCH",
-        "CI_MERGE_REQUEST_TITLE": "PR_TITLE",
-        "CI_PROJECT_DIR": "PROJECT_DIR",
-        "CI_PROJECT_ID ": "PROJECT_ID",
-        "CI_PROJECT_NAME": "PROJECT_NAME",
-        "CI_PROJECT_PATH_SLUG": "PROJECT_PATH_SLUG",
-        "CI_REGISTRY": "CONTAINER_REGISTRY",
-        "CI_REGISTRY_IMAGE": "CONTAINER_REGISTRY_REPO",
-        "CI_REGISTRY_PASSWORD": "CONTAINER_REGISTRY_PASSWORD",
-        "CI_REGISTRY_USER": "CONTAINER_REGISTRY_USER",
-        "GITLAB_USER_NAME": "JOB_ACTOR",
-        "KUBE_CLUSTER_ISSUER": "K8S_CLUSTER_ISSUER",
-        "KUBE_INGRESS_BASE_DOMAIN": "K8S_INGRESS_BASE_DOMAIN",
-        "KUBE_INGRESS_PREVENT_ROBOTS": "K8S_INGRESS_PREVENT_ROBOTS",
-        "KUBE_NAMESPACE": "K8S_NAMESPACE",
-        "KUBECONFIG": "KUBECONFIG",
+        "CONTAINER_REGISTRY": "CI_REGISTRY",
+        "CONTAINER_REGISTRY_PASSWORD": "CI_REGISTRY_PASSWORD",
+        "CONTAINER_REGISTRY_REPO": "CI_REGISTRY_IMAGE",
+        "CONTAINER_REGISTRY_USER": "CI_REGISTRY_USER",
+        "ENVIRONMENT_SLUG": "CI_ENVIRONMENT_SLUG",
+        "ENVIRONMENT_URL": "CI_ENVIRONMENT_URL",
+        "GIT_COMMIT_REF_NAME": "CI_COMMIT_REF_NAME",
+        "GIT_COMMIT_SHA": "CI_COMMIT_SHA",
+        "GIT_DEFAULT_TARGET_BRANCH": "CI_DEFAULT_BRANCH",
+        "GIT_TARGET_BRANCH": "CI_MERGE_REQUEST_TARGET_BRANCH_NAME",
+        "JOB_ACTOR": "GITLAB_USER_NAME",
+        "K8S_CLUSTER_ISSUER": "KUBE_CLUSTER_ISSUER",
+        "K8S_INGRESS_BASE_DOMAIN": "KUBE_INGRESS_BASE_DOMAIN",
+        "K8S_INGRESS_PREVENT_ROBOTS": "KUBE_INGRESS_PREVENT_ROBOTS",
+        "K8S_NAMESPACE": "KUBE_NAMESPACE",
+        "PR_ASSIGNEES": "CI_MERGE_REQUEST_ASSIGNEES",
+        "PR_ID": "CI_MERGE_REQUEST_ID",
+        "PROJECT_DIR": "CI_PROJECT_DIR",
+        "PROJECT_ID": "CI_PROJECT_ID",
+        "PROJECT_NAME": "CI_PROJECT_NAME",
+        "PROJECT_PATH_SLUG": "CI_PROJECT_PATH_SLUG",
+        "PR_TITLE": "CI_MERGE_REQUEST_TITLE",
+        "PR_URL": "CI_MERGE_REQUEST_PROJECT_URL",
+        "VAULT_JWT": "CI_JOB_JWT",
     }
 
     def __str__(self) -> str:
@@ -539,15 +539,15 @@ class GitLabMapper(BaseCI):
 
 class GitHubActionsMapper(BaseCI):
     MAPPING = {
-        "GITHUB_ACTOR": "JOB_ACTOR",
-        "GITHUB_BASE_REF": "GIT_TARGET_BRANCH",
-        "GITHUB_REF": "GIT_COMMIT_REF_NAME",
-        "GITHUB_REPOSITORY": "PROJECT_NAME",
-        "GITHUB_SHA": "GIT_COMMIT_SHA",
-        "=PR_ID": "PR_ID",
-        "=PR_TITLE": "PR_TITLE",
-        "=PR_URL": "PR_URL",
-        "=PROJECT_ID": "PROJECT_ID",
+        "GIT_COMMIT_REF_NAME": "GITHUB_REF",
+        "GIT_COMMIT_SHA": "GITHUB_SHA",
+        "GIT_TARGET_BRANCH": "GITHUB_BASE_REF",
+        "JOB_ACTOR": "GITHUB_ACTOR",
+        "PR_ID": "=PR_ID",
+        "PR_TITLE": "=PR_TITLE",
+        "PR_URL": "=PR_URL",
+        "PROJECT_ID": "=PROJECT_ID",
+        "PROJECT_NAME": "GITHUB_REPOSITORY",
     }
     _EVENT_DATA: Optional[Dict[str, Any]]
 
