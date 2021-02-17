@@ -24,7 +24,7 @@ from kolga.utils.general import (
     current_rfc3339_datetime,
     get_deploy_name,
     get_environment_vars_by_prefix,
-    kuberenetes_safe_name,
+    kubernetes_safe_name,
     loads_json,
     run_os_command,
     validate_file_secret_path,
@@ -259,6 +259,16 @@ class Kubernetes:
             )
         return helm_path
 
+    @staticmethod
+    def get_namespace_labels() -> Dict[str, str]:
+        # TODO: Un-hardcode this label
+        labels = {"app": "kubed"}
+
+        if settings.PROJECT_ID:
+            labels["kolga.io/project_id"] = settings.PROJECT_ID
+
+        return labels
+
     def create_namespace(self, namespace: str = settings.K8S_NAMESPACE) -> str:
         """
         Create a Kubernetes namespace
@@ -289,7 +299,10 @@ class Kubernetes:
             logger.success()
             return namespace
 
-        v1_metadata = k8s_client.V1ObjectMeta(name=namespace, labels={"app": "kubed"})
+        v1_metadata = k8s_client.V1ObjectMeta(
+            labels=self.get_namespace_labels(),
+            name=namespace,
+        )
         v1_namespace = k8s_client.V1Namespace(metadata=v1_metadata)
         try:
             v1.create_namespace(v1_namespace)
@@ -500,7 +513,7 @@ class Kubernetes:
                 "secretName": project.ingress_secret_name,
             },
             "namespace": namespace,
-            "releaseOverride": f"{settings.ENVIRONMENT_SLUG}-{kuberenetes_safe_name(project.name)}",
+            "releaseOverride": f"{settings.ENVIRONMENT_SLUG}-{kubernetes_safe_name(project.name)}",
             "replicaCount": project.replica_count,
             "service": {
                 "targetPort": project.service_port,
