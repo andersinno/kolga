@@ -92,7 +92,7 @@ def env_var_safe_key(key: str) -> str:
     return re.sub(r"^\d+|\W", "_", key).upper()
 
 
-def kuberenetes_safe_name(name: str) -> str:
+def kubernetes_safe_name(name: str) -> str:
     """
     Returns a version of the string that can be used in in kubernetes resource names
 
@@ -133,7 +133,7 @@ def get_deploy_name(track: Optional[str] = None, postfix: Optional[str] = None) 
     max_postfix_len = DEPLOY_NAME_MAX_HELM_NAME_LENGTH - tracked_name_len
     deploy_name = f"{tracked_name}{truncate_with_hash(postfix, max_postfix_len)}"
 
-    return kuberenetes_safe_name(deploy_name)
+    return kubernetes_safe_name(deploy_name)
 
 
 def get_secret_name(track: Optional[str] = None, postfix: Optional[str] = None) -> str:

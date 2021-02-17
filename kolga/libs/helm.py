@@ -7,7 +7,7 @@ from typing import Any, List, Optional
 import yaml
 
 from kolga.settings import settings
-from kolga.utils.general import kuberenetes_safe_name, run_os_command
+from kolga.utils.general import kubernetes_safe_name, run_os_command
 from kolga.utils.logger import logger
 from kolga.utils.models import HelmValues, SubprocessResult
 
@@ -148,7 +148,7 @@ class Helm:
         if values_files:
             helm_command += self.get_chart_params(flag="--values", values=values_files)
 
-        safe_name = kuberenetes_safe_name(name=name)
+        safe_name = kubernetes_safe_name(name=name)
         values_yaml = yaml.dump(values)
 
         with NamedTemporaryFile(buffering=0) as fobj:
