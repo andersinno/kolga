@@ -629,10 +629,12 @@ class Kubernetes:
         settings.plugin_manager.hook.project_deployment_complete(
             project=project, track=track, namespace=namespace
         )
-        logger.info(
-            icon=f"{self.ICON}  📄",
-            title=f"Deployment can be accessed via {project.url}",
-        )
+
+        if not settings.K8S_INGRESS_DISABLED:
+            logger.info(
+                icon=f"{self.ICON}  📄",
+                title=f"Deployment can be accessed via {project.url}",
+            )
 
     def create_default_network_policy(
         self,
