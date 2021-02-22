@@ -1,9 +1,7 @@
-# Anders CI/CD DevOps
-
-> Version 3 is still in BETA and is therefor in a volatile state and can change without notice
+# Kólga CI/CD DevOps
 
 CI/CD configuration for running a complete DevOps pipeline with all stages
-from Docker builds and testnig to review, QA/staging and production environment
+from Docker builds and testing to review, QA/staging and production environment
 creation.
 
 ## Contents
@@ -23,17 +21,25 @@ creation.
     - Database URL
     - Media file storage, S3-combatible object storage in testing and
       production
+    - Outgoing mail SMTP server
 
 - Add secrets to CI/CD environment variables starting with `K8S_SECRET_`
 
 - Make sure the application listens on port 8000 or set `SERVICE_PORT`
+  variable
 
 - Import the CI config for your CI/CD pipeline, for GitLab for example:
 ```yaml
 include:
   - project: 'anders/ci-configuration'
-    ref: v2
+    ref: v3
     file: '/.gitlab-ci-template.yml'
+```
+
+- Define a build job
+```yaml
+build:
+  extends: .build
 ```
 
 - Add URL for the staging environment
