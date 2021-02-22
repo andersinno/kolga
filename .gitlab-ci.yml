@@ -27,6 +27,18 @@ build:
     - /^r-[\d]+$/
     - v3
 
+pages:
+  stage: release
+  image: ${DEVELOPMENT_IMAGE}
+  script:
+    - make docs
+    - mv -vi docs/_build/html public/
+  only:
+    - v3
+  artifacts:
+    paths:
+      - public
+
 release-local:
   stage: release
   extends: .build
