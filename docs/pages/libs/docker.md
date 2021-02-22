@@ -1,7 +1,7 @@
 # Docker    
 
 ```eval_rst
-.. automodule:: scripts.libs.docker
+.. automodule:: kolga.libs.docker
     :members:
     :private-members:
 ```

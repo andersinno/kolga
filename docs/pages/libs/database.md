@@ -1,7 +1,7 @@
 # Database    
 
 ```eval_rst
-.. automodule:: scripts.libs.database
+.. automodule:: kolga.libs.database
     :members:
     :private-members:
 ```

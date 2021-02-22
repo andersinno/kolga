@@ -5,7 +5,7 @@
 * [Git](../../git.md)
 * [Docker](../../docker.md)
 * [Database](../../database.md)
-* [Project](../../project.md)
+* [Project](../../projects.md)
 
 ## Tools
 * [General](../../utils/general.md)

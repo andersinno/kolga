@@ -1,7 +1,7 @@
 # Helm    
 
 ```eval_rst
-.. automodule:: scripts.libs.helm
+.. automodule:: kolga.libs.helm
     :members:
     :private-members:
 ```

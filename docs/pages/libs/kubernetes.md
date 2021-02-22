@@ -1,7 +1,7 @@
 # Kubernetes    
 
 ```eval_rst
-.. automodule:: scripts.libs.kubernetes
+.. automodule:: kolga.libs.kubernetes
     :members:
     :private-members:
 ```

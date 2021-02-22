@@ -1,7 +1,7 @@
 # Project    
 
 ```eval_rst
-.. automodule:: scripts.libs.project
+.. automodule:: kolga.libs.project
     :members:
     :private-members:
 ```

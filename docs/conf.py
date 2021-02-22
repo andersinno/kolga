@@ -74,6 +74,11 @@ github_doc_root = "https://github.com/rtfd/recommonmark/tree/master/doc/"
 
 
 def setup(app: Sphinx) -> None:
+    # FIXME: Importing `kolga.settings` without setting the
+    # `PROJECT_NAME` environment variable causes
+    # `Settings._get_project_name()` to raise an `AssertionError`.
+    os.environ["PROJECT_NAME"] = "Generate Documentation"
+
     app.add_config_value(
         "recommonmark_config",
         {
