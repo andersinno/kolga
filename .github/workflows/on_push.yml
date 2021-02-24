@@ -4,12 +4,12 @@ on: [push]
 
 env:
   CONTAINER_REGISTRY: ghcr.io
-  CONTAINER_REGISTRY_REPO: ghcr.io/andersinno
+  CONTAINER_REGISTRY_REPO: ghcr.io/${{ github.repository_owner }}
   CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
   CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
   DOCKER_IMAGE_NAME: kolga
   BUILD_HOST_IMAGE: ghcr.io/andersinno/kolga:v3
-  BUILT_DOCKER_TEST_IMAGE: ghcr.io/andersinno/kolga:${{ github.sha }}-development
+  BUILT_DOCKER_TEST_IMAGE: ghcr.io/${{ github.repository_owner }}/kolga:${{ github.sha }}-development
 
 
 jobs:
@@ -24,10 +24,15 @@ jobs:
         with:
           registry: ${{ env.CONTAINER_REGISTRY }}
           username: ${{ env.CONTAINER_REGISTRY_USER }}
-          password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+          password: ${{ env.CONTAINER_REGISTRY_PASSWORD }}
 
       - name: pull Kólga Docker image
         run: docker pull $BUILD_HOST_IMAGE
+
+      - name: ensure lowercase image
+        run: |
+          echo BUILT_DOCKER_TEST_IMAGE=$(echo ${{ env.BUILT_DOCKER_TEST_IMAGE }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+          echo CONTAINER_REGISTRY_REPO=$(echo ${{ env.CONTAINER_REGISTRY_REPO }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
 
       - name: use Kólga to build Kólga
         id: build
