@@ -479,14 +479,12 @@ class Kubernetes:
             version=service.chart_version,
         )
 
-    def create_application_deployment(
+    def get_application_deployment_values(
         self,
-        project: Project,
         namespace: str,
+        project: Project,
         track: str,
-    ) -> None:
-        helm_path = self.get_helm_path()
-
+    ) -> ApplicationDeploymentValues:
         values: ApplicationDeploymentValues = {
             "application": {
                 "initializeCommand": project.initialize_command,
@@ -588,6 +586,21 @@ class Kubernetes:
                 values["hpa"]["avgCpuUtilization"] = settings.K8S_HPA_MAX_CPU_AVG
             if settings.K8S_HPA_MAX_RAM_AVG:
                 values["hpa"]["avgRamUtilization"] = settings.K8S_HPA_MAX_RAM_AVG
+
+        return values
+
+    def create_application_deployment(
+        self,
+        namespace: str,
+        project: Project,
+        track: str,
+    ) -> None:
+        helm_path = self.get_helm_path()
+        values = self.get_application_deployment_values(
+            namespace=namespace,
+            project=project,
+            track=track,
+        )
 
         deployment_started_at = current_rfc3339_datetime()
         result = self.helm.upgrade_chart(
