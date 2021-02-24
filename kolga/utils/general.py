@@ -71,9 +71,9 @@ def create_artifact_file_from_dict(
     return env_file  # type: ignore
 
 
-def current_rfc3339_datetime() -> str:
-    local_time = datetime.now(timezone.utc).astimezone()
-    return local_time.isoformat()
+def current_datetime_kubernetes_label_safe() -> str:
+    utcnow = datetime.now(timezone.utc)
+    return utcnow.strftime("%Y-%m-%d_%H-%M-%S.%fZ")
 
 
 def env_var_safe_key(key: str) -> str:
