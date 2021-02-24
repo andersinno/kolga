@@ -84,14 +84,6 @@ class _GitLab(TypedDict, total=False):
     env: str
 
 
-class _HPA(TypedDict, total=False):
-    enabled: bool
-    minReplicas: int
-    maxReplicas: int
-    avgCpuUtilization: int
-    avgRamUtilization: int
-
-
 class _Ingress(TypedDict, total=False):
     annotations: Dict[str, str]
     basicAuthSecret: str
@@ -113,7 +105,7 @@ class _Service(TypedDict, total=False):
 class ApplicationDeploymentValues(HelmValues, total=False):
     application: _Application
     gitlab: _GitLab
-    hpa: _HPA
+    hpa: _Hpa
     ingress: _Ingress
     image: str
     namespace: str
