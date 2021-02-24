@@ -140,4 +140,27 @@ spec:
           persistentVolumeClaim:
             claimName: {{ template "appname" . }}-pvc
       {{- end }}
+      {{ if or (.Values.replicaCount > 1) .Values.hpa.enabled }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  name: app
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  name: app
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  name: app
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 100
+      {{- end }}
 {{- end }}
