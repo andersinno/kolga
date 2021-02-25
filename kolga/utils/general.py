@@ -1,7 +1,7 @@
 import json
 import os
 import re
-import subprocess  # nosec
+import subprocess
 from datetime import datetime, timezone
 from functools import reduce
 from hashlib import sha256
