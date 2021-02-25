@@ -12,4 +12,4 @@ Note however that we do not put restrictions on the jobs or stages that are run 
 new jobs and stages can be added and the default stages and jobs can be disabled.
 
 **Supported platforms:**
-* [GitLab](../../gitlab/index.md)
+* [GitLab](/pages/reference/platforms/gitlab/index.md)

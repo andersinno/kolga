@@ -84,7 +84,7 @@ def setup(app: Sphinx) -> None:
         {
             # "auto_toc_tree_section": "Contents",
             "enable_auto_toc_tree": True,
-            "auto_toc_maxdepth": 2,
+            "auto_toc_maxdepth": 1,
             "enable_math": True,
             "enable_inline_math": True,
             "enable_eval_rst": True,
