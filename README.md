@@ -1,4 +1,4 @@
-# Kólga CI/CD DevOps
+# Kólga
 
 CI/CD configuration for running a complete DevOps pipeline with all stages
 from Docker builds and testing to review, QA/staging and production environment

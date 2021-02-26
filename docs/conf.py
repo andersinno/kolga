@@ -6,8 +6,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "Anders DevOps"
-copyright = "2019, Anders Innovations Oy"
+project = "Kólga"
+copyright = "2021, Anders Innovations Oy"
 author = "Anders Innovations Oy"
 
 # The full version, including alpha/beta/rc tags
