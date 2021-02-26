@@ -1,11 +1,11 @@
-# Quick-start Guide
+# Getting Started
 
 ## Preparing your application
 
-- Write a Dockerfile for your project
+- [Write a Dockerfile](/pages/guides/writing-dockerfiles.md) for your project.
 
 - Add liveness and readiness probes: `/healthz` and `/readiness` should
-  respond with `200 OK` when the application is ready to serve requests
+  respond with `200 OK` when the application is ready to serve requests.
 
 - Make sure everything that needs to be configured can be configured with
   environment variables. For example:
@@ -14,10 +14,10 @@
       production,
     - Outgoing mail SMTP server.
 
-- Add secrets to CI/CD environment variables starting with `K8S_SECRET_`
+- Add secrets to CI/CD environment variables starting with `K8S_SECRET_`.
 
 - Make sure the application listens on port 8000 or set `SERVICE_PORT`
-  variable
+  variable.
 
 
 ## GitLab

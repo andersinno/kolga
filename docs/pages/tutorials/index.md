@@ -5,11 +5,10 @@
 > your project needs in order to show a beginner that they can achieve
 > something with it.
 
-
 ```{toctree}
 ---
 caption: Contents
 maxdepth: 2
 ---
-quickstart
+getting-started
 ```
