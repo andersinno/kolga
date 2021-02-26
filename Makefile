@@ -15,6 +15,8 @@ typing-tests:
 package-tests:
 	./check-packages
 
+static-tests: sast-tests typing-tests style-tests package-tests
+
 docs:
 	cd docs && $(MAKE) clean && $(MAKE) html
 
