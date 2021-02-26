@@ -17,4 +17,7 @@ help:
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@# FIXME: Importing `kolga.settings` without setting the
+	@# `PROJECT_NAME` environment variable causes
+	@# `Settings._get_project_name()` to raise an `AssertionError`.
+	@PROJECT_NAME=docs $(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

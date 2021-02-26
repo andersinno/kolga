@@ -1,6 +1,6 @@
 # Git    
 
-```eval_rst
+```{eval-rst}
 .. automodule:: kolga.libs.git
     :members:
     :private-members:

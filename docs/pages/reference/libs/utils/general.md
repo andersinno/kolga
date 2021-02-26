@@ -1,6 +1,6 @@
 # General tools    
 
-```eval_rst
+```{eval-rst}
 .. automodule:: kolga.utils.general
     :members:
     :private-members:

@@ -4,21 +4,6 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import os
-import sys
-
-from recommonmark.transform import AutoStructify  # type: ignore
-from sphinx.application import Sphinx
-
-# -- Path setup --------------------------------------------------------------
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath(".."))
-sys.path.insert(0, os.path.abspath("./_plugins"))
-
-
 # -- Project information -----------------------------------------------------
 
 project = "Anders DevOps"
@@ -35,14 +20,13 @@ release = "3.0.0"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "recommonmark",
     "sphinx_rtd_theme",
-    "markdowntables",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.coverage",
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,6 +37,11 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+# -- MyST configuration ------------------------------------------------------
+myst_enable_extensions = [
+    "amsmath",
+    "dollarmath",
+]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -68,27 +57,3 @@ html_static_path = ["_static"]
 
 # Custom theming
 html_style = "css/custom_theme.css"
-
-
-github_doc_root = "https://github.com/rtfd/recommonmark/tree/master/doc/"
-
-
-def setup(app: Sphinx) -> None:
-    # FIXME: Importing `kolga.settings` without setting the
-    # `PROJECT_NAME` environment variable causes
-    # `Settings._get_project_name()` to raise an `AssertionError`.
-    os.environ["PROJECT_NAME"] = "Generate Documentation"
-
-    app.add_config_value(
-        "recommonmark_config",
-        {
-            # "auto_toc_tree_section": "Contents",
-            "enable_auto_toc_tree": True,
-            "auto_toc_maxdepth": 1,
-            "enable_math": True,
-            "enable_inline_math": True,
-            "enable_eval_rst": True,
-        },
-        True,
-    )
-    app.add_transform(AutoStructify)
