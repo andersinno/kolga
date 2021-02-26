@@ -1,7 +1,7 @@
-# Database    
+# Git    
 
 ```eval_rst
-.. automodule:: scripts.libs.database
+.. automodule:: kolga.libs.git
     :members:
     :private-members:
 ```

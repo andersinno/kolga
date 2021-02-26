@@ -1,7 +1,7 @@
-# Helm    
+# Project    
 
 ```eval_rst
-.. automodule:: scripts.libs.helm
+.. automodule:: kolga.libs.project
     :members:
     :private-members:
 ```

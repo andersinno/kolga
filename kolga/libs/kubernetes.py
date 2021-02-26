@@ -415,7 +415,7 @@ class Kubernetes:
         then read and base64 encoded (as required by Kubernetes secrets).
 
         Args:
-            basic_auth_users: List of `BasicAuthUser`s
+            basic_auth_users: List of `BasicAuthUser` objects
 
         Returns:
             A dict with the key `auth` and base64 content of a htpasswd file as value
@@ -634,15 +634,18 @@ class Kubernetes:
     ) -> None:
         """
         Creates a default network policy which prevents traffic between namespaces.
-        ingress:
-          - from:
-            - namespaceSelector:
-                matchLabels:
-                  ingress: default
-            - podSelector: {}
-          podSelector: {}
-          policyTypes:
-          - Ingress
+
+        As YAML::
+
+            ingress:
+            - from:
+                - namespaceSelector:
+                    matchLabels:
+                    ingress: default
+                - podSelector: {}
+            podSelector: {}
+            policyTypes:
+            - Ingress
         """
 
         policy_name = "deny-traffic-from-other-namespaces"

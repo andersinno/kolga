@@ -1,0 +1,8 @@
+# How-to Guides
+
+> How-to guides take the reader through the steps required to solve a
+> real-world problem.
+
+
+## Contents
+* [Writing Dockerfiles](/pages/guides/writing-dockerfiles.md)

@@ -1,7 +1,7 @@
 # General tools    
 
 ```eval_rst
-.. automodule:: scripts.utils.general
+.. automodule:: kolga.utils.general
     :members:
     :private-members:
 ```

@@ -1,7 +1,7 @@
-# Docker    
+# Helm    
 
 ```eval_rst
-.. automodule:: scripts.libs.docker
+.. automodule:: kolga.libs.helm
     :members:
     :private-members:
 ```

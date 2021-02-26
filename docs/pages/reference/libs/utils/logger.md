@@ -1,7 +1,7 @@
 # Logging tools 
 
 ```eval_rst
-.. automodule:: scripts.utils.logger
+.. automodule:: kolga.utils.logger
     :members:
     :private-members:
 ```
