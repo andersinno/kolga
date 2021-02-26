@@ -1,3 +1,6 @@
 exclude_dirs:
   - /tests/
   - ./conftest.py
+
+skips:
+  - B404  # B404: import_subprocess
