@@ -4,5 +4,10 @@
 > real-world problem.
 
 
-## Contents
-* [Writing Dockerfiles](/pages/guides/writing-dockerfiles.md)
+```{toctree}
+---
+caption: Contents
+maxdepth: 2
+---
+writing-dockerfiles
+```

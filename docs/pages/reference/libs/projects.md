@@ -1,6 +1,6 @@
 # Project    
 
-```eval_rst
+```{eval-rst}
 .. automodule:: kolga.libs.project
     :members:
     :private-members:

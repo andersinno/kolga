@@ -1,6 +1,6 @@
 # Logging tools 
 
-```eval_rst
+```{eval-rst}
 .. automodule:: kolga.utils.logger
     :members:
     :private-members:

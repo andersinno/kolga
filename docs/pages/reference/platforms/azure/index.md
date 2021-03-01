@@ -2,11 +2,13 @@
 
 The CI-pipeline has preliminary support for running in [Azure Pipelines](https://azure.microsoft.com/en-us/services/devops/pipelines/). This document points out some differences from how configuring [GitLab's CI/CD pipeline](../gitlab/index.md) works.
 
+
 ## Defining a YAML configuration file
 
 Instead of extending configuration files provided by Kólga, you will need to provide a whole Azure Pipelines YAML file yourself. This document includes a working example file at the end.
 
-## **Configuration variables**
+
+## Configuration variables
 
 To use the example configuration file, you need to create a Variable Group named `kolga-vars` in the Azure Pipelines Library, and provide values for these variables:
 
@@ -45,11 +47,13 @@ users:
     token: ${JWT}
 ```
 
-## **Service connections**
+
+## Service connections
 
 To use the example configuration file as is, your Azure Pipelines project needs to have a Docker service connection defined by the name `docker_anders_fi`. It needs to point to a docker registry where the Kólga docker image is available. This image will be used as the container where Kólga is executed in the pipeline. The image name and tag are defined in the configuration file.
 
-## **Example YAML file**
+
+## Example YAML file
 
 ```yaml
 trigger:

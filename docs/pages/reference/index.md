@@ -4,8 +4,13 @@
 > to operate it.
 
 
-## Contents
-* [Stages](/pages/reference/stages.md)
-* [Variables](/pages/reference/variables.md)
-* [Platforms](/pages/reference/platforms/index.md)
-* [Libs](/pages/reference/libs/index.md)
+```{toctree}
+---
+caption: Contents
+maxdepth: 3
+---
+stages
+variables
+platforms/index
+libs/index
+```

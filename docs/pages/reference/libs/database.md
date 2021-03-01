@@ -1,6 +1,6 @@
 # Database    
 
-```eval_rst
+```{eval-rst}
 .. automodule:: kolga.libs.database
     :members:
     :private-members:

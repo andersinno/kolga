@@ -1,6 +1,6 @@
 # Helm    
 
-```eval_rst
+```{eval-rst}
 .. automodule:: kolga.libs.helm
     :members:
     :private-members:
