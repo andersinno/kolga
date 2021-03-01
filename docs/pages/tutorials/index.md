@@ -5,5 +5,11 @@
 > your project needs in order to show a beginner that they can achieve
 > something with it.
 
-## Contents
-* [Quick-start guide](/pages/tutorials/quickstart.md)
+
+```{toctree}
+---
+caption: Contents
+maxdepth: 2
+---
+quickstart
+```

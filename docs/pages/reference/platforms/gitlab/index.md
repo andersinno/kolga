@@ -18,7 +18,8 @@
 - The application should be configurable using environmental variables (instead of config files) as the CI-pipeline provides an easy way of injecting variables into the built app.
 - CI-pipeline is configured using .gitlab-ci.yml placed at the root directory of the project. [A ci-configuration repo](https://gitlab.com/City-of-Helsinki/KuVa/ci-cd-config/ci-configuration) provides ready-made functions for running the CI-pipeline, and the user can configure only the desired pipeline steps if needed.
 
-## **Configuration variables**
+
+## Configuration variables
 
 The application should be configurable using environmental variables rather than using configuration files.
 The CI-pipeline provides a method to inject environmental variables into started applications.

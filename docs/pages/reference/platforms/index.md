@@ -11,5 +11,13 @@ The stages and jobs are named the same across all CI platforms as far as possibl
 Note however that we do not put restrictions on the jobs or stages that are run and
 new jobs and stages can be added and the default stages and jobs can be disabled.
 
-**Supported platforms:**
-* [GitLab](/pages/reference/platforms/gitlab/index.md)
+
+## Supported platforms
+
+```{toctree}
+---
+maxdepth: 2
+---
+gitlab/index
+azure/index
+```
