@@ -21,7 +21,7 @@ from kolga.utils.exceptions import (
 )
 from kolga.utils.general import (
     camel_case_split,
-    current_rfc3339_datetime,
+    current_datetime_kubernetes_label_safe,
     get_deploy_name,
     get_environment_vars_by_prefix,
     kubernetes_safe_name,
@@ -29,6 +29,7 @@ from kolga.utils.general import (
     run_os_command,
     validate_file_secret_path,
 )
+from kolga.utils.kube_logger import KubeLoggerThread
 from kolga.utils.logger import logger
 from kolga.utils.models import (
     BasicAuthUser,
@@ -79,6 +80,10 @@ class _Application(TypedDict, total=False):
     track: str
 
 
+class _Deployment(TypedDict, total=False):
+    timestamp: str
+
+
 class _GitLab(TypedDict, total=False):
     app: str
     env: str
@@ -104,15 +109,16 @@ class _Service(TypedDict, total=False):
 
 class ApplicationDeploymentValues(HelmValues, total=False):
     application: _Application
+    deployment: _Deployment
     gitlab: _GitLab
     hpa: _Hpa
-    ingress: _Ingress
     image: str
+    ingress: _Ingress
+    jobsOnly: bool
     namespace: str
     releaseOverride: str
     replicaCount: int
     service: _Service
-    jobsOnly: bool
 
 
 class Kubernetes:
@@ -479,14 +485,12 @@ class Kubernetes:
             version=service.chart_version,
         )
 
-    def create_application_deployment(
+    def get_application_deployment_values(
         self,
-        project: Project,
         namespace: str,
+        project: Project,
         track: str,
-    ) -> None:
-        helm_path = self.get_helm_path()
-
+    ) -> ApplicationDeploymentValues:
         values: ApplicationDeploymentValues = {
             "application": {
                 "initializeCommand": project.initialize_command,
@@ -499,11 +503,15 @@ class Kubernetes:
                 "secretName": project.secret_name,
                 "track": track,
             },
+            "deployment": {
+                "timestamp": current_datetime_kubernetes_label_safe(),
+            },
             "image": project.image,
             "ingress": {
                 "maxBodySize": settings.K8S_INGRESS_MAX_BODY_SIZE,
                 "secretName": project.ingress_secret_name,
             },
+            "jobsOnly": settings.KOLGA_JOBS_ONLY,
             "namespace": namespace,
             "releaseOverride": f"{settings.ENVIRONMENT_SLUG}-{kubernetes_safe_name(project.name)}",
             "replicaCount": project.replica_count,
@@ -512,7 +520,6 @@ class Kubernetes:
                 "url": project.url,
                 "urls": [project.url, *project.additional_urls],
             },
-            "jobsOnly": settings.KOLGA_JOBS_ONLY,
         }
 
         if str(settings.active_ci) == "GitLab CI":
@@ -589,7 +596,32 @@ class Kubernetes:
             if settings.K8S_HPA_MAX_RAM_AVG:
                 values["hpa"]["avgRamUtilization"] = settings.K8S_HPA_MAX_RAM_AVG
 
-        deployment_started_at = current_rfc3339_datetime()
+        return values
+
+    def create_application_deployment(
+        self,
+        namespace: str,
+        project: Project,
+        track: str,
+    ) -> None:
+        helm_path = self.get_helm_path()
+        values = self.get_application_deployment_values(
+            namespace=namespace,
+            project=project,
+            track=track,
+        )
+
+        application_labels = {
+            "deploymentTime": values["deployment"]["timestamp"],
+            "release": project.deploy_name,
+            "track": track,
+        }
+        log_collector = KubeLoggerThread(
+            labels=application_labels,
+            namespace=namespace,
+        )
+
+        log_collector.start()
         result = self.helm.upgrade_chart(
             chart_path=helm_path,
             name=project.deploy_name,
@@ -597,6 +629,7 @@ class Kubernetes:
             values=values,
             raise_exception=False,
         )
+        log_collector.stop()
 
         if result.return_code:
             logger.info(
@@ -606,16 +639,17 @@ class Kubernetes:
             for line in yaml.dump(values).split("\n"):
                 logger.info(message=f"\t{line}")
 
-            application_labels = {"release": project.deploy_name}
             status = self.status(namespace=namespace, labels=application_labels)
             logger.info(message=str(status))
-            self.logs(
-                labels=application_labels,
-                since_time=deployment_started_at,
-                namespace=namespace,
-                raise_exception=False,
-                print_result=True,
+
+            logger.info(
+                icon=f"{self.ICON}  📋️️ ",
+                title="Getting logs for resource: ",
             )
+            with log_collector.log_path.open() as f:
+                for line in f:
+                    logger.info(line, end="")
+
             raise DeploymentFailed()
 
         settings.plugin_manager.hook.project_deployment_complete(
@@ -814,46 +848,6 @@ class Kubernetes:
             logger.success()
         else:
             logger.std(result, raise_exception=raise_exception)
-        return result
-
-    def logs(
-        self,
-        labels: Optional[Dict[str, str]] = None,
-        since_time: Optional[str] = None,
-        namespace: str = settings.K8S_NAMESPACE,
-        print_result: bool = True,
-        raise_exception: bool = True,
-    ) -> SubprocessResult:
-        os_command = [
-            "kubectl",
-            "logs",
-            f"--namespace={namespace}",
-            "--prefix=true",
-            "--timestamps=true",
-            "--tail=100",
-        ]
-
-        logger.info(
-            icon=f"{self.ICON}  📋️️ ", title="Getting logs for resource: ", end=""
-        )
-
-        if labels:
-            labels_str = self.labels_to_string(labels)
-            os_command += ["-l", labels_str]
-            logger.info(title=f" with labels {labels_str}", end="")
-
-        if since_time:
-            os_command += [f"--since-time={since_time}"]
-            logger.info(title=f" since {since_time}", end="")
-
-        result = run_os_command(os_command, shell=True)  # nosec
-        if not result.return_code:
-            logger.success()
-            if print_result:
-                logger.std(result)
-        else:
-            logger.std(result, raise_exception=raise_exception)
-
         return result
 
     def status(
