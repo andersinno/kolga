@@ -27,6 +27,10 @@ build:
     - /^r-[\d]+$/
     - v3
 
+test-image:
+  extends: .docker-image-scan
+  allow_failure: true
+
 pages:
   stage: release
   image: ${DEVELOPMENT_IMAGE}
