@@ -1,6 +1,8 @@
+from datetime import datetime, timedelta
 from typing import Dict
 
 import hvac  # type: ignore
+from jwt import encode
 
 from kolga.utils.logger import logger
 
@@ -34,11 +36,27 @@ class Vault:
                 message="VAULT_ADDR not defined. Skipping Vault usage.",
             )
 
-    def login(self, ci_jwt: str = settings.VAULT_JWT) -> None:
+    def login(
+        self,
+        ci_jwt: str = settings.VAULT_JWT,
+        ci_jwt_private_key: str = settings.VAULT_JWT_PRIVATE_KEY,
+    ) -> None:
         if self.initialized:
             try:
+                secret_path = f"{settings.PROJECT_NAME}-{self.track}"
+                if ci_jwt_private_key:
+                    ci_jwt = encode(
+                        {
+                            "user": secret_path,
+                            "aud": secret_path,
+                            "exp": datetime.utcnow() + timedelta(seconds=60),
+                            "iat": datetime.utcnow(),
+                        },
+                        ci_jwt_private_key,
+                        algorithm="RS256",
+                    )
                 response = self.client.auth.jwt.jwt_login(
-                    role=f"{settings.PROJECT_NAME}-{self.track}",
+                    role=secret_path,
                     jwt=ci_jwt,
                     path=settings.VAULT_JWT_AUTH_PATH,
                 )
@@ -54,16 +72,26 @@ class Vault:
     def get_secrets(self) -> Dict[str, str]:
         if self.initialized:
             secrets_list = {}
+            secret_path = f"{settings.PROJECT_NAME}-{self.track}"
             try:
                 logger.info(
                     icon=f"{self.ICON} 🔑",
-                    message=f"Checking for secrets in {settings.VAULT_KV_SECRET_MOUNT_POINT}/{settings.PROJECT_NAME}-{self.track}",
+                    message=f"Checking for secrets in {settings.VAULT_KV_SECRET_MOUNT_POINT}/{secret_path}",
                 )
-                secrets = self.client.secrets.kv.v1.read_secret(
-                    path=f"{settings.PROJECT_NAME}-{self.track}",
-                    mount_point=settings.VAULT_KV_SECRET_MOUNT_POINT,
-                )
-                secrets_list = secrets["data"]
+                secrets = {}
+                if settings.VAULT_KV_VERSION == 2:
+                    secrets = self.client.secrets.kv.read_secret_version(
+                        path=secret_path,
+                        mount_point=settings.VAULT_KV_SECRET_MOUNT_POINT,
+                    )
+                    secrets_list = secrets["data"]["data"]
+
+                else:
+                    secrets = self.client.secrets.kv.v1.read_secret(
+                        path=secret_path,
+                        mount_point=settings.VAULT_KV_SECRET_MOUNT_POINT,
+                    )
+                    secrets_list = secrets["data"]
             except hvac.exceptions.InvalidPath as e:
                 logger.error(
                     icon=f"{self.ICON} 🔑",
