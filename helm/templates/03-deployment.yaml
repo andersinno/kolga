@@ -10,14 +10,12 @@ metadata:
     app.gitlab.com/env: "{{ .Values.gitlab.env }}"
     {{- end }}
   labels:
-    app: {{ template "appname" . }}
-    release: "{{ .Release.Name }}"
-    track: "{{ .Values.application.track }}"
+    {{- include "commonLabels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ template "appname" . }}
+      {{- include "selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
@@ -26,10 +24,8 @@ spec:
         app.gitlab.com/env: "{{ .Values.gitlab.env }}"
         {{- end }}
       labels:
-        app: {{ template "appname" . }}
+        {{- include "commonLabels" . | nindent 8 }}
         deploymentTime: {{ .Values.deployment.timestamp }}
-        release: "{{ .Release.Name }}"
-        track: "{{ .Values.application.track }}"
     spec:
       containers:
         - name: "{{ .Chart.Name }}"
@@ -147,19 +143,19 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchLabels:
-                  app: {{ template "appname" . }}
+                  {{- include "selectorLabels" . | nindent 18 }}
               topologyKey: kubernetes.io/hostname
             weight: 100
           - podAffinityTerm:
               labelSelector:
                 matchLabels:
-                  app: {{ template "appname" . }}
+                  {{- include "selectorLabels" . | nindent 18 }}
               topologyKey: topology.kubernetes.io/zone
             weight: 100
           - podAffinityTerm:
               labelSelector:
                 matchLabels:
-                  app: {{ template "appname" . }}
+                  {{- include "selectorLabels" . | nindent 18 }}
               topologyKey: failure-domain.beta.kubernetes.io/zone
             weight: 100
       {{- end }}

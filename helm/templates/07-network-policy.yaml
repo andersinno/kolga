@@ -3,6 +3,8 @@ kind: NetworkPolicy
 metadata:
   name: deny-traffic-from-other-namespaces
   namespace: "{{ .Values.namespace }}"
+  labels:
+    {{- include "commonLabels" . | nindent 4 }}
 spec:
   ingress:
   - from:

@@ -4,6 +4,8 @@ apiVersion: v1
 metadata:
   name: {{ template "appname" . }}-pvc
   namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "commonLabels" . | nindent 4 }}
 spec:
   storageClassName: "{{ .Values.application.pvc.storageClass }}"
   accessModes:
