@@ -28,6 +28,10 @@ Common labels
 */}}
 {{- define "commonLabels" -}}
 {{ include "selectorLabels" . }}
+app.kubernetes.io/instance: {{ .Release.Name | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+app.kubernetes.io/name: {{ include "appname" . | quote }}
+helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 {{- end -}}
 
 {{/*
