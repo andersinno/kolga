@@ -193,8 +193,6 @@ def test_gh_event_data_set(mockenv: MockEnv) -> None:
         },
     }
 
-    gh_mapper = GitHubActionsMapper()
-
     with tempfile.NamedTemporaryFile(mode="w") as f:
         json.dump(event_data, f)
         f.seek(0)
@@ -204,7 +202,7 @@ def test_gh_event_data_set(mockenv: MockEnv) -> None:
             "GITHUB_EVENT_PATH": str(Path(f.name).absolute()),
         }
         with mockenv(env):
-            gh_mapper.initialize()
+            gh_mapper = GitHubActionsMapper()
 
     assert gh_mapper.PR_URL == str(event_data["pull_request"]["url"])
     assert gh_mapper.PR_TITLE == str(event_data["pull_request"]["title"])

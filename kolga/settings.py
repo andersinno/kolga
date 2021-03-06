@@ -5,7 +5,7 @@ import tempfile
 import uuid
 from glob import glob
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 import pluggy  # type: ignore
 from environs import Env
@@ -273,14 +273,7 @@ class Settings:
 
         self.devops_root_path = Path(sys.argv[0]).resolve().parent
 
-        self.active_ci: Optional[Any] = None
-        self.supported_cis: List[Any] = [
-            GitLabMapper(),
-            AzurePipelinesMapper(),
-            GitHubActionsMapper(),
-        ]
-        self._set_ci_environment()
-
+        self.active_ci: Optional["BaseCI"] = self._get_ci_environment()
         if self.active_ci:
             unescape_envs = self.active_ci.UNESCAPE_ENVIRONMENT_VARIABLES
             self._map_ci_variables(unescape_envs)
@@ -330,6 +323,12 @@ class Settings:
 
         return self.plugin_manager.unregister(_to_be_unregistered_plugin)
 
+    def _get_ci_environment(self) -> Optional["BaseCI"]:
+        Mapper = BaseCI.get_active_mapper_cls()
+        if Mapper:
+            return Mapper()
+        return None
+
     def _set_attributes(self, unescape_values: bool = False) -> None:
         """
         Read and set settings from environment variables
@@ -357,13 +356,6 @@ class Settings:
                     value = default_value
 
             setattr(self, variable, value)
-
-    def _set_ci_environment(self) -> None:
-        for ci in self.supported_cis:
-            if ci.is_active:
-                self.active_ci = ci
-                ci.initialize()
-                break
 
     def _get_project_name(self) -> str:
         parser, default_value = _VARIABLE_DEFINITIONS[PROJECT_NAME_VAR]
@@ -491,10 +483,29 @@ class Settings:
 
 
 class BaseCI:
+    MAPPERS: List[Type["BaseCI"]] = []
+    MAPPING: Dict[str, str] = {}
     UNESCAPE_ENVIRONMENT_VARIABLES = False
 
-    def initialize(self) -> None:
-        pass
+    @property
+    def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
+        return []
+
+    @classmethod
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        cls.MAPPERS.append(cls)
+
+    @classmethod
+    def get_active_mapper_cls(cls) -> Optional[Type["BaseCI"]]:
+        for Mapper in cls.MAPPERS:
+            if Mapper.is_active():
+                return Mapper
+        return None
+
+    @classmethod
+    def is_active(cls) -> bool:
+        return False
 
 
 class AzurePipelinesMapper(BaseCI):
@@ -510,12 +521,12 @@ class AzurePipelinesMapper(BaseCI):
         return "Azure Pipelines"
 
     @property
-    def is_active(self) -> bool:
-        return bool(env.str("AZURE_HTTP_USER_AGENT", ""))
-
-    @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
         return ["/builds/"]
+
+    @classmethod
+    def is_active(cls) -> bool:
+        return bool(env.str("AZURE_HTTP_USER_AGENT", ""))
 
 
 class GitLabMapper(BaseCI):
@@ -549,8 +560,8 @@ class GitLabMapper(BaseCI):
     def __str__(self) -> str:
         return "GitLab CI"
 
-    @property
-    def is_active(self) -> bool:
+    @classmethod
+    def is_active(cls) -> bool:
         return env.bool("GITLAB_CI", False)  # type: ignore
 
     @property
@@ -573,15 +584,11 @@ class GitHubActionsMapper(BaseCI):
     UNESCAPE_ENVIRONMENT_VARIABLES = True
     _EVENT_DATA: Optional[Dict[str, Any]]
 
-    def __str__(self) -> str:
-        return "GitHub Actions"
-
-    def initialize(self) -> None:
+    def __init__(self) -> None:
         self._set_event_data_variables()
 
-    @property
-    def is_active(self) -> bool:
-        return env.bool("GITHUB_ACTIONS", False)  # type: ignore
+    def __str__(self) -> str:
+        return "GitHub Actions"
 
     @property
     def PR_ID(self) -> Optional[str]:
@@ -627,6 +634,10 @@ class GitHubActionsMapper(BaseCI):
                 self._EVENT_DATA = json.load(event_data_file)
         except (FileNotFoundError, IOError, OSError, ValueError):
             self._EVENT_DATA = None
+
+    @classmethod
+    def is_active(cls) -> bool:
+        return env.bool("GITHUB_ACTIONS", False)  # type: ignore
 
 
 settings = Settings()
