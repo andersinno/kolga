@@ -15,7 +15,7 @@ from kolga.hooks.hookspec import KolgaHookSpec
 from kolga.plugins import KOLGA_CORE_PLUGINS
 from kolga.utils.exceptions import NoClusterConfigError
 from kolga.utils.fields import BasicAuthUserList
-from kolga.utils.general import deep_get, kubernetes_safe_name
+from kolga.utils.general import deep_get, env_var_safe_key, kubernetes_safe_name
 from kolga.utils.logger import logger
 
 env = Env()
@@ -163,6 +163,12 @@ class Settings(SettingsValues):
     # TODO: For some reason mypy complains about __init__ being already defined
     #       on the line where this class starts. Ignoring it for now.
     def __init__(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+        # TODO: Could this be done in ``Config.prepare_field()``?
+        project_name_prefix = env_var_safe_key(self.get_project_name())
+        for field in self.__fields__.values():
+            key = field.name
+            field.field_info.extra["env_names"] = (key, f"{project_name_prefix}_{key}")
+
         super().__init__(*args, **kwargs)
 
         self._plugin_manager = self._setup_pluggy()
