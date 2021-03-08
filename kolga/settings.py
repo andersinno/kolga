@@ -28,7 +28,7 @@ from kolga.hooks.exceptions import PluginMissingConfiguration
 from kolga.hooks.hookspec import KolgaHookSpec
 from kolga.plugins import KOLGA_CORE_PLUGINS
 from kolga.utils.exceptions import ImproperlyConfigured, NoClusterConfigError
-from kolga.utils.fields import BasicAuthUserList
+from kolga.utils.fields import BasicAuthUserList, split_comma_separated_values
 from kolga.utils.general import deep_get, env_var_safe_key, kubernetes_safe_name
 from kolga.utils.logger import logger
 
@@ -353,7 +353,16 @@ class Settings(SettingsValues):
         case_sensitive = True
         customise_sources = settings_sources
         extra = Extra.ignore
+        json_loads = lambda x: x  # Disable JSON parsing.  # noqa: E731
         underscore_attrs_are_private = True
+
+        @classmethod
+        def prepare_field(cls, field: "ModelField") -> None:
+            validators = field.pre_validators or ()
+
+            # Split comma separated lists
+            if field.is_complex() and field.outer_type_ is List[str]:
+                field.pre_validators = [split_comma_separated_values, *validators]
 
 
 class BaseCI:

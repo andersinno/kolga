@@ -1,7 +1,24 @@
 import re
-from typing import Callable, Generator, List, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    Type,
+    Union,
+)
 
 from kolga.utils.models import BasicAuthUser
+
+if TYPE_CHECKING:
+    from pydantic import BaseConfig
+    from pydantic.dataclasses import Dataclass
+    from pydantic.fields import ModelField
+    from pydantic.main import BaseModel
+
 
 BASIC_AUTH_REGEX = re.compile(r"(?P<credential>[^:\s]+:[^:\s]+)+", re.IGNORECASE)
 
@@ -28,3 +45,16 @@ class BasicAuthUserList(List[BasicAuthUser]):
                 if user:
                     users.append(user)
         return users
+
+
+def split_comma_separated_values(
+    settings: Union[Type["BaseModel"], Type["Dataclass"], None],
+    value: Optional[Union[str, List[str]]],
+    values: Dict[str, Any],
+    field: "ModelField",
+    config: Type["BaseConfig"],
+) -> Optional[List[str]]:
+    if isinstance(value, str):
+        # Split at comma, strip whitespace, and filter out falsy values.
+        value = [*filter(None, map(str.strip, value.split(",")))]
+    return value
