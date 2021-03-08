@@ -5,12 +5,16 @@ from typing import (
     Callable,
     Dict,
     Generator,
+    Iterable,
     List,
     Optional,
+    Protocol,
     Type,
+    TypeVar,
     Union,
 )
 
+from kolga.utils.general import unescape_string
 from kolga.utils.models import BasicAuthUser
 
 if TYPE_CHECKING:
@@ -57,4 +61,32 @@ def split_comma_separated_values(
     if isinstance(value, str):
         # Split at comma, strip whitespace, and filter out falsy values.
         value = [*filter(None, map(str.strip, value.split(",")))]
+    return value
+
+
+T_co = TypeVar("T_co", covariant=True)
+
+
+class ConstructableIterable(Iterable[T_co], Protocol[T_co]):
+    def __init__(self, __items: Iterable[T_co]) -> None:
+        ...
+
+
+T_OptionalStringOrIterableOfStrings = TypeVar(
+    "T_OptionalStringOrIterableOfStrings", None, str, ConstructableIterable[str]
+)
+
+
+def unescape_string_values(
+    settings: Union[Type["BaseModel"], Type["Dataclass"], None],
+    value: T_OptionalStringOrIterableOfStrings,
+    values: Dict[str, Any],
+    field: "ModelField",
+    config: Type["BaseConfig"],
+) -> T_OptionalStringOrIterableOfStrings:
+    if value is not None and getattr(config, "unescape_strings", False):
+        if isinstance(value, str):
+            value = unescape_string(value)
+        else:
+            value = type(value)(unescape_string(v) for v in value)
     return value
