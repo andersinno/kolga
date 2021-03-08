@@ -31,7 +31,7 @@ BUILT_DOCKER_TEST_IMAGE = "BUILT_DOCKER_TEST_IMAGE"
 DEPLOY_NAME_MAX_ENV_SLUG_LENGTH = 30
 DEPLOY_NAME_MAX_HELM_NAME_LENGTH = 53
 DEPLOY_NAME_MAX_TRACK_LENGTH = 10
-URL_MAX_LENGTH = 63
+CN_MAX_LENGTH = 64
 
 
 def get_project_secret_var(project_name: str, value: str = "") -> str:
@@ -205,18 +205,21 @@ def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessRe
 
 def limit_url_length(url: str) -> str:
     """
-    Ensure that url is not longer than URL_MAX_LENGTH
-    and truncate the subdomain if needed.
+    Certificate's common name field (CN) can have max 64 characters.
+    Ensure that domain, without protocol field, is max 64 characters long.
+    Extra characters are removed by truncating the leftist subdomain.
 
     Args:
-        url: Url without protocol prefix (subdomain.example.com)
+        url: Application's url (https://subdomain.example.com)
 
     Returns:
-        An url which is not longer than URL_MAX_LENGTH characters.
+        An url which is not longer than CN_MAX_LENGTH characters.
     """
-    url_parts = url.split(".", 1)
+    url_no_protocol = re.sub(r"https?://", "", url)
+    url_parts = url_no_protocol.split(".", 1)
 
-    max_subdomain_length = URL_MAX_LENGTH - len(url_parts[1])
+    # -1 is the additional dot between subdomain and domain
+    max_subdomain_length = CN_MAX_LENGTH - len(url_parts[1]) - 1
 
     return f"{truncate_with_hash(url_parts[0],max_subdomain_length)}.{url_parts[1]}"
 
