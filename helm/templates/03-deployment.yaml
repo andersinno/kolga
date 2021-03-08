@@ -140,7 +140,7 @@ spec:
           persistentVolumeClaim:
             claimName: {{ template "appname" . }}-pvc
       {{- end }}
-      {{ if or (.Values.replicaCount > 1) .Values.hpa.enabled }}
+      {{ if or (gt .Values.replicaCount 1) .Values.hpa.enabled }}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
