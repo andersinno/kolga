@@ -3,22 +3,74 @@ import os
 import sys
 import tempfile
 import uuid
+from itertools import chain
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    ItemsView,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    cast,
+)
 
 import pluggy  # type: ignore
+from dotenv import dotenv_values
 from environs import Env
 from pydantic import BaseConfig, BaseSettings, Extra, Field
 
 from kolga.hooks.exceptions import PluginMissingConfiguration
 from kolga.hooks.hookspec import KolgaHookSpec
 from kolga.plugins import KOLGA_CORE_PLUGINS
-from kolga.utils.exceptions import NoClusterConfigError
+from kolga.utils.exceptions import ImproperlyConfigured, NoClusterConfigError
 from kolga.utils.fields import BasicAuthUserList
 from kolga.utils.general import deep_get, env_var_safe_key, kubernetes_safe_name
 from kolga.utils.logger import logger
 
+if TYPE_CHECKING:
+    from pydantic.env_settings import SettingsSourceCallable
+    from pydantic.fields import ModelField
+
+
 env = Env()
+
+
+def settings_sources(
+    init_settings: "SettingsSourceCallable",
+    env_settings: "SettingsSourceCallable",
+    file_secret_settings: "SettingsSourceCallable",
+) -> Tuple["SettingsSourceCallable", ...]:
+    return init_settings, env_settings, source_env_files, source_ci_mapper
+
+
+def source_ci_mapper(settings: BaseSettings) -> Dict[str, Any]:
+    Mapper = BaseCI.get_active_mapper_cls()
+    if not Mapper:
+        return {}
+    return Mapper().map_variables(settings.__fields__)
+
+
+def source_env_files(settings: BaseSettings) -> Dict[str, str]:
+    def env_files() -> Generator[Path, None, None]:
+        if build_artifacts := env.path("BUILD_ARTIFACT_FOLDER", None):
+            yield from build_artifacts.glob("*.env")
+
+        if service_artifacts := env.path("SERVICE_ARTIFACT_FOLDER", None):
+            yield from service_artifacts.glob("*.env")
+
+    def load_env_files() -> Generator[Dict[str, str], None, None]:
+        for env_file in env_files():
+            d = dotenv_values(env_file, interpolate=False)
+            yield {k: v for k, v in d.items() if v is not None}
+
+    # Merge dicts
+    dict_items = cast(Callable[[Dict[str, str]], ItemsView[str, str]], dict.items)
+    return dict(chain.from_iterable(map(dict_items, load_env_files())))
 
 
 class ProjectNameSetting(BaseSettings):
@@ -26,13 +78,16 @@ class ProjectNameSetting(BaseSettings):
     Settings class used to get the project name.
 
     This is done as a separate setting since the value needs to be known before
-    the ``Settings`` class can be initialized.
+    the ``Settings`` class can be initialized. The same sources (environment
+    variables, build & services artifacts, and CI mappers) are used as for the
+    ``Settings`` class.
     """
 
     PROJECT_NAME: Optional[str]
 
     class Config(BaseConfig):
         case_sensitive = True
+        customise_sources = settings_sources
         env_file_encoding = "utf-8"
         extra = Extra.ignore
 
@@ -213,14 +268,9 @@ class Settings(SettingsValues):
 
     def get_project_name(self) -> str:
         project_name = ProjectNameSetting().PROJECT_NAME
-        if not project_name and self.active_ci:
-            name_from = self.active_ci.MAPPING.get("PROJECT_NAME")
-            if name_from:
-                # TODO: Use parser and add support for generated properties
-                project_name = os.environ.get(name_from, "")
-
         if not project_name:
             raise AssertionError("No project name could be found!")
+
         return project_name
 
     def create_kubeconfig(self, track: str) -> Tuple[str, str]:
@@ -301,6 +351,7 @@ class Settings(SettingsValues):
 
     class Config(BaseConfig):
         case_sensitive = True
+        customise_sources = settings_sources
         extra = Extra.ignore
         underscore_attrs_are_private = True
 
@@ -314,7 +365,7 @@ class BaseCI:
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
         return []
 
-    def map_variables(self, fields: Dict[str, List[Any]]) -> Dict[str, Any]:
+    def map_variables(self, fields: Dict[str, "ModelField"]) -> Dict[str, Any]:
         """
         Map CI variables to settings
 
@@ -340,8 +391,12 @@ class BaseCI:
                     )
                     continue
             elif name_from in os.environ:
-                parser, _ = fields[name_to]
-                value = parser(name_from, None)
+                raw_value = os.environ.get(name_from)
+                value, error = fields[name_to].validate(raw_value, {}, loc=name_from)
+                if error:
+                    raise ImproperlyConfigured(
+                        f"Invalid valid value: {name_from}={raw_value}"
+                    )
             else:
                 value = None
 
