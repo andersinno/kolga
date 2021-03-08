@@ -16,6 +16,7 @@ from typing import (
     Optional,
     Tuple,
     Type,
+    Union,
     cast,
 )
 
@@ -26,6 +27,7 @@ from pydantic import BaseConfig, BaseSettings, Extra, Field
 
 from kolga.hooks.exceptions import PluginMissingConfiguration
 from kolga.hooks.hookspec import KolgaHookSpec
+from kolga.hooks.plugins import PluginBase
 from kolga.plugins import KOLGA_CORE_PLUGINS
 from kolga.utils.exceptions import ImproperlyConfigured, NoClusterConfigError
 from kolga.utils.fields import (
@@ -257,14 +259,14 @@ class Settings(SettingsValues):
                 logger.info(f"{plugin.verbose_name}: {message}")
             # TODO: Implement verbose logging where the plugin loading error would be shown
 
-    def _load_plugin(self, plugin: Any) -> Tuple[bool, str]:
+    def _load_plugin(self, plugin: Type[PluginBase]) -> Tuple[bool, str]:
         try:
             self.plugin_manager.register(plugin(env), name=plugin.name)
         except PluginMissingConfiguration as e:
             return False, f"⚠️  {e}"
         return True, "✅"
 
-    def _unload_plugin(self, plugin: Any) -> Any:
+    def _unload_plugin(self, plugin: Union[PluginBase, Type[PluginBase]]) -> Any:
         # We need to first fetch the instance of the plugin in order to unregister it.
         # If we do not do this, Pluggy will not properly unregister as it will try
         # to do it on the class and not the instance, which will not hard-fail, but

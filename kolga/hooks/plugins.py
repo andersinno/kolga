@@ -18,6 +18,9 @@ class PluginBase:
     optional_variables: List[Tuple[str, ParserMethod]] = []
     configured: bool = False
 
+    def __init__(self, env: Env) -> None:
+        pass
+
     def configure(self, env: Env) -> None:
         missing_required_variables = [
             variable
