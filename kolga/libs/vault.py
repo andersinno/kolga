@@ -44,7 +44,9 @@ class Vault:
         if self.initialized:
             try:
                 secret_path = f"{settings.PROJECT_NAME}-{self.track}"
+                print(f"JWT token: {ci_jwt}")
                 if ci_jwt_private_key:
+                    print("Generating JWT token")
                     ci_jwt = encode(
                         {
                             "user": secret_path,
@@ -52,9 +54,10 @@ class Vault:
                             "exp": datetime.utcnow() + timedelta(seconds=60),
                             "iat": datetime.utcnow(),
                         },
-                        ci_jwt_private_key,
+                        ci_jwt_private_key.replace("\\n", "\n"),
                         algorithm="RS256",
                     )
+                print(f"JWT token: {ci_jwt}")
                 response = self.client.auth.jwt.jwt_login(
                     role=secret_path,
                     jwt=ci_jwt,
