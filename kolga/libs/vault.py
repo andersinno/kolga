@@ -44,9 +44,11 @@ class Vault:
         if self.initialized:
             try:
                 secret_path = f"{settings.PROJECT_NAME}-{self.track}"
-                print(f"JWT token: {ci_jwt}")
-                if ci_jwt_private_key:
-                    print("Generating JWT token")
+                if not ci_jwt and ci_jwt_private_key:
+                    logger.info(
+                        icon=f"{self.ICON} ℹ️",
+                        message="Generating JWT token with private key",
+                    )
                     ci_jwt = encode(
                         {
                             "user": secret_path,
@@ -57,7 +59,12 @@ class Vault:
                         ci_jwt_private_key.replace("\\n", "\n"),
                         algorithm="RS256",
                     )
-                print(f"JWT token: {ci_jwt}")
+                    if not ci_jwt:
+                        logger.error(
+                            message="Failed to generate JWT token with private key",
+                            error=ValueError(),
+                            raise_exception=True,
+                        )
                 response = self.client.auth.jwt.jwt_login(
                     role=secret_path,
                     jwt=ci_jwt,
