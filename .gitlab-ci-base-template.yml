@@ -195,7 +195,7 @@ variables:
 
 .review-cleanup:
   variables:
-    git_strategy: none
+    GIT_STRATEGY: none
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     action: stop
