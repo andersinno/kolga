@@ -75,6 +75,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "ENVIRONMENT_SLUG": [env.str_unescape, ""],
     "ENVIRONMENT_URL": [env.str_unescape, ""],
     "SERVICE_PORT": [env.int, 8000],
+    "TRACK": [env.str, ""],
     # ================================================
     # GIT
     # ================================================
@@ -192,6 +193,7 @@ class Settings:
     ENVIRONMENT_SLUG: str
     ENVIRONMENT_URL: str
     SERVICE_PORT: str
+    TRACK: str
     GIT_COMMIT_REF_NAME: str
     GIT_COMMIT_SHA: str
     GIT_DEFAULT_TARGET_BRANCH: str

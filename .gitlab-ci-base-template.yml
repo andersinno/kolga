@@ -139,6 +139,7 @@ variables:
   stage: review-service
   variables:
     DEFAULT_TRACK: review
+    TRACK: review
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     on_stop: stop_review
@@ -159,9 +160,10 @@ variables:
 .review-no-env:
   stage: review
   script:
-    - devops deploy_application --track review
+    - devops deploy_application
   variables:
     K8S_INGRESS_PREVENT_ROBOTS: 1
+    TRACK: review
   only:
     refs:
       - merge_requests
@@ -184,6 +186,7 @@ variables:
 .review-cleanup:
   variables:
     GIT_STRATEGY: none
+    TRACK: review
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     action: stop
@@ -215,7 +218,7 @@ variables:
 .staging:
   stage: staging
   script:
-    - devops deploy_application --track staging
+    - devops deploy_application
   environment:
     name: qa/staging
     url: https://$CI_PROJECT_PATH_SLUG-qa.$KUBE_INGRESS_BASE_DOMAIN
@@ -223,6 +226,7 @@ variables:
       namespace: $K8S_STAGING_NAMESPACE
   variables:
     K8S_INGRESS_PREVENT_ROBOTS: 1
+    TRACK: staging
   only:
     refs:
       - master
@@ -235,12 +239,14 @@ variables:
 .production:
   stage: production
   script:
-    - devops deploy_application --track stable
+    - devops deploy_application
   environment:
     name: production
     url: https://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
     kubernetes:
       namespace: $K8S_STABLE_NAMESPACE
+  variables:
+    TRACK: stable
   only:
     refs:
       - /^r-[\d]+$/

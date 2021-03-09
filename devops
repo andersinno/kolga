@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
-from typing import List
+from typing import List, Optional
 
 from kolga.settings import settings
+from kolga.utils.general import get_track
 
 
 class Devops:
@@ -32,21 +33,17 @@ class Devops:
             "deploy_application",
             help="Deploy an application based on the current Docker image",
         )
-        deploy_application_parser.add_argument(
-            "-t", "--track", dest="track", default=settings.DEFAULT_TRACK
-        )
+        deploy_application_parser.add_argument("-t", "--track", dest="track")
 
         deploy_service_parser = subparsers.add_parser(
             "deploy_service", help="Deploy a service supported by the devops pipeline"
         )
-        deploy_service_parser.add_argument(
-            "-t", "--track", dest="track", default=settings.DEFAULT_TRACK
-        )
-        deploy_service_parser.add_argument("-s", "--service", dest="service")
         deploy_service_parser.add_argument("-e", "--env-var", dest="envvar")
         deploy_service_parser.add_argument(
             "-p", "--projects", dest="projects", nargs="+"
         )
+        deploy_service_parser.add_argument("-s", "--service", dest="service")
+        deploy_service_parser.add_argument("-t", "--track", dest="track")
 
         subparsers.add_parser("docker_test_image", help="Print image tag")
 
@@ -57,9 +54,7 @@ class Devops:
         review_cleanup_parser = subparsers.add_parser(
             "review_cleanup", help="Cleans up the current namespace"
         )
-        review_cleanup_parser.add_argument(
-            "-t", "--track", dest="track", default=settings.DEFAULT_TRACK
-        )
+        review_cleanup_parser.add_argument("-t", "--track", dest="track")
 
         test_setup_parser = subparsers.add_parser(
             "test_setup",
@@ -99,7 +94,8 @@ class Devops:
         d.login()
         d.build_stages(push_images=True)
 
-        project = Project(track="development")
+        track = get_track("development")
+        project = Project(track=track)
         artifact_data = {
             f"{env_var_safe_key(project.name)}_{BUILT_DOCKER_TEST_IMAGE}": d.test_image_tag()
         }
@@ -110,11 +106,12 @@ class Devops:
             filename="docker_build",
         )
 
-    def deploy_application(self, track: str) -> None:
+    def deploy_application(self, track: Optional[str] = None) -> None:
         from kolga.libs.kubernetes import Kubernetes
         from kolga.libs.project import Project
         from kolga.libs.vault import Vault
 
+        track = get_track(track)
         main_project = Project(track=track)
         projects = main_project.dependency_projects + [main_project]
 
@@ -154,7 +151,11 @@ class Devops:
             )
 
     def deploy_service(
-        self, track: str, service: str, envvar: str, projects: List[str]
+        self,
+        envvar: str,
+        projects: List[str],
+        service: str,
+        track: Optional[str] = None,
     ) -> None:
         from kolga.libs.kubernetes import Kubernetes
         from kolga.libs.service import Service
@@ -165,6 +166,7 @@ class Devops:
         if not service_class:
             raise Exception(f"The service {service} is currently not supported")
 
+        track = get_track(track)
         k = Kubernetes(track=track)
         k.setup_helm()
         namespace = k.create_namespace()
@@ -190,9 +192,10 @@ class Devops:
     def help(self) -> None:
         self.parser.print_help()
 
-    def review_cleanup(self, track: str) -> None:
+    def review_cleanup(self, track: Optional[str] = None) -> None:
         from kolga.libs.kubernetes import Kubernetes
 
+        track = get_track(track)
         k = Kubernetes(track=track)
         k.delete_namespace()
 

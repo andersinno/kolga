@@ -126,6 +126,8 @@ Review stage or development stage is meant to be triggered by pull requests (PR)
         name: qa/r/${CI_COMMIT_REF_SLUG}
         url: http://$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG.$K8S_QA_INGRESS_DOMAIN
         on_stop: stop_review
+      variables:
+        TRACK: review
       only:
         refs:
           - merge_requests
