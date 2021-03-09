@@ -8,6 +8,7 @@ variables:
 stages:
   - build
   - test
+  - sast
   - release
 
 .code-tests:
@@ -29,6 +30,13 @@ build:
 
 test-image:
   extends: .docker-image-scan
+  allow_failure: true
+
+sonar:
+  extends: .sonar
+  needs: ["test"]
+  dependencies:
+    - test
   allow_failure: true
 
 pages:
@@ -91,6 +99,13 @@ test-sast:
 
 test:
   extends: .test
+  variables:
+    CLIENT_COMMAND: pytest -ra -vvv --cov=. --cov-report xml --cov-report term --junit-xml=pytest.xml
+  artifacts:
+    paths:
+      - pytest.xml
+      - coverage.xml
+    expire_in: 5 mins
   only:
     - merge_requests
     - v3
