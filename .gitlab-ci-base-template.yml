@@ -253,8 +253,6 @@ variables:
     url: https://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
     kubernetes:
       namespace: $K8S_STABLE_NAMESPACE
-  variables:
-    POSTGRES_ENABLED: 0
   only:
     refs:
       - /^r-[\d]+$/
