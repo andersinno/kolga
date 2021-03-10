@@ -295,3 +295,24 @@ def deep_get(
         keys.split("."),
         dictionary or {},
     )
+
+
+def unescape_string(s: str) -> str:
+    """
+    Interpret backslash-escaped sequences in a string
+
+    Args:
+        s: A string with possible escape sequences
+
+    Return:
+        An un-escaped string
+    """
+    # Map code points 0..255 to bytes 0x0..0xff. Encode wide characters
+    # to backslash-escaped sequences (`r"\uXXXX"`). Existing backslashes
+    # are left as-is. This is equivivalent to
+    # `s.encode(encoding="latin-1", errors="backslashreplace")`.
+    b = s.encode("raw_unicode_escape")
+
+    # Decode bytes back to a UTF-8 string with backslash-escapeded
+    # sequences interpreted.
+    return b.decode("unicode_escape")

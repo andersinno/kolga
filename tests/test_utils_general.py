@@ -14,6 +14,7 @@ from kolga.utils.general import (
     get_deploy_name,
     get_environment_vars_by_prefix,
     get_secret_name,
+    unescape_string,
 )
 
 DEFAULT_TRACK = os.environ.get("DEFAULT_TRACK", "stable")
@@ -118,3 +119,23 @@ def test_deep_get(
     dictionary: Dict[Any, Any], keys: str, expected_value: Optional[bool]
 ) -> None:
     assert deep_get(dictionary, keys) == expected_value
+
+
+@pytest.mark.parametrize(
+    "value, expected_value",
+    (
+        ("Hello World!", None),  # No escape, no change
+        ("Héllö Wõrlð!", None),  # No escape, no change
+        ("Hello\nworld!", None),  # Newlines should be preserved
+        ("こんにちは世界", None),  # Wide chars should be preserved
+        (r"Hello\nworld!", "Hello\nworld!"),  # Escaped newline should be un-escaped
+        (r"Hello\tworld!", "Hello\tworld!"),  # Escaped tab should be un-escaped
+        (r"Hello\\tworld!", r"Hello\tworld!"),  # Escaped backslash should be un-escaped
+    ),
+)
+def test_unescape_string(value: str, expected_value: Optional[str]) -> None:
+    if expected_value is None:
+        expected_value = value
+
+    unescaped_value = unescape_string(value)
+    assert unescaped_value == expected_value

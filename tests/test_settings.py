@@ -204,3 +204,16 @@ def test_gh_event_data_set() -> None:
     assert gh_mapper.PR_URL == str(event_data["pull_request"]["url"])
     assert gh_mapper.PR_TITLE == str(event_data["pull_request"]["title"])
     assert gh_mapper.PR_ID == str(event_data["pull_request"]["number"])
+
+
+def test_string_unescaping() -> None:
+    env = {
+        "GITHUB_ACTIONS": "1",
+        "K8S_ADDITIONAL_HOSTNAMES": r"foo\tbar,fizz\\buzz",
+        "PROJECT_DIR": r"Hello\nworld!",
+    }
+    with mock.patch.dict("os.environ", env):
+        s = Settings()
+        assert s.K8S_ADDITIONAL_HOSTNAMES == ["foo\tbar", "fizz\\buzz"]
+        assert s.PROJECT_DIR == "Hello\nworld!"
+        assert s.BUILDKIT_CACHE_REPO == ""  # Not set. Should be an empty string.
