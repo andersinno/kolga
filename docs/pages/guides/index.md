@@ -9,5 +9,6 @@
 caption: Contents
 maxdepth: 2
 ---
+user-guide
 writing-dockerfiles
 ```
