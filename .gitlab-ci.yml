@@ -34,9 +34,10 @@ test-image:
 
 sonar:
   extends: .sonar
-  needs: ["test"]
+  needs: ["test","test-sast"]
   dependencies:
     - test
+    - test-sast
   allow_failure: true
 
 pages:
@@ -96,6 +97,10 @@ test-sast:
   extends: .code-tests
   script:
     - make sast-tests
+  artifacts:
+    paths:
+      - bandit_report.json
+    expire_in: 5 mins
 
 test:
   extends: .test

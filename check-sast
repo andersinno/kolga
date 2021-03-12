@@ -2,4 +2,4 @@
 
 set -e
 
-bandit . -r -c .bandit.yaml
+bandit . -r -c .bandit.yaml -o bandit_report.json -f json
