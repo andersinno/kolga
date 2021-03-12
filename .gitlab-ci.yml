@@ -8,7 +8,7 @@ variables:
 stages:
   - build
   - test
-  - sast
+  - post-test
   - release
 
 .code-tests:

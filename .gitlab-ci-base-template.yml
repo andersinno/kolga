@@ -3,7 +3,7 @@ image: docker.anders.fi/anders/ci-configuration:v3
 stages:
   - build
   - test
-  - sast
+  - post-test
   - review-service
   - review
   - staging
@@ -79,7 +79,7 @@ variables:
     - /^r-[\d]+$/
 
 .sonar:
-  stage: sast
+  stage: post-test
   image: sonarsource/sonar-scanner-cli:latest
   variables:
     SONAR_PROJECT_BASE_DIR: $CI_PROJECT_DIR
