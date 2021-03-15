@@ -8,6 +8,7 @@ variables:
 stages:
   - build
   - test
+  - post-test
   - release
 
 .code-tests:
@@ -29,6 +30,14 @@ build:
 
 test-image:
   extends: .docker-image-scan
+  allow_failure: true
+
+sonarqube:
+  extends: .sonarqube
+  needs: ["test","test-sast"]
+  dependencies:
+    - test
+    - test-sast
   allow_failure: true
 
 pages:
@@ -88,9 +97,20 @@ test-sast:
   extends: .code-tests
   script:
     - make sast-tests
+  artifacts:
+    paths:
+      - bandit_report.json
+    expire_in: 5 mins
 
 test:
   extends: .test
+  variables:
+    CLIENT_COMMAND: pytest -ra -vvv --cov=. --cov-report xml --cov-report term --junit-xml=pytest.xml
+  artifacts:
+    paths:
+      - pytest.xml
+      - coverage.xml
+    expire_in: 5 mins
   only:
     - merge_requests
     - v3
