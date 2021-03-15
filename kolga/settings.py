@@ -430,9 +430,10 @@ class Settings:
             fp, name = tempfile.mkstemp()
             with os.fdopen(fp, "w") as f:
                 f.write(kubeconfig)
-            break
 
             logger.info(message=f"Created a kubeconfig file using {key}")
+
+            break
 
         return name, key
 
