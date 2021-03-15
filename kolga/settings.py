@@ -16,7 +16,7 @@ from kolga.utils.models import BasicAuthUser
 from .hooks.exceptions import PluginMissingConfiguration
 from .hooks.hookspec import KolgaHookSpec
 from .plugins import KOLGA_CORE_PLUGINS
-from .utils.environ_parsers import basicauth_parser, list_none_parser
+from .utils.environ_parsers import basicauth_parser, list_none_parser, str_unescape
 from .utils.exceptions import NoClusterConfigError
 from .utils.general import deep_get, kubernetes_safe_name
 
@@ -32,6 +32,8 @@ env = Env()
 
 env.add_parser("basicauth", basicauth_parser)
 env.add_parser("list_none", list_none_parser)
+env.add_parser("str_unescape", str_unescape)
+
 env.read_env()
 for env_file in env_files:
     env.read_env(env_file)
@@ -44,97 +46,97 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     # ================================================
     # PROJECT
     # ================================================
-    PROJECT_NAME_VAR: [env.str, ""],
-    "PROJECT_DIR": [env.str, ""],
-    "PROJECT_ID": [env.str, ""],
-    "PROJECT_PATH_SLUG": [env.str, ""],
+    PROJECT_NAME_VAR: [env.str_unescape, ""],
+    "PROJECT_DIR": [env.str_unescape, ""],
+    "PROJECT_ID": [env.str_unescape, ""],
+    "PROJECT_PATH_SLUG": [env.str_unescape, ""],
     # ================================================
     # DOCKER
     # ================================================
-    "BUILDKIT_CACHE_IMAGE_NAME": [env.str, "cache"],
-    "BUILDKIT_CACHE_REPO": [env.str, ""],
+    "BUILDKIT_CACHE_IMAGE_NAME": [env.str_unescape, "cache"],
+    "BUILDKIT_CACHE_REPO": [env.str_unescape, ""],
     "BUILDKIT_CACHE_DISABLE": [env.bool, False],
-    "CONTAINER_REGISTRY": [env.str, "docker.anders.fi"],
-    "CONTAINER_REGISTRY_PASSWORD": [env.str, ""],
-    "CONTAINER_REGISTRY_REPO": [env.str, ""],
-    "CONTAINER_REGISTRY_USER": [env.str, ""],
-    "BUILT_DOCKER_TEST_IMAGE": [env.str, ""],
-    "DOCKER_BUILD_ARG_PREFIX": [env.str, "DOCKER_BUILD_ARG_"],
-    "DOCKER_BUILD_CONTEXT": [env.str, "."],
-    "DOCKER_BUILD_SOURCE": [env.str, "Dockerfile"],
-    "DOCKER_HOST": [env.str, ""],
-    "DOCKER_IMAGE_NAME": [env.str, ""],
-    "DOCKER_TEST_IMAGE_STAGE": [env.str, "development"],
+    "CONTAINER_REGISTRY": [env.str_unescape, "docker.anders.fi"],
+    "CONTAINER_REGISTRY_PASSWORD": [env.str_unescape, ""],
+    "CONTAINER_REGISTRY_REPO": [env.str_unescape, ""],
+    "CONTAINER_REGISTRY_USER": [env.str_unescape, ""],
+    "BUILT_DOCKER_TEST_IMAGE": [env.str_unescape, ""],
+    "DOCKER_BUILD_ARG_PREFIX": [env.str_unescape, "DOCKER_BUILD_ARG_"],
+    "DOCKER_BUILD_CONTEXT": [env.str_unescape, "."],
+    "DOCKER_BUILD_SOURCE": [env.str_unescape, "Dockerfile"],
+    "DOCKER_HOST": [env.str_unescape, ""],
+    "DOCKER_IMAGE_NAME": [env.str_unescape, ""],
+    "DOCKER_TEST_IMAGE_STAGE": [env.str_unescape, "development"],
     # ================================================
     # ENVIRONMENT
     # ================================================
-    "DEFAULT_TRACK": [env.str, "stable"],
-    "ENVIRONMENT_SLUG": [env.str, ""],
-    "ENVIRONMENT_URL": [env.str, ""],
+    "DEFAULT_TRACK": [env.str_unescape, "stable"],
+    "ENVIRONMENT_SLUG": [env.str_unescape, ""],
+    "ENVIRONMENT_URL": [env.str_unescape, ""],
     "SERVICE_PORT": [env.int, 8000],
     # ================================================
     # GIT
     # ================================================
-    "GIT_COMMIT_REF_NAME": [env.str, ""],
-    "GIT_COMMIT_SHA": [env.str, ""],
-    "GIT_DEFAULT_TARGET_BRANCH": [env.str, "master"],
-    "GIT_TARGET_BRANCH": [env.str, ""],
+    "GIT_COMMIT_REF_NAME": [env.str_unescape, ""],
+    "GIT_COMMIT_SHA": [env.str_unescape, ""],
+    "GIT_DEFAULT_TARGET_BRANCH": [env.str_unescape, "master"],
+    "GIT_TARGET_BRANCH": [env.str_unescape, ""],
     # ================================================
     # APPLICATION
     # ================================================
-    "APP_INITIALIZE_COMMAND": [env.str, ""],
-    "APP_MIGRATE_COMMAND": [env.str, ""],
-    "BUILD_ARTIFACT_FOLDER": [env.str, ""],
-    "DATABASE_DB": [env.str, "appdb"],
-    "DATABASE_PASSWORD": [env.str, str(uuid.uuid4())],
-    "DATABASE_USER": [env.str, "user"],
-    "MYSQL_VERSION_TAG": [env.str, "5.7"],
-    "POSTGRES_IMAGE": [env.str, "docker.io/bitnami/postgresql:9.6"],
-    "RABBITMQ_VERSION_TAG": [env.str, "3.8.5"],
-    "SERVICE_ARTIFACT_FOLDER": [env.str, ""],
+    "APP_INITIALIZE_COMMAND": [env.str_unescape, ""],
+    "APP_MIGRATE_COMMAND": [env.str_unescape, ""],
+    "BUILD_ARTIFACT_FOLDER": [env.str_unescape, ""],
+    "DATABASE_DB": [env.str_unescape, "appdb"],
+    "DATABASE_PASSWORD": [env.str_unescape, str(uuid.uuid4())],
+    "DATABASE_USER": [env.str_unescape, "user"],
+    "MYSQL_VERSION_TAG": [env.str_unescape, "5.7"],
+    "POSTGRES_IMAGE": [env.str_unescape, "docker.io/bitnami/postgresql:9.6"],
+    "RABBITMQ_VERSION_TAG": [env.str_unescape, "3.8.5"],
+    "SERVICE_ARTIFACT_FOLDER": [env.str_unescape, ""],
     # ================================================
     # KUBERNETES
     # ================================================
     "K8S_ADDITIONAL_HOSTNAMES": [env.list_none, []],
-    "K8S_CLUSTER_ISSUER": [env.str, ""],
+    "K8S_CLUSTER_ISSUER": [env.str_unescape, ""],
     "K8S_HPA_ENABLED": [env.bool, False],
     "K8S_HPA_MAX_REPLICAS": [env.int, 3],
     "K8S_HPA_MIN_REPLICAS": [env.int, 1],
     "K8S_HPA_MAX_CPU_AVG": [env.int, 75],
     "K8S_HPA_MAX_RAM_AVG": [env.int, 0],
     "K8S_INGRESS_ANNOTATIONS": [env.list_none, []],
-    "K8S_INGRESS_BASE_DOMAIN": [env.str, ""],
+    "K8S_INGRESS_BASE_DOMAIN": [env.str_unescape, ""],
     "K8S_INGRESS_BASIC_AUTH": [env.basicauth, []],
     "K8S_INGRESS_DISABLED": [env.bool, False],
     "K8S_CERTMANAGER_USE_OLD_API": [env.bool, False],
-    "K8S_INGRESS_MAX_BODY_SIZE": [env.str, "100m"],
+    "K8S_INGRESS_MAX_BODY_SIZE": [env.str_unescape, "100m"],
     "K8S_INGRESS_PREVENT_ROBOTS": [env.bool, False],
-    "K8S_INGRESS_SECRET_NAME": [env.str, ""],
-    "K8S_INGRESS_WHITELIST_IPS": [env.str, ""],
-    "K8S_LIVENESS_PATH": [env.str, "/healthz"],
-    "K8S_NAMESPACE": [env.str, ""],
+    "K8S_INGRESS_SECRET_NAME": [env.str_unescape, ""],
+    "K8S_INGRESS_WHITELIST_IPS": [env.str_unescape, ""],
+    "K8S_LIVENESS_PATH": [env.str_unescape, "/healthz"],
+    "K8S_NAMESPACE": [env.str_unescape, ""],
     "K8S_PROBE_FAILURE_THRESHOLD": [env.int, 3],
     "K8S_PROBE_INITIAL_DELAY": [env.int, 60],
     "K8S_PROBE_PERIOD": [env.int, 10],
-    "K8S_FILE_SECRET_MOUNTPATH": [env.str, "/tmp/secrets"],  # nosec
-    "K8S_FILE_SECRET_PREFIX": [env.str, "K8S_FILE_SECRET_"],
-    "K8S_READINESS_PATH": [env.str, "/readiness"],
-    "K8S_REQUEST_CPU": [env.str, "50m"],
-    "K8S_REQUEST_RAM": [env.str, "128Mi"],
-    "K8S_LIMIT_CPU": [env.str, ""],
-    "K8S_LIMIT_RAM": [env.str, ""],
-    "K8S_SECRET_PREFIX": [env.str, "K8S_SECRET_"],
-    "K8S_LIVENESS_FILE": [env.str, ""],
+    "K8S_FILE_SECRET_MOUNTPATH": [env.str_unescape, "/tmp/secrets"],  # nosec
+    "K8S_FILE_SECRET_PREFIX": [env.str_unescape, "K8S_FILE_SECRET_"],
+    "K8S_READINESS_PATH": [env.str_unescape, "/readiness"],
+    "K8S_REQUEST_CPU": [env.str_unescape, "50m"],
+    "K8S_REQUEST_RAM": [env.str_unescape, "128Mi"],
+    "K8S_LIMIT_CPU": [env.str_unescape, ""],
+    "K8S_LIMIT_RAM": [env.str_unescape, ""],
+    "K8S_SECRET_PREFIX": [env.str_unescape, "K8S_SECRET_"],
+    "K8S_LIVENESS_FILE": [env.str_unescape, ""],
     "K8S_PERSISTENT_STORAGE": [env.bool, False],
-    "K8S_PERSISTENT_STORAGE_ACCESS_MODE": [env.str, "ReadWriteOnce"],
-    "K8S_PERSISTENT_STORAGE_PATH": [env.str, ""],
-    "K8S_PERSISTENT_STORAGE_SIZE": [env.str, "1Gi"],
-    "K8S_PERSISTENT_STORAGE_STORAGE_TYPE": [env.str, "standard"],
-    "K8S_READINESS_FILE": [env.str, ""],
+    "K8S_PERSISTENT_STORAGE_ACCESS_MODE": [env.str_unescape, "ReadWriteOnce"],
+    "K8S_PERSISTENT_STORAGE_PATH": [env.str_unescape, ""],
+    "K8S_PERSISTENT_STORAGE_SIZE": [env.str_unescape, "1Gi"],
+    "K8S_PERSISTENT_STORAGE_STORAGE_TYPE": [env.str_unescape, "standard"],
+    "K8S_READINESS_FILE": [env.str_unescape, ""],
     "K8S_REPLICACOUNT": [env.int, 1],
-    "K8S_TEMP_STORAGE_PATH": [env.str, ""],
-    "KUBECONFIG": [env.str, ""],
-    "DEPENDS_ON_PROJECTS": [env.str, ""],
+    "K8S_TEMP_STORAGE_PATH": [env.str_unescape, ""],
+    "KUBECONFIG": [env.str_unescape, ""],
+    "DEPENDS_ON_PROJECTS": [env.str_unescape, ""],
     # ================================================
     # PIPELINE
     # ================================================
@@ -142,24 +144,24 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     # ================================================
     # VAULT
     # ================================================
-    "VAULT_ADDR": [env.str, ""],
-    "VAULT_JWT_AUTH_PATH": [env.str, "jwt"],
-    "VAULT_KV_SECRET_MOUNT_POINT": [env.str, "secrets"],
+    "VAULT_ADDR": [env.str_unescape, ""],
+    "VAULT_JWT_AUTH_PATH": [env.str_unescape, "jwt"],
+    "VAULT_KV_SECRET_MOUNT_POINT": [env.str_unescape, "secrets"],
     "VAULT_KV_VERSION": [env.int, 1],
-    "VAULT_JWT": [env.str, ""],
-    "VAULT_JWT_PRIVATE_KEY": [env.str, ""],
+    "VAULT_JWT": [env.str_unescape, ""],
+    "VAULT_JWT_PRIVATE_KEY": [env.str_unescape, ""],
     "VAULT_TLS_ENABLED": [env.bool, True],
     # ================================================
     # JOB
     # ================================================
-    "JOB_ACTOR": [env.str, ""],
+    "JOB_ACTOR": [env.str_unescape, ""],
     # ================================================
     # MERGE/PULL-REQUEST
     # ================================================
-    "PR_ASSIGNEES": [env.str, ""],
-    "PR_ID": [env.str, ""],
-    "PR_TITLE": [env.str, ""],
-    "PR_URL": [env.str, ""],
+    "PR_ASSIGNEES": [env.str_unescape, ""],
+    "PR_ID": [env.str_unescape, ""],
+    "PR_TITLE": [env.str_unescape, ""],
+    "PR_URL": [env.str_unescape, ""],
 }
 
 
@@ -273,9 +275,12 @@ class Settings:
         setattr(self, PROJECT_NAME_VAR, self._get_project_name())
 
         if self.active_ci:
-            self._map_ci_variables()
+            unescape_envs = self.active_ci.UNESCAPE_ENVIRONMENT_VARIABLES
+            self._map_ci_variables(unescape_envs)
+        else:
+            unescape_envs = False
 
-        self._set_attributes()
+        self._set_attributes(unescape_envs)
 
         self.plugin_manager = self._setup_pluggy()
 
@@ -317,7 +322,7 @@ class Settings:
 
         return self.plugin_manager.unregister(_to_be_unregistered_plugin)
 
-    def _set_attributes(self) -> None:
+    def _set_attributes(self, unescape_values: bool = False) -> None:
         """
         Read and set settings from environment variables
 
@@ -331,7 +336,7 @@ class Settings:
 
         safe_name = env_var_safe_key(self.PROJECT_NAME)
         for variable, (parser, default_value) in _VARIABLE_DEFINITIONS.items():
-            value = parser(variable, None)
+            value = parser(variable, None, unescape=unescape_values)
             if value is None:
                 project_prefixed_variable_name = f"{safe_name}_{variable}"
                 value = parser(project_prefixed_variable_name, None)
@@ -366,7 +371,7 @@ class Settings:
             raise AssertionError("No project name could be found!")
         return project_name
 
-    def _map_ci_variables(self) -> None:
+    def _map_ci_variables(self, unescape_values: bool = False) -> None:
         """
         Map CI variables to settings
 
@@ -476,6 +481,8 @@ class Settings:
 
 
 class BaseCI:
+    UNESCAPE_ENVIRONMENT_VARIABLES = False
+
     def initialize(self) -> None:
         pass
 
@@ -553,6 +560,7 @@ class GitHubActionsMapper(BaseCI):
         "PROJECT_ID": "=PROJECT_ID",
         "PROJECT_NAME": "GITHUB_REPOSITORY",
     }
+    UNESCAPE_ENVIRONMENT_VARIABLES = True
     _EVENT_DATA: Optional[Dict[str, Any]]
 
     def __str__(self) -> str:
