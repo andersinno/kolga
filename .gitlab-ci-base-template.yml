@@ -78,7 +78,7 @@ variables:
     - qa
     - /^r-[\d]+$/
 
-.sonar:
+.sonarqube:
   stage: post-test
   image: sonarsource/sonar-scanner-cli:latest
   variables:

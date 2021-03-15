@@ -32,8 +32,8 @@ test-image:
   extends: .docker-image-scan
   allow_failure: true
 
-sonar:
-  extends: .sonar
+sonarqube:
+  extends: .sonarqube
   needs: ["test","test-sast"]
   dependencies:
     - test
