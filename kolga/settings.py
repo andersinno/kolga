@@ -272,7 +272,6 @@ class Settings:
             GitHubActionsMapper(),
         ]
         self._set_ci_environment()
-        setattr(self, PROJECT_NAME_VAR, self._get_project_name())
 
         if self.active_ci:
             unescape_envs = self.active_ci.UNESCAPE_ENVIRONMENT_VARIABLES
@@ -280,6 +279,7 @@ class Settings:
         else:
             unescape_envs = False
 
+        setattr(self, PROJECT_NAME_VAR, self._get_project_name())
         self._set_attributes(unescape_envs)
 
         self.plugin_manager = self._setup_pluggy()
@@ -388,6 +388,7 @@ class Settings:
                 logger.warning(
                     message=f"CI variable mapping failed, no setting called {name_to}"
                 )
+                continue
 
             if name_from.startswith("="):
                 name_from = name_from[1:]
