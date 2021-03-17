@@ -11,8 +11,6 @@ stages:
   - cleanup_review
 
 variables:
-  DOCKER_BUILD_CONTEXT: "."
-
   # Default usernames and passwords for postgres setups
   # Note: These are the credentials that will be used for testing
   DATABASE_USER: user
@@ -37,8 +35,6 @@ variables:
 .build:
   services:
     - docker:stable-dind
-  variables:
-    DOCKER_BUILD_SOURCE: Dockerfile
   stage: build
   script:
     - devops create_images
