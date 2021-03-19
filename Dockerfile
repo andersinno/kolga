@@ -58,11 +58,11 @@ RUN find $HOME/.poetry/lib/poetry/_vendor \
 FROM build-base AS buildx
 # ===================================
 
-ARG BUILDX_CHECKSUM=c21f07356de93a4fa5d1b7998252ea5f518dbe94ae781e0edeec7d7e29fdf899
+ARG BUILDX_CHECKSUM=5f1dda3ae598e82c3186c2766506921e6f9f51c93b5ba43f7b42b659db4aa48d
 ARG BUILDX_TARGET=/buildx/docker-buildx
 
 RUN mkdir -p /buildx
-RUN curl -fLSs https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64 -o "$BUILDX_TARGET"
+RUN curl -fLSs https://github.com/docker/buildx/releases/download/v0.5.1/buildx-v0.5.1.linux-amd64 -o "$BUILDX_TARGET"
 RUN sha256sum "$BUILDX_TARGET"
 RUN echo "$BUILDX_CHECKSUM *$BUILDX_TARGET" | sha256sum -c -
 RUN chmod a+x "$BUILDX_TARGET"
