@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from kolga.utils.logger import logger
 from kolga.utils.models import DockerImage, ImageStage
@@ -184,23 +184,26 @@ class Docker:
             return True
         return False
 
-    def create_cache_tag(self, postfix: str = "") -> str:
-        git_ref_tag = self.get_docker_git_ref_tag()
+    def create_cache_tag(self, postfix: str = "", ref: Optional[str] = None) -> str:
+        if ref:
+            git_ref_tag = ref
+        else:
+            git_ref_tag = self.get_docker_git_ref_tag()
 
         stage_postfix = f"-{postfix}" if postfix else ""
 
         return f"{self.cache_repo}:{git_ref_tag}{stage_postfix}"
 
     def get_cache_tags(self) -> List[str]:
-        cache_tags = []
-
+        cache_tags: List[str] = []
         target_branch = settings.GIT_TARGET_BRANCH or settings.GIT_DEFAULT_TARGET_BRANCH
-        target_image = f"{self.cache_repo}:{target_branch}"
-        cache_tags.append(target_image)
 
         for stage in self.get_stages():
             if stage.build:
                 cache_tags.append(self.create_cache_tag(postfix=stage.name))
+                cache_tags.append(
+                    self.create_cache_tag(postfix=stage.name, ref=target_branch)
+                )
 
         return cache_tags
 
@@ -236,9 +239,6 @@ class Docker:
     ) -> DockerImage:
         logger.info(icon=f"{self.ICON} 🔨", title=f"Building stage '{stage}': ")
 
-        cache_tags = self.get_cache_tags()
-        postfix = stage if not final_image else ""
-
         build_command = [
             "docker",
             "buildx",
@@ -254,11 +254,11 @@ class Docker:
             build_command.append("--push")
 
         if not disable_cache:
-            cache_to = self.create_cache_tag(postfix=postfix)
+            cache_to = self.create_cache_tag(postfix=stage)
             logger.info(title=f"\t ℹ️ Cache to: {cache_to}")
             build_command.append(f"--cache-to=type=registry,ref={cache_to},mode=max")
 
-            for cache_tag in cache_tags:
+            for cache_tag in self.get_cache_tags():
                 logger.info(title=f"\t ℹ️ Cache from: {cache_tag}")
                 build_command.append(f"--cache-from=type=registry,ref={cache_tag}")
 
