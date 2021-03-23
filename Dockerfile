@@ -17,7 +17,6 @@ ARG KUBECTL_CHECKSUM=f4eb3da33d74b792f0833332fb509f1443c6f89c32acf8d79cadf6108da
 ARG SOURCE=https://dl.k8s.io/v$KUBECTL_VERSION/kubernetes-client-linux-amd64.tar.gz
 ARG TARGET=/kubernetes-client.tar.gz
 RUN curl -fLSs "$SOURCE" -o "$TARGET"
-RUN sha256sum "$TARGET"
 RUN echo "$KUBECTL_CHECKSUM *$TARGET" | sha256sum -c -
 RUN tar -xvf "$TARGET" -C /
 
@@ -29,7 +28,6 @@ ARG HELM_CHECKSUM=2170a1a644a9e0b863f00c17b761ce33d4323da64fc74562a3a6df2abbf6cd
 ARG SOURCE=https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz
 ARG TARGET=/helm.tar.gz
 RUN curl -fLSs "$SOURCE" -o "$TARGET"
-RUN sha256sum "$TARGET"
 RUN echo "$HELM_CHECKSUM *$TARGET" | sha256sum -c -
 RUN mkdir -p /helm
 RUN tar -xvf "$TARGET" -C /helm
@@ -41,7 +39,6 @@ ARG POETRY_CHECKSUM=e973b3badb95a916bfe250c22eeb7253130fd87312afa326eb02b8bdcea8
 ARG POETRY_TARGET=/tmp/get-poetry.py
 
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/1.1.5/get-poetry.py -o "$POETRY_TARGET"
-RUN sha256sum "$POETRY_TARGET"
 RUN echo "$POETRY_CHECKSUM *$POETRY_TARGET" | sha256sum -c -
 RUN python /tmp/get-poetry.py
 
@@ -63,7 +60,6 @@ ARG BUILDX_TARGET=/buildx/docker-buildx
 
 RUN mkdir -p /buildx
 RUN curl -fLSs https://github.com/docker/buildx/releases/download/v0.5.1/buildx-v0.5.1.linux-amd64 -o "$BUILDX_TARGET"
-RUN sha256sum "$BUILDX_TARGET"
 RUN echo "$BUILDX_CHECKSUM *$BUILDX_TARGET" | sha256sum -c -
 RUN chmod a+x "$BUILDX_TARGET"
 
