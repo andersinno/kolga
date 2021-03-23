@@ -69,10 +69,10 @@ RUN echo "$BUILDX_CHECKSUM *$BUILDX_TARGET" | sha256sum -c -
 RUN chmod a+x "$BUILDX_TARGET"
 
 # ===================================
-FROM build-base AS stage
+FROM build-base AS tools
 # ===================================
-WORKDIR /stage
-ENV PATH=$PATH:/stage/usr/bin
+WORKDIR /tools
+ENV PATH=$PATH:/tools/usr/bin
 COPY --from=kubectl /kubernetes/client/bin/kubectl ./usr/bin/
 COPY --from=helm /helm/linux-amd64/helm ./usr/bin/
 COPY --from=poetry /root/.poetry ./root/.poetry
@@ -84,7 +84,7 @@ FROM docker:20.10.5-dind as app-base
 
 ENV PYTHONUNBUFFERED=1
 
-COPY --from=stage /stage/ /
+COPY --from=tools /tools/ /
 
 # Symlink poetry to bin
 RUN ln -s $HOME/.poetry/bin/poetry /usr/bin/poetry
