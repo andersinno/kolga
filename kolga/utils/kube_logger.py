@@ -1,5 +1,5 @@
 from pathlib import Path
-from subprocess import Popen, TimeoutExpired
+from subprocess import DEVNULL, Popen, TimeoutExpired
 from tempfile import NamedTemporaryFile
 from threading import Event, Thread
 from typing import IO, Dict, Optional, Tuple
@@ -62,7 +62,9 @@ class KubeLoggerThread(Thread):
 
             if subprocess is None:
                 # (Re-)start the subprocess
-                subprocess = Popen(self._cmd, shell=False, stdout=self._log)  # nosec
+                subprocess = Popen(  # nosec
+                    self._cmd, shell=False, stderr=DEVNULL, stdout=self._log
+                )
 
             # Wait on stop event
             running = not self._stop_event.wait(self.TIMEOUT)
