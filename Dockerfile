@@ -1,9 +1,5 @@
 # ===================================
-FROM python:3.8-alpine AS base
-# ===================================
-
-# ===================================
-FROM base AS build-base
+FROM python:3.8.8-alpine3.13 AS build-base
 # ===================================
 RUN apk add --no-cache \
     python3 \
@@ -16,24 +12,22 @@ RUN ln -s pip3 /usr/bin/pip
 # ===================================
 FROM build-base AS kubectl
 # ===================================
-ARG KUBECTL_VERSION=1.17.2
-ARG KUBECTL_CHECKSUM=7f9bc410e8cc7f3b4075b50ab144fe08fefc5e7a9d03b9c09ee2e7e483e0c436
+ARG KUBECTL_VERSION=1.17.17
+ARG KUBECTL_CHECKSUM=f4eb3da33d74b792f0833332fb509f1443c6f89c32acf8d79cadf6108da34d0f
 ARG SOURCE=https://dl.k8s.io/v$KUBECTL_VERSION/kubernetes-client-linux-amd64.tar.gz
 ARG TARGET=/kubernetes-client.tar.gz
 RUN curl -fLSs "$SOURCE" -o "$TARGET"
-RUN sha256sum "$TARGET"
 RUN echo "$KUBECTL_CHECKSUM *$TARGET" | sha256sum -c -
 RUN tar -xvf "$TARGET" -C /
 
 # ===================================
 FROM build-base AS helm
 # ===================================
-ARG HELM_VERSION=3.5.2
-ARG HELM_CHECKSUM=01b317c506f8b6ad60b11b1dc3f093276bb703281cb1ae01132752253ec706a2
+ARG HELM_VERSION=3.5.3
+ARG HELM_CHECKSUM=2170a1a644a9e0b863f00c17b761ce33d4323da64fc74562a3a6df2abbf6cd70
 ARG SOURCE=https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz
 ARG TARGET=/helm.tar.gz
 RUN curl -fLSs "$SOURCE" -o "$TARGET"
-RUN sha256sum "$TARGET"
 RUN echo "$HELM_CHECKSUM *$TARGET" | sha256sum -c -
 RUN mkdir -p /helm
 RUN tar -xvf "$TARGET" -C /helm
@@ -41,12 +35,10 @@ RUN tar -xvf "$TARGET" -C /helm
 # ===================================
 FROM build-base AS poetry
 # ===================================
-
 ARG POETRY_CHECKSUM=e973b3badb95a916bfe250c22eeb7253130fd87312afa326eb02b8bdcea8f4a7
 ARG POETRY_TARGET=/tmp/get-poetry.py
 
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/1.1.2/get-poetry.py -o "$POETRY_TARGET"
-RUN sha256sum "$POETRY_TARGET"
+RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/1.1.5/get-poetry.py -o "$POETRY_TARGET"
 RUN echo "$POETRY_CHECKSUM *$POETRY_TARGET" | sha256sum -c -
 RUN python /tmp/get-poetry.py
 
@@ -63,32 +55,31 @@ RUN find $HOME/.poetry/lib/poetry/_vendor \
 FROM build-base AS buildx
 # ===================================
 
-ARG BUILDX_CHECKSUM=c21f07356de93a4fa5d1b7998252ea5f518dbe94ae781e0edeec7d7e29fdf899
+ARG BUILDX_CHECKSUM=5f1dda3ae598e82c3186c2766506921e6f9f51c93b5ba43f7b42b659db4aa48d
 ARG BUILDX_TARGET=/buildx/docker-buildx
 
 RUN mkdir -p /buildx
-RUN curl -fLSs https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64 -o "$BUILDX_TARGET"
-RUN sha256sum "$BUILDX_TARGET"
+RUN curl -fLSs https://github.com/docker/buildx/releases/download/v0.5.1/buildx-v0.5.1.linux-amd64 -o "$BUILDX_TARGET"
 RUN echo "$BUILDX_CHECKSUM *$BUILDX_TARGET" | sha256sum -c -
 RUN chmod a+x "$BUILDX_TARGET"
 
 # ===================================
-FROM build-base AS stage
+FROM build-base AS tools
 # ===================================
-WORKDIR /stage
-ENV PATH=$PATH:/stage/usr/bin
+WORKDIR /tools
+ENV PATH=$PATH:/tools/usr/bin
 COPY --from=kubectl /kubernetes/client/bin/kubectl ./usr/bin/
 COPY --from=helm /helm/linux-amd64/helm ./usr/bin/
 COPY --from=poetry /root/.poetry ./root/.poetry
 COPY --from=buildx /buildx/docker-buildx ./usr/local/lib/docker/cli-plugins/
 
 # ===================================
-FROM docker:stable-dind as app-base
+FROM docker:20.10.5-dind as app-base
 # ===================================
 
 ENV PYTHONUNBUFFERED=1
 
-COPY --from=stage /stage/ /
+COPY --from=tools /tools/ /
 
 # Symlink poetry to bin
 RUN ln -s $HOME/.poetry/bin/poetry /usr/bin/poetry
@@ -101,37 +92,29 @@ WORKDIR /app
 COPY poetry.lock /app/poetry.lock
 COPY pyproject.toml /app/pyproject.toml
 
-ENV RUSTUP_HOME=/usr/local/rustup \
-    CARGO_HOME=/usr/local/cargo \
-    PATH=/usr/local/cargo/bin:$PATH
-
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
+        cargo \
         python3-dev \
-    && apk add --no-cache --virtual .fetch-deps \
-        curl \
+        rust \
     && apk add --no-cache \
-        python3 \
+        apache2-utils \
         bash \
-        nodejs \
-        shadow \
         ca-certificates \
         git \
-        make \
-        openssl-dev \
         libffi-dev \
-        apache2-utils \
-    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile minimal \
-    && chmod -R a+w $RUSTUP_HOME $CARGO_HOME \
+        make \
+        nodejs \
+        openssl-dev \
+        python3 \
+        shadow \
     && ln -sf python3 /usr/bin/python \
     && ln -s pip3 /usr/bin/pip \
     && python3 -m ensurepip \
     && poetry config virtualenvs.create false \
-	&& poetry install --no-dev --no-interaction \
-	&& pip install docker-compose \
-	&& apk del .build-deps \
-	&& apk del .fetch-deps \
-    && rustup self uninstall -y
+    && poetry install --no-dev --no-interaction \
+    && pip install docker-compose \
+    && apk del .build-deps
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
