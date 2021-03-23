@@ -121,7 +121,6 @@ class Devops:
         k = Kubernetes(track=track)
         k.setup_helm()
         namespace = k.create_namespace()
-        k.create_default_network_policy()
 
         v = Vault(track)
         v.login()
