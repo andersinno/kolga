@@ -79,7 +79,7 @@ COPY --from=poetry /root/.poetry ./root/.poetry
 COPY --from=buildx /buildx/docker-buildx ./usr/local/lib/docker/cli-plugins/
 
 # ===================================
-FROM docker:stable-dind as app-base
+FROM docker:20.10.5-dind as app-base
 # ===================================
 
 ENV PYTHONUNBUFFERED=1
