@@ -24,8 +24,8 @@ RUN tar -xvf "$TARGET" -C /
 # ===================================
 FROM build-base AS helm
 # ===================================
-ARG HELM_VERSION=3.5.2
-ARG HELM_CHECKSUM=01b317c506f8b6ad60b11b1dc3f093276bb703281cb1ae01132752253ec706a2
+ARG HELM_VERSION=3.5.3
+ARG HELM_CHECKSUM=2170a1a644a9e0b863f00c17b761ce33d4323da64fc74562a3a6df2abbf6cd70
 ARG SOURCE=https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz
 ARG TARGET=/helm.tar.gz
 RUN curl -fLSs "$SOURCE" -o "$TARGET"
