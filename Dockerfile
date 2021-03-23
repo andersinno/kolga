@@ -1,9 +1,5 @@
 # ===================================
-FROM python:3.8-alpine AS base
-# ===================================
-
-# ===================================
-FROM base AS build-base
+FROM python:3.8.8-alpine3.13 AS build-base
 # ===================================
 RUN apk add --no-cache \
     python3 \
