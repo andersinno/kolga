@@ -1,5 +1,5 @@
 import os
-from typing import Any, List, Tuple
+from typing import List, Tuple
 
 from environs import Env, ParserMethod
 
@@ -14,8 +14,8 @@ class PluginBase:
     name: str
     verbose_name: str
 
-    required_variables: List[Tuple[str, ParserMethod[Any]]] = []
-    optional_variables: List[Tuple[str, ParserMethod[Any]]] = []
+    required_variables: List[Tuple[str, ParserMethod]] = []
+    optional_variables: List[Tuple[str, ParserMethod]] = []
     configured: bool = False
 
     def configure(self, env: Env) -> None:

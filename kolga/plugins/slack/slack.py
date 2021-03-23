@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Optional
 
 from environs import Env
-from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+from slack_sdk.web.client import WebClient
 
 from kolga.hooks import hookimpl
 from kolga.hooks.plugins import PluginBase

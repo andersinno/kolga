@@ -18,7 +18,9 @@ from ..slack import KolgaSlackPlugin
     },
 )
 @load_plugin(KolgaSlackPlugin)
-@mock.patch.object(slack_sdk.WebClient, "chat_postMessage", return_value=True)
+@mock.patch.object(
+    slack_sdk.web.client.WebClient, "chat_postMessage", return_value=True
+)
 def test_project_deployment_complete(mock_post_message: Any) -> None:
     results = settings.plugin_manager.hook.project_deployment_complete(
         project=Project(track="review", url="test.example.com"),
