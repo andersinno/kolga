@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# Change working directory to project root
+cd "$(dirname "$0")/.."
+
+echo "Checking scripts"
+mypy --strict
