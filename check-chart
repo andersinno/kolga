@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -e
+
+DATE=$(date +"%Y-%m-%d_%H-%M-%S.800081Z")
+
+helm lint ./helm
+helm template --dry-run --set deployment.timestamp=$DATE --set application.initializeCommand=test --set application.migrateCommand=test --set application.pvc.enabled=true --set hpa.enabled=true ./helm
