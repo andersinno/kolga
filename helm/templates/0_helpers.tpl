@@ -22,3 +22,23 @@ Get a hostname from URL
 {{- define "hostname" -}}
 {{- . | trimPrefix "http://" |  trimPrefix "https://" | trimSuffix "/" | quote -}}
 {{- end -}}
+
+{{/*
+Common labels
+*/}}
+{{- define "commonLabels" -}}
+{{ include "selectorLabels" . }}
+app.kubernetes.io/instance: {{ .Release.Name | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+app.kubernetes.io/name: {{ include "appname" . | quote }}
+helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+{{- end -}}
+
+{{/*
+Selector labels
+*/}}
+{{- define "selectorLabels" -}}
+app: {{ include "appname" . | quote }}
+release: {{ .Release.Name | quote }}
+track: {{ .Values.application.track | quote }}
+{{- end -}}

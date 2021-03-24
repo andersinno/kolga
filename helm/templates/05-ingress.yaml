@@ -4,9 +4,6 @@ kind: Ingress
 metadata:
   name: {{ template "appname" . }}-ingress
   namespace: {{ .Values.namespace }}
-  labels:
-    app: {{ template "appname" . }}
-    release: {{ .Release.Name }}
   annotations:
     {{- if .Values.ingress.clusterIssuer }}
     {{ .Values.ingress.certManagerAnnotationPrefix }}/cluster-issuer: {{ .Values.ingress.clusterIssuer }}
@@ -36,6 +33,8 @@ metadata:
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
+  labels:
+    {{- include "commonLabels" . | nindent 4 }}
 spec:
   tls:
     - hosts:

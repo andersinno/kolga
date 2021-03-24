@@ -4,20 +4,18 @@ kind: Job
 metadata:
   name: {{ template "trackableappname" . }}-migrate
   namespace: {{ .Values.namespace }}
-  labels:
-    release: {{ .Release.Name }}
-    app: {{ template "appname" . }}
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-weight": "2"
     "helm.sh/hook-delete-policy": before-hook-creation
+  labels:
+    {{- include "commonLabels" . | nindent 4 }}
 spec:
   backoffLimit: 1
   template:
     metadata:
       labels:
-        app: {{ template "appname" . }}
-        release: {{ .Release.Name }}
+        {{- include "commonLabels" . | nindent 8 }}
     spec:
       restartPolicy: Never
       imagePullSecrets:
