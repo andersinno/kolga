@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Change working directory to project root
 cd "$(dirname "$0")/.."

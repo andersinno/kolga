@@ -1,6 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 set -e
+set -u
 
 # Change working directory to project root
 cd "$(dirname "$0")/.."
