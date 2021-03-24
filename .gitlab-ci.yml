@@ -69,6 +69,11 @@ release-dockerhub:
   only:
     - v2
 
+test-helm:
+  extends: .test
+  script:
+    - make helm-tests
+
 test-style:
   extends: .code-tests
   script:

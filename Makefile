@@ -15,9 +15,12 @@ typing-tests:
 package-tests:
 	./check-packages
 
+helm-tests:
+	./check-chart
+
 static-tests: sast-tests typing-tests style-tests package-tests
 
 docs:
 	cd docs && $(MAKE) clean && $(MAKE) html
 
-.PHONY: test, sast-tests, style-tests, typing-tests, packages-tests, docs
+.PHONY: test, sast-tests, style-tests, typing-tests, packages-tests, helm-tests, docs
