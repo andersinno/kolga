@@ -6,7 +6,14 @@ set -u
 # Change working directory to project root
 cd "$(dirname "$0")/.."
 
-DATE=$(date +"%Y-%m-%d_%H-%M-%S.800081Z")
-
 helm lint ./helm
-helm template --dry-run --set deployment.timestamp=$DATE --set application.initializeCommand=test --set application.migrateCommand=test --set application.pvc.enabled=true --set hpa.enabled=true ./helm
+
+echo >&2
+helm template \
+     --dry-run \
+     --set application.initializeCommand=test \
+     --set application.migrateCommand=test \
+     --set application.pvc.enabled=true \
+     --set deployment.timestamp="$(date "+%Y-%m-%d_%H-%M-%S.800081Z")" \
+     --set hpa.enabled=true \
+     ./helm >/dev/null
