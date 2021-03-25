@@ -79,7 +79,6 @@ services:
       - K3S_CLUSTER_SECRET=k3stestclustersecret
       - K3S_URL=https://kubernetes:6443
       - KUBECONFIG=/config/kubeconfig.yaml
-      - TEST_DOCKER_ACTIVE=1
       - TEST_HELM_REGISTRY=http://helm-registry:8080
       - TEST_VAULT_ACTIVE=1
     volumes:
