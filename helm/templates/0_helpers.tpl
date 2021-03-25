@@ -38,7 +38,15 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 Selector labels
 */}}
 {{- define "selectorLabels" -}}
-app: {{ include "appname" . | quote }}
+{{ include "legacySelectorLabels" . }}
 release: {{ .Release.Name | quote }}
 track: {{ .Values.application.track | quote }}
+{{- end -}}
+
+{{/*
+Legacy selector labels
+Used for backwards compatibility with version 0d4321479 and earlier.
+*/}}
+{{- define "legacySelectorLabels" -}}
+app: {{ include "appname" . | quote }}
 {{- end -}}
