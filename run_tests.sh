@@ -19,4 +19,4 @@ elif [ "$USERID" != "0" ]; then
 fi
 
 docker-compose down -v
-docker-compose up -V --abort-on-container-exit --exit-code-from client "$@"
+CLIENT_COMMAND="$@" docker-compose up -V --abort-on-container-exit --exit-code-from client
