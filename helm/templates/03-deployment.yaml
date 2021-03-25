@@ -15,7 +15,7 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "selectorLabels" . | nindent 6 }}
+      {{- include "legacySelectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
@@ -143,19 +143,19 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchLabels:
-                  {{- include "selectorLabels" . | nindent 18 }}
+                  {{- include "legacySelectorLabels" . | nindent 18 }}
               topologyKey: kubernetes.io/hostname
             weight: 100
           - podAffinityTerm:
               labelSelector:
                 matchLabels:
-                  {{- include "selectorLabels" . | nindent 18 }}
+                  {{- include "legacySelectorLabels" . | nindent 18 }}
               topologyKey: topology.kubernetes.io/zone
             weight: 100
           - podAffinityTerm:
               labelSelector:
                 matchLabels:
-                  {{- include "selectorLabels" . | nindent 18 }}
+                  {{- include "legacySelectorLabels" . | nindent 18 }}
               topologyKey: failure-domain.beta.kubernetes.io/zone
             weight: 100
       {{- end }}
