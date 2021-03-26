@@ -94,3 +94,7 @@ ENV/
 
 # Created by the Helm Chartmuseum
 tests/charts/index-cache.yaml
+
+pytest.xml
+coverage.xml
+bandit_report.json
