@@ -59,6 +59,6 @@ def pytest_runtest_setup(item: Item) -> None:
         pytest.skip("test requires TEST_CLUSTER_ACTIVE to be true")
 
     if item.get_closest_marker("docker") and os.environ.get(
-        "TEST_CLUSTER_ACTIVE", False
+        "TEST_DOCKER_ACTIVE", False
     ) not in [1, "1", True, "True"]:
         pytest.skip("test requires TEST_DOCKER_ACTIVE to be true")
