@@ -4,19 +4,19 @@ test:
 	./run_tests.sh
 
 sast-tests:
-	./check-sast
+	./utils/check-sast
 
 style-tests:
-	./check-style
+	./utils/check-style
 
 typing-tests:
-	./check-typing
+	./utils/check-typing
 
 package-tests:
-	./check-packages
+	./utils/check-packages
 
 helm-tests:
-	./check-chart
+	./utils/check-chart
 
 static-tests: sast-tests typing-tests style-tests package-tests
 

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+set -u
+
+# Change working directory to project root
+cd "$(dirname "$0")/.."
+
+flake8
+isort . -c
+black . --check

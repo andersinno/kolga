@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-set -e
-
-bandit . -r -c .bandit.yaml -o bandit_report.json -f json

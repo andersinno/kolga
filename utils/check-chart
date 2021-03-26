@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+set -u
+
+# Change working directory to project root
+cd "$(dirname "$0")/.."
+
+helm lint ./helm
+
+echo >&2
+helm template \
+     --dry-run \
+     --set application.initializeCommand=test \
+     --set application.migrateCommand=test \
+     --set application.pvc.enabled=true \
+     --set deployment.timestamp="$(date "+%Y-%m-%d_%H-%M-%S.800081Z")" \
+     --set hpa.enabled=true \
+     ./helm >/dev/null
