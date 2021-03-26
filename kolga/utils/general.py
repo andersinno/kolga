@@ -89,7 +89,7 @@ def env_var_safe_key(key: str) -> str:
     """
     # Convert `key` to upper-case and replace leading digits and all
     # other non-alpha-numeric characters with underscores.
-    return re.sub(r"^\d+|\W", "_", key).upper()
+    return re.sub(r"^\d+|[^a-zA-Z0-9_]", "_", key).upper()
 
 
 def kubernetes_safe_name(name: str) -> str:

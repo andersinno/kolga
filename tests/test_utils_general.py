@@ -13,6 +13,7 @@ from kolga.utils.general import (
     deep_get,
     get_deploy_name,
     get_environment_vars_by_prefix,
+    get_project_secret_var,
     get_secret_name,
     unescape_string,
 )
@@ -139,3 +140,17 @@ def test_unescape_string(value: str, expected_value: Optional[str]) -> None:
 
     unescaped_value = unescape_string(value)
     assert unescaped_value == expected_value
+
+
+@pytest.mark.parametrize(
+    "project_name, variable_name, expected_value",
+    (
+        ("kolga", "key", "KOLGA_K8S_SECRET_KEY"),
+        ("kolga", "key.-_!", "KOLGA_K8S_SECRET_KEY____"),
+        ("kolga", "keyö", "KOLGA_K8S_SECRET_KEY_"),
+    ),
+)
+def test_get_project_secret_var(
+    project_name: str, variable_name: str, expected_value: str
+) -> None:
+    assert get_project_secret_var(project_name, variable_name) == expected_value
