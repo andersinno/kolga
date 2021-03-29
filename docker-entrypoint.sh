@@ -10,5 +10,5 @@ else
     echo -e "\n#####################"
     echo "### Running tests ###"
     echo "#####################"
-    pytest -ra -vvv --cov=scripts --cov-report xml --cov-report term
+    pytest -ra -vvv --cov=. --cov-report xml --cov-report term --junit-xml=pytest.xml
 fi

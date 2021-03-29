@@ -10,10 +10,15 @@ from kolga.settings import settings
 from kolga.utils.general import (
     DEPLOY_NAME_MAX_HELM_NAME_LENGTH,
     camel_case_split,
+    create_artifact_file_from_dict,
     deep_get,
     get_deploy_name,
     get_environment_vars_by_prefix,
+    get_project_secret_var,
     get_secret_name,
+    loads_json,
+    string_to_yaml,
+    truncate_with_hash,
     unescape_string,
 )
 
@@ -139,3 +144,95 @@ def test_unescape_string(value: str, expected_value: Optional[str]) -> None:
 
     unescaped_value = unescape_string(value)
     assert unescaped_value == expected_value
+
+
+@pytest.mark.parametrize(
+    "value, expected_value, indentation, strip",
+    (
+        ("Hello World", b"Hello World", 0, True),  # No change
+        ("  Hello World!  ", b"Hello World!", 0, True),  # Strip
+        ("  Hello World!  ", b"  Hello World!  ", 0, False),  # No strip
+        ("Hello \n World", b"|-\nHello\nWorld", 0, True),  # \n in string + strip
+        ("Hello \n World", b"|-\nHello \n World", 0, False),  # \n in string + no strip
+        (" Hello World", b"  Hello World", 1, False),  # Indentation + no strip
+        ("Hello World", b" Hello World", 1, True),  # Indentation + strip
+        ("Hello World", b"    Hello World", 4, True),  # Indentation + strip
+        (
+            "Hello \n World",
+            b"|-\n Hello\n World",
+            1,
+            True,
+        ),  # Indentation + \n in string + strip
+        (
+            "Hello \n World",
+            b"|-\n Hello \n  World",
+            1,
+            False,
+        ),  # Indentation + \n in string + no strip
+        (
+            "Hello \n World",
+            b"|-\n    Hello\n    World",
+            4,
+            True,
+        ),  # Indentation + \n in string
+    ),
+)
+def test_string_to_yaml(
+    value: str, expected_value: bytes, indentation: int, strip: bool
+) -> None:
+    yaml_string = string_to_yaml(value, indentation=indentation, strip=strip)
+    assert yaml_string == expected_value
+
+
+def test_truncate_with_hash() -> None:
+    truncated_string = truncate_with_hash("abcde", 4)
+    assert truncated_string == "a-36"
+
+
+def test_truncate_with_hash_exception() -> None:
+    with pytest.raises(ValueError):
+        truncate_with_hash("abd", 2)
+
+
+@pytest.mark.parametrize(
+    "project_name, variable_name, expected_value",
+    (
+        ("kolga", "key", "KOLGA_K8S_SECRET_KEY"),
+        ("kolga", "key.-_!", "KOLGA_K8S_SECRET_KEY____"),
+        ("kolga", "keyö", "KOLGA_K8S_SECRET_KEY_"),
+    ),
+)
+def test_get_project_secret_var(
+    project_name: str, variable_name: str, expected_value: str
+) -> None:
+    assert get_project_secret_var(project_name, variable_name) == expected_value
+
+
+def test_create_artifact_file_from_dict(tmp_path: Any) -> None:
+    filename = "test.env"
+    data = {
+        "TEST_VALUE1": "VAL1",
+        "TEST_VALUE2": "VAL2",
+    }
+    assert_data = ["TEST_VALUE1=VAL1\n", "TEST_VALUE2=VAL2\n"]
+    create_artifact_file_from_dict(env_dir=tmp_path, data=data, filename=filename)
+    with open(tmp_path / filename) as file:
+        file_lines = file.readlines()
+
+    assert file_lines == assert_data
+
+
+@pytest.mark.parametrize(
+    "value, expected_value",
+    (
+        ("a", {}),
+        ('{"test": "success"}', {"test": "success"}),
+    ),
+)
+def test_loads_json(value: str, expected_value: Dict[str, Any]) -> None:
+    assert loads_json(value) == expected_value
+
+
+def test_loads_json_array_exception() -> None:
+    with pytest.raises(TypeError):
+        loads_json('["a", "b"]')

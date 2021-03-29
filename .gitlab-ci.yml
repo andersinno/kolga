@@ -109,8 +109,6 @@ test-sast:
 
 test:
   extends: .test
-  variables:
-    CLIENT_COMMAND: pytest -ra -vvv --cov=. --cov-report xml --cov-report term --junit-xml=pytest.xml
   artifacts:
     paths:
       - pytest.xml

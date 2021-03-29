@@ -79,6 +79,7 @@ services:
     - K3S_URL=https://kubernetes:6443
     - KUBECONFIG=/config/kubeconfig.yaml
     - TEST_HELM_REGISTRY=http://helm-registry:8080
+    - TEST_DOCKER_ACTIVE=1
     volumes:
       - k3s-config:/config
       - .:/app
