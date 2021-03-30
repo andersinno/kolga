@@ -188,6 +188,7 @@ def get_environment_vars_by_prefix(prefix: str) -> Dict[str, str]:
 
 
 def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessResult:
+    from kolga.utils.logger import logger
 
     command = command_list if not shell else " ".join(map(quote, command_list))
 
@@ -196,13 +197,15 @@ def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessRe
     )
 
     string_command = command if isinstance(command, str) else " ".join(command)
-    return SubprocessResult(
+    subprocess_result = SubprocessResult(
         out=result.stdout,
         err=result.stderr,
         return_code=result.returncode,
         child=result,
         command=string_command,
     )
+    logger.debug_std(subprocess_result)
+    return subprocess_result
 
 
 def limit_url_length(url: str) -> str:
