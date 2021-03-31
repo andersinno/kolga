@@ -197,6 +197,7 @@ variables:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     action: stop
   stage: cleanup_review
+  dependencies: []
   script:
     - devops review_cleanup
   only:
