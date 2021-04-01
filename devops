@@ -126,15 +126,15 @@ class Devops:
         v.login()
 
         for project in projects:
+            secret_data = {}
+            if settings.VAULT_ADDR:
+                secret_data.update(v.get_secrets())
             file_secrets_paths = k.create_file_secrets_from_environment(
                 namespace=namespace,
                 track=track,
                 project=project,
                 secret_name=project.file_secret_name,
             )
-            secret_data = {}
-            if settings.VAULT_ADDR:
-                secret_data.update(v.get_secrets())
             secret_data.update(project.secret_data)
             secret_data.update(file_secrets_paths)
 
