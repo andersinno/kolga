@@ -195,11 +195,13 @@ def run_os_command(command_list: List[str], shell: bool = False) -> SubprocessRe
         command, encoding="UTF-8", capture_output=True, shell=shell
     )
 
+    string_command = command if isinstance(command, str) else " ".join(command)
     return SubprocessResult(
         out=result.stdout,
         err=result.stderr,
         return_code=result.returncode,
         child=result,
+        command=string_command,
     )
 
 

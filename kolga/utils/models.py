@@ -53,6 +53,7 @@ class SubprocessResult:
     err: str
     return_code: int
     child: Any
+    command: str
 
 
 @dataclass
