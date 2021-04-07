@@ -68,6 +68,7 @@ supplies a predefined variables with the SHA.
 | K8S\_LIMIT\_RAM               | Limit max RAM (ex. 512Mi)                           |                              |            |
 | K8S\_SECRET\_PREFIX           | Application environment variable prefix             | K8S\_SECRET\_                |            |
 | K8S\_TEMP\_STORAGE\_PATH      | Temporary volume mount storage path                 |                              |            |
+| KOLGA\_DEBUG                  | Enable debug output                                 | False                        |            |
 | KOLGA\_JOBS\_ONLY             | Run only job deployments                            | False                        |            |
 | KUBECONFIG                    | Path to Kubernetes config                           |                              |            |
 | MYSQL\_ENABLED                | Should a MySQL database be created for preview      | False                        |            |

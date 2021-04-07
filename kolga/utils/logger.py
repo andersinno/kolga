@@ -14,6 +14,39 @@ class Logger:
         icon_string = f"{icon} " if icon else ""
         return f"{icon_string}{message}"
 
+    def debug(
+        self,
+        message: str = "",
+        icon: Optional[str] = "🐛",
+    ) -> None:
+        """
+        Log formatted warnings to stdout
+
+        Args:
+            message: Debug message
+            icon: Icon to place as before the output
+        """
+        from kolga.settings import settings
+
+        if settings.KOLGA_DEBUG:
+            _message = self._create_message(message, icon)
+            print(f"{cf.purple}{_message}{cf.reset}")  # noqa: T001
+
+    def debug_std(
+        self,
+        std: SubprocessResult,
+    ) -> None:
+        return_code_color = cf.green if std.return_code == 0 else cf.red
+        self.debug(
+            message=f"{std.command}: {return_code_color}{std.return_code}{cf.reset}"
+        )
+
+        if std.out:
+            self.debug(message=f"{std.out}")
+
+        if std.err:
+            self.debug(message=f"{std.err}")
+
     def error(
         self,
         message: str = "",

@@ -141,6 +141,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     # PIPELINE
     # ================================================
     "KOLGA_JOBS_ONLY": [env.bool, False],
+    "KOLGA_DEBUG": [env.bool, False],
     # ================================================
     # VAULT
     # ================================================
@@ -243,6 +244,7 @@ class Settings:
     KUBECONFIG: str
     DEPENDS_ON_PROJECTS: str
     KOLGA_JOBS_ONLY: bool
+    KOLGA_DEBUG: bool
     VAULT_ADDR: str
     VAULT_JWT_AUTH_PATH: str
     VAULT_KV_SECRET_MOUNT_POINT: str
