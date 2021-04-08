@@ -69,7 +69,7 @@ class Docker:
         else:
             logger.success(
                 icon=f"{self.ICON} 🔑",
-                message=f"New buildx builder instace is set up (Instance name: {name})",
+                message=f"New buildx builder instance is set up (Instance name: {name})",
             )
 
     def login(
