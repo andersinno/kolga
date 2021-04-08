@@ -93,6 +93,9 @@ variables:
     - master
     - /^r-[\d]+$/
     - v3
+  except:
+    variables:
+      - $SONARQUBE_DISABLED
 
 .test:
   services:

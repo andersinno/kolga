@@ -2,6 +2,7 @@
 
 ## [v3]
 ### Added
+- add SONARQUBE_DISABLED settings for GitLab template for disabling Sonarqube scans (2021-04-07)
 - add debug logging, enabled by KOLGA_DEBUG (2012-03-30)
 - move network policy creation into the helm chart (2010-03-24)
 - add plugin support (2021-02-05)
