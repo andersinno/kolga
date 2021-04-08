@@ -112,8 +112,11 @@ RUN apk add --no-cache --virtual .build-deps \
     && ln -s pip3 /usr/bin/pip \
     && python3 -m ensurepip \
     && poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction \
-    && pip install docker-compose \
+    && poetry export --no-ansi --no-interaction -o /tmp/requirements.txt \
+    && pip install --no-cache-dir --no-input -r /tmp/requirements.txt \
+    && pip install --no-cache-dir --no-input docker-compose \
+    && rm -r /root/.cache \
+    && rm -r /root/.cargo \
     && apk del .build-deps
 
 COPY docker-entrypoint.sh /usr/local/bin/
