@@ -95,6 +95,8 @@ COPY pyproject.toml /app/pyproject.toml
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
         cargo \
+        libffi-dev \
+        openssl-dev \
         python3-dev \
         rust \
     && apk add --no-cache \
@@ -102,10 +104,10 @@ RUN apk add --no-cache --virtual .build-deps \
         bash \
         ca-certificates \
         git \
-        libffi-dev \
+        libffi \
         make \
         nodejs \
-        openssl-dev \
+        openssl \
         python3 \
         shadow \
     && ln -sf python3 /usr/bin/python \
