@@ -29,6 +29,9 @@ build-bootstrap:
   stage: build-bootstrap
   only:
     - merge_requests
+    - master
+    - /^r-[\d]+$/
+    - v3
   variables:
     # Don't build development image
     DOCKER_TEST_IMAGE_STAGE: ""
