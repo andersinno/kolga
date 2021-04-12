@@ -1,5 +1,6 @@
 import os
 
+import pytest
 from pytest import MonkeyPatch
 
 from kolga.libs.vault import Vault
@@ -11,11 +12,13 @@ expected_secrets = {"key": "test", "value": 1, "DUPLICATE": "user-secret"}
 expected_tf_secrets = {"tf_secret": "test", "DUPLICATE": "terraform-secret"}
 
 
+@pytest.mark.vault
 def test_vault_init() -> None:
     vault = Vault(track="review", vault_addr=vault_addr)
     assert vault.initialized
 
 
+@pytest.mark.vault
 def test_get_secrets_v1(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "VAULT_KV_SECRET_MOUNT_POINT", "secrets")
     monkeypatch.setattr(settings, "PROJECT_NAME", "test")
@@ -32,6 +35,7 @@ def test_get_secrets_v1(monkeypatch: MonkeyPatch) -> None:
     assert secrets == expected_secrets
 
 
+@pytest.mark.vault
 def test_get_secrets_v2(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "VAULT_KV_VERSION", 2)
     monkeypatch.setattr(settings, "VAULT_KV_SECRET_MOUNT_POINT", "secret")
@@ -46,6 +50,7 @@ def test_get_secrets_v2(monkeypatch: MonkeyPatch) -> None:
     assert secrets == expected_secrets
 
 
+@pytest.mark.vault
 def test_get_tf_secrets(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "VAULT_KV_VERSION", 2)
     monkeypatch.setattr(settings, "VAULT_TF_SECRETS", True)
@@ -67,6 +72,7 @@ def test_get_tf_secrets(monkeypatch: MonkeyPatch) -> None:
     assert "user-secret" in secrets.values()
 
 
+@pytest.mark.vault
 def test_file_type_secrets(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "VAULT_KV_VERSION", 2)
     monkeypatch.setattr(settings, "VAULT_KV_SECRET_MOUNT_POINT", "secret")
