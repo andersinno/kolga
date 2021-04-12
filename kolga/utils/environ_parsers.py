@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Optional, cast
+from typing import Any, List, TypeVar
 
 from kolga.utils.general import unescape_string
 from kolga.utils.models import BasicAuthUser
@@ -36,12 +36,15 @@ def list_none_parser(value: str, **kwargs: Any) -> List[str]:
         return []
 
     stripped_items = (item.strip() for item in value.split(","))
-    return [cast(str, str_unescape(item, **kwargs)) for item in stripped_items if item]
+    return [str_unescape(item, **kwargs) for item in stripped_items if item]
+
+
+_StrOrNone = TypeVar("_StrOrNone", str, None)
 
 
 def str_unescape(
-    value: Optional[str], unescape: bool = False, **kwargs: Any
-) -> Optional[str]:
+    value: _StrOrNone, unescape: bool = False, **kwargs: Any
+) -> _StrOrNone:
     if not value:
         return value
     elif unescape:
