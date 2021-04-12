@@ -1,11 +1,14 @@
+image: docker.anders.fi/anders/ci-configuration:v3
+
 include:
   - local: '.gitlab-ci-base-template.yml'
 
 variables:
+  BOOTSTRAP_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
   DEVELOPMENT_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}-development
-  KOLGA_BRANCH: ${CI_COMMIT_REF_NAME}
 
 stages:
+  - build-bootstrap
   - build
   - test
   - post-test
@@ -13,6 +16,7 @@ stages:
 
 .code-tests:
   image: ${DEVELOPMENT_IMAGE}
+  stage: test
   tags:
     - light
   only:
@@ -20,7 +24,17 @@ stages:
     - master
     - v3
 
+build-bootstrap:
+  extends: .build
+  stage: build-bootstrap
+  only:
+    - merge_requests
+  variables:
+    # Don't build development image
+    DOCKER_TEST_IMAGE_STAGE: ""
+
 build:
+  image: ${BOOTSTRAP_IMAGE}
   extends: .build
   only:
     - merge_requests
@@ -119,7 +133,7 @@ test:
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
-  - export PATH="$PATH:$PWD"
+  - export PATH="$PATH:/app"
   - source utils/shell_utils.sh
   - set_docker_host
   - echo 127.0.0.1 docker-registry >> /etc/hosts

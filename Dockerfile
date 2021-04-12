@@ -95,6 +95,8 @@ COPY pyproject.toml /app/pyproject.toml
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
         cargo \
+        libffi-dev \
+        openssl-dev \
         python3-dev \
         rust \
     && apk add --no-cache \
@@ -102,18 +104,21 @@ RUN apk add --no-cache --virtual .build-deps \
         bash \
         ca-certificates \
         git \
-        libffi-dev \
+        libffi \
         make \
         nodejs \
-        openssl-dev \
+        openssl \
         python3 \
         shadow \
     && ln -sf python3 /usr/bin/python \
     && ln -s pip3 /usr/bin/pip \
     && python3 -m ensurepip \
     && poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction \
-    && pip install docker-compose \
+    && poetry export --no-ansi --no-interaction -o /tmp/requirements.txt \
+    && pip install --no-cache-dir --no-input -r /tmp/requirements.txt \
+    && pip install --no-cache-dir --no-input docker-compose \
+    && rm -r /root/.cache \
+    && rm -r /root/.cargo \
     && apk del .build-deps
 
 COPY docker-entrypoint.sh /usr/local/bin/

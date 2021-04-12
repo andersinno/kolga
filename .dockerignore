@@ -1,0 +1,13 @@
+*
+
+!helm/
+!kolga/
+!utils/
+!devops
+!docker-entrypoint.sh
+!poetry.lock
+!pyproject.toml
+!setup.cfg
+
+**/__pycache__/
+**/*.py[cod]
