@@ -37,6 +37,7 @@ supplies a predefined variables with the SHA.
 | DOCKER\_BUILD\_SOURCE         | Dockerfile to build from                            | Dockerfile                   |            |
 | DOCKER\_HOST                  | Docker runtime                                      |                              |            |
 | DOCKER\_IMAGE\_NAME           | Name of docker image \(without tag\)                | $PROJECT\_NAME               |            |
+| DOCKER\_IMAGE\_TAGS           | List of tags to tag the image with when building    | $GIT\_COMMIT\_REF\_NAME      |            |
 | DOCKER\_TEST\_IMAGE\_STAGE    | Which image stage to run tests on                   | development                  |            |
 | ENVIRONMENT\_SLUG             | Slug name of CI environment                         |                              | GitLab     |
 | ENVIRONMENT\_URL              | Full URL to the upcoming environment                |                              | GitLab     |

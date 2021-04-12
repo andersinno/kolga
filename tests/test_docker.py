@@ -1,11 +1,12 @@
 import tempfile
 from pathlib import Path
-from typing import List
+from typing import List, Optional
+from unittest import mock
 
 import pytest
 
 from kolga.libs.docker import Docker
-from kolga.settings import settings
+from kolga.settings import Settings, settings
 
 
 def test_incorrect_dockerfile_path() -> None:
@@ -152,6 +153,35 @@ def test_test_image_tag() -> None:
         stage_tag
         == "docker-registry:5000/test/testing:2a7958c61a31a38a365aa347147aba2aaaaaaa-development"
     )
+
+
+@pytest.mark.parametrize(
+    "env_tags, expected",
+    [
+        (None, [settings.GIT_COMMIT_SHA, settings.GIT_COMMIT_REF_NAME]),
+        ("", [settings.GIT_COMMIT_SHA]),
+        ("foo,bar", [settings.GIT_COMMIT_SHA, "bar", "foo"]),
+    ],
+)
+def test_get_image_tags(env_tags: Optional[str], expected: List[str]) -> None:
+    intermediate_stage = "stage"
+
+    # Patch environment
+    env = {}
+    if env_tags is not None:
+        env["DOCKER_IMAGE_TAGS"] = env_tags
+
+    with mock.patch.dict("os.environ", env):
+        s = Settings()
+
+    # Patch settings
+    with mock.patch.object(settings, "DOCKER_IMAGE_TAGS", s.DOCKER_IMAGE_TAGS):
+        d = Docker()
+        stage_tags = d.get_image_tags(stage=intermediate_stage, final_image=False)
+        final_tags = d.get_image_tags(stage="", final_image=True)
+
+    assert final_tags == expected
+    assert stage_tags == [f"{tag}-{intermediate_stage}" for tag in expected]
 
 
 # =====================================================
