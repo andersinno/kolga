@@ -129,7 +129,7 @@ class Vault:
                     secrets_list = secrets["data"]
 
                 # Check secrets defined by Terraform
-                if settings.VAULT_TF_SECRETS:
+                if settings.VAULT_TF_SECRETS and settings.VAULT_KV_VERSION == 2:
                     secrets_list = self._read_tf_secrets(secret_path, secrets_list)
 
                 # Check for file type secrets
