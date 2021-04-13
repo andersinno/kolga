@@ -66,6 +66,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "DOCKER_BUILD_SOURCE": [env.str_unescape, "Dockerfile"],
     "DOCKER_HOST": [env.str_unescape, ""],
     "DOCKER_IMAGE_NAME": [env.str_unescape, ""],
+    "DOCKER_IMAGE_TAGS": [env.list_none, None],
     "DOCKER_TEST_IMAGE_STAGE": [env.str_unescape, "development"],
     # ================================================
     # ENVIRONMENT
@@ -184,6 +185,7 @@ class Settings:
     DOCKER_BUILD_SOURCE: str
     DOCKER_HOST: str
     DOCKER_IMAGE_NAME: str
+    DOCKER_IMAGE_TAGS: Optional[List[str]]
     DOCKER_TEST_IMAGE_STAGE: str
     DEFAULT_TRACK: str
     ENVIRONMENT_SLUG: str

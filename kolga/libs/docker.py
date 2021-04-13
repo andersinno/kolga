@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import Generator, List, Optional
 
 from kolga.utils.logger import logger
 from kolga.utils.models import DockerImage, ImageStage
@@ -164,12 +164,20 @@ class Docker:
         return stages
 
     def get_image_tags(self, stage: str = "", final_image: bool = False) -> List[str]:
-        # Add - prefix to tag name if prefix is present
-        stage_tag = f"-{stage}" if stage else stage
-        git_ref_tag = self.get_docker_git_ref_tag()
-        tags = {f"{settings.GIT_COMMIT_SHA}{stage_tag}", f"{git_ref_tag}{stage_tag}"}
-        if final_image:
-            tags |= {f"{settings.GIT_COMMIT_SHA}", f"{git_ref_tag}"}
+        def extra_tags(postfix: Optional[str] = None) -> Generator[str, None, None]:
+            postfix = postfix or ""
+            if settings.DOCKER_IMAGE_TAGS is None:
+                yield f"{self.get_docker_git_ref_tag()}{postfix}"
+            else:
+                yield from (f"{tag}{postfix}" for tag in settings.DOCKER_IMAGE_TAGS)
+
+        postfix = f"-{stage}" if stage else ""
+        tags = {f"{settings.GIT_COMMIT_SHA}{postfix}", *extra_tags(postfix)}
+
+        if postfix and final_image:
+            # Add postfix-less tags
+            tags |= {settings.GIT_COMMIT_SHA, *extra_tags()}
+
         return sorted(tags)
 
     def pull_image(self, image: str) -> bool:

@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Optional, cast
+from typing import Any, List, Optional, TypeVar, Union
 
 from kolga.utils.general import unescape_string
 from kolga.utils.models import BasicAuthUser
@@ -21,27 +21,34 @@ def basicauth_parser(value: str, **kwargs: Any) -> List[BasicAuthUser]:
     return users
 
 
-def list_none_parser(value: str, **kwargs: Any) -> List[str]:
+def list_none_parser(
+    value: Union[str, List[str], None], **kwargs: Any
+) -> Optional[List[str]]:
     """
-    Identical parser to environs normal list parser, but with None support
+    Parse a comma-separated string into a list
+
+    Identical to environs normal list parser, but with None and string unescaping support.
 
     Args:
-        value: A string value from the environment, or None
+        value: An optional string value from the environment, or the given default value
 
     Returns:
         A list from the string, or empty list in the case of
-        empty string or None
+        empty string. Non-string values (``None``, ``[]``) are returned as-is.
     """
-    if not value:
-        return []
+    if not isinstance(value, str):
+        return value
 
     stripped_items = (item.strip() for item in value.split(","))
-    return [cast(str, str_unescape(item, **kwargs)) for item in stripped_items if item]
+    return [str_unescape(item, **kwargs) for item in stripped_items if item]
+
+
+_StrOrNone = TypeVar("_StrOrNone", str, None)
 
 
 def str_unescape(
-    value: Optional[str], unescape: bool = False, **kwargs: Any
-) -> Optional[str]:
+    value: _StrOrNone, unescape: bool = False, **kwargs: Any
+) -> _StrOrNone:
     if not value:
         return value
     elif unescape:

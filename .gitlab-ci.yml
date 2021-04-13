@@ -33,6 +33,8 @@ build-bootstrap:
     - /^r-[\d]+$/
     - v3
   variables:
+    # Don't add any additional tags
+    DOCKER_IMAGE_TAGS: ""
     # Don't build development image
     DOCKER_TEST_IMAGE_STAGE: ""
 
