@@ -77,7 +77,6 @@ def test_file_type_secrets(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "VAULT_KV_VERSION", 2)
     monkeypatch.setattr(settings, "VAULT_KV_SECRET_MOUNT_POINT", "secret")
     monkeypatch.setattr(settings, "PROJECT_NAME", "test")
-    os.mkdir("/builds")
     vault = Vault(track="review", vault_addr=vault_addr)
     expected_secrets = {"K8S_FILE_SECRET_TEST": "test"}
     vault.client.secrets.kv.v2.create_or_update_secret(

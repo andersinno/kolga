@@ -97,7 +97,7 @@ class Vault:
         file_secret_path = (
             settings.active_ci.VALID_FILE_SECRET_PATH_PREFIXES[0]
             if settings.active_ci
-            else "/builds/"
+            else "/tmp/"
         )
         fp, name = mkstemp(dir=file_secret_path)
         with os.fdopen(fp, "w") as f:
