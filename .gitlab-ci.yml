@@ -121,9 +121,11 @@ test-sast:
   script:
     - make sast-tests
   artifacts:
+    when: always
     paths:
       - bandit_report.json
     expire_in: 1 week
+  allow_failure: true
 
 test:
   extends: .test
