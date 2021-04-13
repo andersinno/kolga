@@ -121,7 +121,7 @@ test-sast:
   artifacts:
     paths:
       - bandit_report.json
-    expire_in: 5 mins
+    expire_in: 1 week
 
 test:
   extends: .test
@@ -129,7 +129,7 @@ test:
     paths:
       - pytest.xml
       - coverage.xml
-    expire_in: 5 mins
+    expire_in: 1 week
   only:
     - merge_requests
     - v3
