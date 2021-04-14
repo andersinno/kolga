@@ -149,7 +149,7 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "VAULT_ADDR": [env.str_unescape, ""],
     "VAULT_JWT_AUTH_PATH": [env.str_unescape, "jwt"],
     "VAULT_KV_SECRET_MOUNT_POINT": [env.str_unescape, "secrets"],
-    "VAULT_KV_VERSION": [env.int, 1],
+    "VAULT_KV_VERSION": [env.int, 2],
     "VAULT_JWT": [env.str_unescape, ""],
     "VAULT_JWT_PRIVATE_KEY": [env.str_unescape, ""],
     "VAULT_TLS_ENABLED": [env.bool, True],

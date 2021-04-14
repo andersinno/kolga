@@ -20,6 +20,7 @@ def test_vault_init() -> None:
 
 @pytest.mark.vault
 def test_get_secrets_v1(monkeypatch: MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "VAULT_KV_VERSION", 1)
     monkeypatch.setattr(settings, "VAULT_KV_SECRET_MOUNT_POINT", "secrets")
     monkeypatch.setattr(settings, "PROJECT_NAME", "test")
     vault = Vault(track="review", vault_addr=vault_addr)
@@ -37,7 +38,6 @@ def test_get_secrets_v1(monkeypatch: MonkeyPatch) -> None:
 
 @pytest.mark.vault
 def test_get_secrets_v2(monkeypatch: MonkeyPatch) -> None:
-    monkeypatch.setattr(settings, "VAULT_KV_VERSION", 2)
     monkeypatch.setattr(settings, "VAULT_KV_SECRET_MOUNT_POINT", "secret")
     monkeypatch.setattr(settings, "PROJECT_NAME", "test")
     vault = Vault(track="review", vault_addr=vault_addr)
@@ -52,7 +52,6 @@ def test_get_secrets_v2(monkeypatch: MonkeyPatch) -> None:
 
 @pytest.mark.vault
 def test_get_tf_secrets(monkeypatch: MonkeyPatch) -> None:
-    monkeypatch.setattr(settings, "VAULT_KV_VERSION", 2)
     monkeypatch.setattr(settings, "VAULT_TF_SECRETS", True)
     monkeypatch.setattr(settings, "VAULT_KV_SECRET_MOUNT_POINT", "secret")
     monkeypatch.setattr(settings, "PROJECT_NAME", "test")
@@ -74,7 +73,6 @@ def test_get_tf_secrets(monkeypatch: MonkeyPatch) -> None:
 
 @pytest.mark.vault
 def test_file_type_secrets(monkeypatch: MonkeyPatch) -> None:
-    monkeypatch.setattr(settings, "VAULT_KV_VERSION", 2)
     monkeypatch.setattr(settings, "VAULT_KV_SECRET_MOUNT_POINT", "secret")
     monkeypatch.setattr(settings, "PROJECT_NAME", "test")
     vault = Vault(track="review", vault_addr=vault_addr)

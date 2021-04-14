@@ -15,7 +15,7 @@ secret management.
 | `VAULT_JWT_PRIVATE_KEY`       |            | This can be used to encode your own tokens and pass them to VAULT_JWT                               |
 | `VAULT_JWT_AUTH_PATH`         | jwt        | Path used for authentication                                                                        |
 | `VAULT_KV_SECRET_MOUNT_POINT` | secrets    | k/v mount point where to fetch secrets                                                              |
-| `VAULT_KV_VERSION`            | 1          | Version of k/v store to use                                                                         |
+| `VAULT_KV_VERSION`            | 2          | Version of k/v store to use                                                                         |
 | `VAULT_TF_SECRETS`            | False      | Read additional secrets path (Only supports k/v v2). These secrets are managed by Terraform         |
 
 ### Usage
