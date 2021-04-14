@@ -137,6 +137,7 @@ test:
   only:
     - merge_requests
     - v3
+  allow_failure: true
 
 before_script:
   - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.anders.fi/".insteadOf "git@git.anders.fi:"
