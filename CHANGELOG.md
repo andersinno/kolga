@@ -2,7 +2,6 @@
 
 ## [v3]
 ### Added
-- add tests for Vault module (2021-04-13)
 - add feature that allows Vault module to create file type secrets from Vault secrets that has prefix K8S_FILE_SECRET_ (2021-04-13)
 - allow reading of Vault secrets from two paths and merge to one (2021-04-13)
 - add SONARQUBE_DISABLED settings for GitLab template for disabling Sonarqube scans (2021-04-07)
