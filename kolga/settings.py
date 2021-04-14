@@ -382,26 +382,7 @@ class Settings:
         if not mapper:
             return None
 
-        ci_value = None
-        for name_to, name_from in mapper.MAPPING.items():
-            if name_to not in _VARIABLE_DEFINITIONS:
-                logger.warning(
-                    message=f"CI variable mapping failed, no setting called {name_to}"
-                )
-                continue
-
-            if name_from.startswith("="):
-                name_from = name_from[1:]
-                try:
-                    ci_value = getattr(mapper, name_from)
-                except AttributeError:
-                    logger.error(
-                        message=f"CI variable mapping failed, no mapper attribute called {name_from}"
-                    )
-            else:
-                parser, _ = _VARIABLE_DEFINITIONS[name_to]
-                ci_value = parser(name_from, None)
-
+        for name_to, ci_value in mapper.map_variables(_VARIABLE_DEFINITIONS).items():
             if ci_value is not None:
                 setattr(self, name_to, ci_value)
 
@@ -490,6 +471,42 @@ class BaseCI:
     @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
         return []
+
+    def map_variables(self, fields: Dict[str, List[Any]]) -> Dict[str, Any]:
+        """
+        Map CI variables to settings
+
+        If the source name starts with '=', get the value from mapper's
+        attribute. Otwerwise read the value from environment.
+        """
+        values = {}
+
+        for name_to, name_from in self.MAPPING.items():
+            if name_to not in fields:
+                logger.warning(
+                    message=f"CI variable mapping failed, no setting called {name_to}"
+                )
+                continue
+
+            if name_from.startswith("="):
+                name_from = name_from[1:]
+                try:
+                    value = getattr(self, name_from)
+                except AttributeError:
+                    logger.warning(
+                        message=f"CI variable mapping failed, no mapper attribute called {name_from}"
+                    )
+                    continue
+            elif name_from in os.environ:
+                parser, _ = fields[name_to]
+                value = parser(name_from, None)
+            else:
+                value = None
+
+            if value is not None:
+                values[name_to] = value
+
+        return values
 
     @classmethod
     def __init_subclass__(cls) -> None:
