@@ -149,10 +149,11 @@ _VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
     "VAULT_ADDR": [env.str_unescape, ""],
     "VAULT_JWT_AUTH_PATH": [env.str_unescape, "jwt"],
     "VAULT_KV_SECRET_MOUNT_POINT": [env.str_unescape, "secrets"],
-    "VAULT_KV_VERSION": [env.int, 1],
+    "VAULT_KV_VERSION": [env.int, 2],
     "VAULT_JWT": [env.str_unescape, ""],
     "VAULT_JWT_PRIVATE_KEY": [env.str_unescape, ""],
     "VAULT_TLS_ENABLED": [env.bool, True],
+    "VAULT_TF_SECRETS": [env.bool, False],
     # ================================================
     # JOB
     # ================================================
@@ -252,6 +253,7 @@ class Settings:
     VAULT_KV_SECRET_MOUNT_POINT: str
     VAULT_KV_VERSION: int
     VAULT_TLS_ENABLED: bool
+    VAULT_TF_SECRETS: bool
     VAULT_JWT: str
     VAULT_JWT_PRIVATE_KEY: str
     JOB_ACTOR: str

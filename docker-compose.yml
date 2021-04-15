@@ -80,6 +80,7 @@ services:
     - KUBECONFIG=/config/kubeconfig.yaml
     - TEST_HELM_REGISTRY=http://helm-registry:8080
     - TEST_DOCKER_ACTIVE=1
+    - TEST_VAULT_ACTIVE=1
     volumes:
       - k3s-config:/config
       - .:/app
@@ -88,6 +89,19 @@ services:
         source: ./tests/registry/certs/docker_registry.crt
         target: /etc/docker/certs.d/docker-registry:5000/ca.crt
     command: ${CLIENT_COMMAND}
+
+  vault:
+    image: vault:1.7.0
+    container_name: vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_ADDR: http://127.0.0.1:8200
+      VAULT_DEV_ROOT_TOKEN_ID: roottoken
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      VAULT_SKIP_VERIFY: "true"
+    cap_add:
+      - IPC_LOCK
 
 volumes:
   k3s-server:

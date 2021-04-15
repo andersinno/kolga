@@ -62,3 +62,8 @@ def pytest_runtest_setup(item: Item) -> None:
         "TEST_DOCKER_ACTIVE", False
     ) not in [1, "1", True, "True"]:
         pytest.skip("test requires TEST_DOCKER_ACTIVE to be true")
+
+    if item.get_closest_marker("vault") and os.environ.get(
+        "TEST_VAULT_ACTIVE", False
+    ) not in [1, "1", True, "True"]:
+        pytest.skip("test requires TEST_VAULT_ACTIVE to be true")
