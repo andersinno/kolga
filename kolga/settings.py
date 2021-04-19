@@ -197,7 +197,8 @@ class SettingsValues(BaseSettings):
     VAULT_JWT_AUTH_PATH: str = "jwt"
     VAULT_JWT_PRIVATE_KEY: str = ""
     VAULT_JWT: str = ""
-    VAULT_KV_SECRET_MOUNT_POINT: str = "secrets"
+    VAULT_PROJECT_SECRET_NAME: str = ""
+    VAULT_KV_SECRET_MOUNT_POINT: str = "project_secrets"
     VAULT_KV_VERSION: int = 2
     VAULT_TF_SECRETS: bool = False
     VAULT_TLS_ENABLED: bool = True

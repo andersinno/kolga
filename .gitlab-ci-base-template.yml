@@ -164,6 +164,7 @@ variables:
   variables:
     K8S_INGRESS_PREVENT_ROBOTS: 1
     TRACK: review
+    VAULT_PROJECT_SECRET_NAME: $CI_PROJECT_NAME/$TRACK
   only:
     refs:
       - merge_requests
@@ -227,6 +228,7 @@ variables:
   variables:
     K8S_INGRESS_PREVENT_ROBOTS: 1
     TRACK: staging
+    VAULT_PROJECT_SECRET_NAME: $CI_PROJECT_NAME/$TRACK
   only:
     refs:
       - master
@@ -247,6 +249,7 @@ variables:
       namespace: $K8S_STABLE_NAMESPACE
   variables:
     TRACK: stable
+    VAULT_PROJECT_SECRET_NAME: $CI_PROJECT_NAME/$TRACK
   only:
     refs:
       - /^r-[\d]+$/

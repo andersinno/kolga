@@ -51,6 +51,21 @@ def test_get_secrets_v2(monkeypatch: MonkeyPatch) -> None:
 
 
 @pytest.mark.vault
+def test_get_secrets_v2_define_secret_name(monkeypatch: MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "VAULT_KV_SECRET_MOUNT_POINT", "secret")
+    monkeypatch.setattr(settings, "VAULT_PROJECT_SECRET_NAME", "somethingelse")
+    monkeypatch.setattr(settings, "PROJECT_NAME", "test")
+    vault = Vault(track="review", vault_addr=vault_addr)
+    vault.client.secrets.kv.v2.create_or_update_secret(
+        path="somethingelse",
+        mount_point="secret",
+        secret=expected_secrets,
+    )
+    secrets = vault.get_secrets()
+    assert secrets == expected_secrets
+
+
+@pytest.mark.vault
 def test_get_tf_secrets(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "VAULT_TF_SECRETS", True)
     monkeypatch.setattr(settings, "VAULT_KV_SECRET_MOUNT_POINT", "secret")

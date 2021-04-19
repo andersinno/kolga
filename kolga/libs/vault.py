@@ -107,7 +107,11 @@ class Vault:
     def get_secrets(self) -> Dict[str, str]:
         if self.initialized:
             secrets_list = {}
-            secret_path = f"{settings.PROJECT_NAME}-{self.track}"
+            secret_path = (
+                settings.VAULT_PROJECT_SECRET_NAME
+                if settings.VAULT_PROJECT_SECRET_NAME
+                else f"{settings.PROJECT_NAME}-{self.track}"
+            )
             try:
                 logger.info(
                     icon=f"{self.ICON} 🔑",
