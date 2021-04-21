@@ -52,6 +52,14 @@ RUN find $HOME/.poetry/lib/poetry/_vendor \
       -exec rm -rf {} +
 
 # ===================================
+FROM poetry AS requirements-txt
+# ===================================
+COPY poetry.lock pyproject.toml /
+RUN set -eux; \
+    ln -s $HOME/.poetry/bin/poetry /usr/bin/poetry; \
+    poetry export --no-ansi --no-interaction -o /requirements.txt
+
+# ===================================
 FROM build-base AS buildx
 # ===================================
 
@@ -67,30 +75,21 @@ RUN chmod a+x "$BUILDX_TARGET"
 FROM build-base AS tools
 # ===================================
 WORKDIR /tools
-ENV PATH=$PATH:/tools/usr/bin
 COPY --from=kubectl /kubernetes/client/bin/kubectl ./usr/bin/
 COPY --from=helm /helm/linux-amd64/helm ./usr/bin/
-COPY --from=poetry /root/.poetry ./root/.poetry
 COPY --from=buildx /buildx/docker-buildx ./usr/local/lib/docker/cli-plugins/
 
 # ===================================
 FROM python:3.8.8-alpine3.13 AS app-base
 # ===================================
-
-ENV PYTHONUNBUFFERED=1
-
 COPY --from=tools /tools/ /
-
-# Symlink poetry to bin
-RUN ln -s $HOME/.poetry/bin/poetry /usr/bin/poetry
 
 # Enable Buildx support
 ENV DOCKER_CLI_EXPERIMENTAL=enabled
 
 WORKDIR /app
 
-COPY poetry.lock /app/poetry.lock
-COPY pyproject.toml /app/pyproject.toml
+COPY --from=requirements-txt /requirements.txt /tmp/requirements.txt
 
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
@@ -114,8 +113,6 @@ RUN apk add --no-cache --virtual .build-deps \
     && ln -sf python3 /usr/bin/python \
     && ln -s pip3 /usr/bin/pip \
     && python3 -m ensurepip \
-    && poetry config virtualenvs.create false \
-    && poetry export --no-ansi --no-interaction -o /tmp/requirements.txt \
     && pip install --no-cache-dir --no-input -r /tmp/requirements.txt \
     && pip install --no-cache-dir --no-input docker-compose \
     && rm -r /root/.cache \
@@ -129,10 +126,17 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 FROM app-base AS development
 # ===================================
 LABEL "com.azure.dev.pipelines.agent.handler.node.path"="/usr/bin/node"
+
+COPY --from=poetry /root/.poetry /root/.poetry
+RUN ln -s /root/.poetry/bin/poetry /usr/bin/poetry
+
+COPY poetry.lock pyproject.toml /app/
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
         python3-dev \
+    && poetry config virtualenvs.create false \
     && poetry install \
+    && rm -r /root/.cache \
     && apk del .build-deps
 
 COPY . /app
