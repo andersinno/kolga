@@ -74,7 +74,7 @@ COPY --from=poetry /root/.poetry ./root/.poetry
 COPY --from=buildx /buildx/docker-buildx ./usr/local/lib/docker/cli-plugins/
 
 # ===================================
-FROM docker:20.10.5-dind as app-base
+FROM python:3.8.8-alpine3.13 AS app-base
 # ===================================
 
 ENV PYTHONUNBUFFERED=1
@@ -103,6 +103,7 @@ RUN apk add --no-cache --virtual .build-deps \
         apache2-utils \
         bash \
         ca-certificates \
+        docker-cli \
         git \
         libffi \
         make \
