@@ -7,7 +7,7 @@ source ./utils/test_utils.sh
 
 if [ $# -eq 0 ]; then
     # Run tests with Docker and Kubernetes by default.
-    set -- --with-docker --with-k8s
+    set -- --with-docker --with-k8s --with-vault
 fi
 
 while [ $# -gt 0 ]; do
@@ -17,6 +17,9 @@ while [ $# -gt 0 ]; do
         shift;;
     --with-k8s)
         setup_kubernetes
+        shift;;
+    --with-vault)
+        check_vault || echo "Warning: cannot connect to Vault"
         shift;;
     *)
         break;;

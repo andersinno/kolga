@@ -15,6 +15,24 @@ check_docker() {
     export TEST_DOCKER_ACTIVE=1
 }
 
+check_vault() {
+    echo
+    echo "##########################"
+    echo "### Checking for Vault ###"
+    echo "##########################"
+
+    if [ -z "$VAULT_ADDR" ]; then
+	return 1
+    fi
+
+    local HOST_AND_PORT=${VAULT_ADDR#http://}
+    local HOST=${HOST_AND_PORT//:*}
+    local PORT=${HOST_AND_PORT##*:}
+
+    wait_for_tcp "$HOST" "$PORT"
+    export TEST_VAULT_ACTIVE=1
+}
+
 setup_kubernetes() {
     echo
     echo "#############################"

@@ -7,7 +7,7 @@ from kolga.libs.vault import Vault
 from kolga.settings import settings
 
 os.environ["VAULT_TOKEN"] = "roottoken"
-vault_addr = os.environ.get("VAULT_ADDR", "http://vault:8200")
+vault_addr = os.environ.get("VAULT_ADDR", "")
 expected_secrets = {"key": "test", "value": 1, "DUPLICATE": "user-secret"}
 expected_tf_secrets = {"tf_secret": "test", "DUPLICATE": "terraform-secret"}
 
