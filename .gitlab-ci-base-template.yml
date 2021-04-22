@@ -156,15 +156,10 @@ variables:
       - $REVIEW_DISABLED
   interruptible: true
 
-.review:
+.review-no-env:
   stage: review
   script:
     - devops deploy_application --track review
-  environment:
-    name: qa/r/${CI_COMMIT_REF_SLUG}
-    url: https://$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
-    on_stop: stop_review
-    auto_stop_in: 2 weeks
   variables:
     K8S_INGRESS_PREVENT_ROBOTS: 1
   only:
@@ -178,20 +173,13 @@ variables:
       - $REVIEW_DISABLED
   interruptible: true
 
-.review-no-env:
-  stage: review
-  script:
-    - devops deploy_application --track review
-  only:
-    refs:
-      - merge_requests
-    kubernetes: active
-  except:
-    refs:
-      - master
-    variables:
-      - $REVIEW_DISABLED
-  interruptible: true
+.review:
+  extends: .review-no-env
+  environment:
+    name: qa/r/${CI_COMMIT_REF_SLUG}
+    url: https://$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    on_stop: stop_review
+    auto_stop_in: 2 weeks
 
 .review-cleanup:
   variables:
