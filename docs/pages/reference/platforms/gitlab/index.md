@@ -127,7 +127,7 @@ Review stage or development stage is meant to be triggered by pull requests (PR)
         url: http://$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG.$K8S_QA_INGRESS_DOMAIN
         on_stop: stop_review
       variables:
-        POSTGRES_ENABLED: 1
+        TRACK: review
       only:
         refs:
           - merge_requests
@@ -149,8 +149,6 @@ The staging stage is meant to be triggered by pushes to the project's master-bra
       environment:
         name: qa/staging
         url: http://$CI_PROJECT_PATH_SLUG-qa.$K8S_QA_INGRESS_DOMAIN
-      variables:
-        POSTGRES_ENABLED: 0
       only:
         refs:
           - master

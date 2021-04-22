@@ -1,5 +1,6 @@
 import os
 import re
+from contextlib import nullcontext as does_not_raise
 from typing import Any, Dict, Optional
 from unittest import mock
 from uuid import uuid4
@@ -7,6 +8,7 @@ from uuid import uuid4
 import pytest
 
 from kolga.settings import settings
+from kolga.utils.exceptions import ImproperlyConfigured
 from kolga.utils.general import (
     DEPLOY_NAME_MAX_HELM_NAME_LENGTH,
     camel_case_split,
@@ -16,6 +18,7 @@ from kolga.utils.general import (
     get_environment_vars_by_prefix,
     get_project_secret_var,
     get_secret_name,
+    get_track,
     loads_json,
     string_to_yaml,
     truncate_with_hash,
@@ -236,3 +239,26 @@ def test_loads_json(value: str, expected_value: Dict[str, Any]) -> None:
 def test_loads_json_array_exception() -> None:
     with pytest.raises(TypeError):
         loads_json('["a", "b"]')
+
+
+@pytest.mark.parametrize(
+    "track, track_env, default_track, expected_value, assumption",
+    (
+        ("review", "staging", "stable", "review", does_not_raise()),
+        ("", "staging", "stable", "staging", does_not_raise()),
+        (None, "staging", "stable", "staging", does_not_raise()),
+        (None, "", "stable", "stable", does_not_raise()),
+        (None, "", "", None, pytest.raises(ImproperlyConfigured)),
+    ),
+)
+def test_get_track(
+    track: str,
+    track_env: str,
+    default_track: str,
+    expected_value: str,
+    assumption: Any,
+) -> None:
+    with mock.patch.object(settings, "DEFAULT_TRACK", default_track):
+        with mock.patch.object(settings, "TRACK", track_env):
+            with assumption:
+                assert get_track(track) == expected_value

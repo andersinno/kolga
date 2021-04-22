@@ -9,11 +9,8 @@ from pathlib import Path
 from shlex import quote
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-import environs
-
+from kolga.utils.exceptions import ImproperlyConfigured
 from kolga.utils.models import SubprocessResult
-
-env = environs.Env()
 
 AMQP = "amqp"
 MYSQL = "mysql"
@@ -321,3 +318,14 @@ def unescape_string(s: str) -> str:
     # Decode bytes back to a UTF-8 string with backslash-escapeded
     # sequences interpreted.
     return b.decode("unicode_escape")
+
+
+def get_track(track: Optional[str] = None) -> str:
+    from kolga.settings import settings
+
+    possible_tracks = track, settings.TRACK, settings.DEFAULT_TRACK
+    for track in possible_tracks:
+        if track:
+            return track
+
+    raise ImproperlyConfigured("Track not configured")

@@ -139,6 +139,7 @@ variables:
   stage: review-service
   variables:
     DEFAULT_TRACK: review
+    TRACK: review
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     on_stop: stop_review
@@ -156,46 +157,36 @@ variables:
       - $REVIEW_DISABLED
   interruptible: true
 
-.review:
+.review-no-env:
   stage: review
   script:
-    - devops deploy_application --track review
+    - devops deploy_application
+  variables:
+    K8S_INGRESS_PREVENT_ROBOTS: 1
+    TRACK: review
+  only:
+    refs:
+      - merge_requests
+    kubernetes: active
+  except:
+    refs:
+      - master
+    variables:
+      - $REVIEW_DISABLED
+  interruptible: true
+
+.review:
+  extends: .review-no-env
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     url: https://$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
     on_stop: stop_review
     auto_stop_in: 2 weeks
-  variables:
-    K8S_INGRESS_PREVENT_ROBOTS: 1
-  only:
-    refs:
-      - merge_requests
-    kubernetes: active
-  except:
-    refs:
-      - master
-    variables:
-      - $REVIEW_DISABLED
-  interruptible: true
-
-.review-no-env:
-  stage: review
-  script:
-    - devops deploy_application --track review
-  only:
-    refs:
-      - merge_requests
-    kubernetes: active
-  except:
-    refs:
-      - master
-    variables:
-      - $REVIEW_DISABLED
-  interruptible: true
 
 .review-cleanup:
   variables:
-    git_strategy: none
+    GIT_STRATEGY: none
+    TRACK: review
   environment:
     name: qa/r/${CI_COMMIT_REF_SLUG}
     action: stop
@@ -227,7 +218,7 @@ variables:
 .staging:
   stage: staging
   script:
-    - devops deploy_application --track staging
+    - devops deploy_application
   environment:
     name: qa/staging
     url: https://$CI_PROJECT_PATH_SLUG-qa.$KUBE_INGRESS_BASE_DOMAIN
@@ -235,6 +226,7 @@ variables:
       namespace: $K8S_STAGING_NAMESPACE
   variables:
     K8S_INGRESS_PREVENT_ROBOTS: 1
+    TRACK: staging
   only:
     refs:
       - master
@@ -247,14 +239,14 @@ variables:
 .production:
   stage: production
   script:
-    - devops deploy_application --track stable
+    - devops deploy_application
   environment:
     name: production
     url: https://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
     kubernetes:
       namespace: $K8S_STABLE_NAMESPACE
   variables:
-    POSTGRES_ENABLED: 0
+    TRACK: stable
   only:
     refs:
       - /^r-[\d]+$/
