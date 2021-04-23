@@ -1,16 +1,19 @@
 import json
 import tempfile
+from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 from random import sample
 from string import ascii_lowercase
-from typing import Any, Dict, Optional, Set, Type
+from typing import Any, ContextManager, Dict, Optional, Set, Type, cast
 from unittest import mock
 
 import pytest
+from environs import EnvValidationError
 
 import kolga
 from kolga.hooks.plugins import PluginBase
 from kolga.settings import GitHubActionsMapper, Settings, settings
+from kolga.utils.models import BasicAuthUser
 from tests import MockEnv
 
 
@@ -219,3 +222,77 @@ def test_string_unescaping(mockenv: MockEnv) -> None:
         assert s.K8S_ADDITIONAL_HOSTNAMES == ["foo\tbar", "fizz\\buzz"]
         assert s.PROJECT_DIR == "Hello\nworld!"
         assert s.BUILDKIT_CACHE_REPO == ""  # Not set. Should be an empty string.
+
+
+@pytest.mark.parametrize(
+    "variable, input, expected",
+    (
+        # String with a non-empty default value.
+        ("DEFAULT_TRACK", None, "stable"),
+        ("DEFAULT_TRACK", "", ""),
+        ("DEFAULT_TRACK", "foo,bar", "foo,bar"),
+        ("DEFAULT_TRACK", '["foo", "bar"]', '["foo", "bar"]'),
+        # List with default value of ``None``.
+        ("DOCKER_IMAGE_TAGS", None, None),
+        ("DOCKER_IMAGE_TAGS", "", []),
+        ("DOCKER_IMAGE_TAGS", "foo", ["foo"]),
+        ("DOCKER_IMAGE_TAGS", "foo, bar,,", ["foo", "bar"]),
+        ("DOCKER_IMAGE_TAGS", '["foo", "bar"]', ['["foo"', '"bar"]']),
+        # List with default value of ``[]``.
+        ("K8S_ADDITIONAL_HOSTNAMES", None, []),
+        ("K8S_ADDITIONAL_HOSTNAMES", "", []),
+        # Int with default value of ``8000``.
+        ("SERVICE_PORT", None, 8000),
+        ("SERVICE_PORT", "9001", 9001),
+        ("SERVICE_PORT", "-1", -1),
+        ("SERVICE_PORT", "0", 0),
+        ("SERVICE_PORT", "", EnvValidationError),
+        ("SERVICE_PORT", "not an int", EnvValidationError),
+        ("SERVICE_PORT", "123.4", EnvValidationError),
+        # Boolean
+        ("KOLGA_DEBUG", None, False),
+        ("KOLGA_DEBUG", "0", False),
+        ("KOLGA_DEBUG", "No", False),
+        ("KOLGA_DEBUG", "n", False),
+        ("KOLGA_DEBUG", "False", False),
+        ("KOLGA_DEBUG", "1", True),
+        ("KOLGA_DEBUG", "Yes", True),
+        ("KOLGA_DEBUG", "Y", True),
+        ("KOLGA_DEBUG", "True", True),
+        ("KOLGA_DEBUG", "", EnvValidationError),
+        ("KOLGA_DEBUG", "2", EnvValidationError),
+        # List[BasicAuthUser]
+        ("K8S_INGRESS_BASIC_AUTH", None, []),
+        ("K8S_INGRESS_BASIC_AUTH", "", []),
+        ("K8S_INGRESS_BASIC_AUTH", "username", []),
+        (
+            "K8S_INGRESS_BASIC_AUTH",
+            "username:password",
+            [BasicAuthUser(username="username", password="password")],
+        ),
+        (
+            "K8S_INGRESS_BASIC_AUTH",
+            "username:password username:password",
+            [
+                BasicAuthUser(username="username", password="password"),
+                BasicAuthUser(username="username", password="password"),
+            ],
+        ),
+    ),
+)
+def test_settings_parsers(
+    mockenv: MockEnv,
+    variable: str,
+    input: Optional[str],
+    expected: Any,
+) -> None:
+    if type(expected) is type and issubclass(expected, Exception):
+        assumption = cast(ContextManager[None], pytest.raises(expected))
+    else:
+        assumption = does_not_raise()
+
+    with mockenv({variable: input}):
+        with assumption:
+            settings = Settings()
+            actual = getattr(settings, variable)
+            assert actual == expected
