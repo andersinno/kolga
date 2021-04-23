@@ -1,4 +1,3 @@
-import os
 from typing import Any, Generator
 
 import pytest
@@ -53,17 +52,13 @@ def test_plugin() -> type:
 
 
 def pytest_runtest_setup(item: Item) -> None:
-    if item.get_closest_marker("k8s") and os.environ.get(
-        "TEST_CLUSTER_ACTIVE", False
-    ) not in [1, "1", True, "True"]:
+    env = Env()
+
+    if item.get_closest_marker("k8s") and not env.bool("TEST_CLUSTER_ACTIVE", False):
         pytest.skip("test requires TEST_CLUSTER_ACTIVE to be true")
 
-    if item.get_closest_marker("docker") and os.environ.get(
-        "TEST_DOCKER_ACTIVE", False
-    ) not in [1, "1", True, "True"]:
+    if item.get_closest_marker("docker") and not env.bool("TEST_DOCKER_ACTIVE", False):
         pytest.skip("test requires TEST_DOCKER_ACTIVE to be true")
 
-    if item.get_closest_marker("vault") and os.environ.get(
-        "TEST_VAULT_ACTIVE", False
-    ) not in [1, "1", True, "True"]:
+    if item.get_closest_marker("vault") and not env.bool("TEST_VAULT_ACTIVE", False):
         pytest.skip("test requires TEST_VAULT_ACTIVE to be true")
