@@ -1,11 +1,17 @@
-from typing import Any, Generator
+import os
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Callable, Generator, Iterator, Mapping, Optional
 
 import pytest
 from environs import Env
+from pytest import MonkeyPatch
 
 from kolga.hooks.plugins import PluginBase
 from kolga.libs.helm import Helm
 from kolga.libs.kubernetes import Kubernetes
+
+if TYPE_CHECKING:
+    from contextlib import _GeneratorContextManager
 
 
 @pytest.fixture()
@@ -48,3 +54,23 @@ def test_plugin() -> type:
         },
     )
     return TestFixturePlugin
+
+
+MockEnv = Callable[
+    [Mapping[str, Optional[str]]], "_GeneratorContextManager[os._Environ[str]]"
+]
+
+
+@pytest.fixture
+def mockenv(monkeypatch: MonkeyPatch) -> MockEnv:
+    @contextmanager
+    def inner(env: Mapping[str, Optional[str]]) -> Iterator["os._Environ[str]"]:
+        with monkeypatch.context() as m:
+            for k, v in env.items():
+                if v is None:
+                    m.delenv(k, raising=False)
+                else:
+                    m.setenv(k, v)
+            yield os.environ
+
+    return inner
