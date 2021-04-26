@@ -1,14 +1,38 @@
 #!/usr/bin/env bash
 
-source utils/kubernetes_tools.sh
-source utils/shell_utils.sh
+set -e
+set -u
 
-if [[ -n "$@" ]]; then
-    "$@"
-else
-    setup_kubernetes
-    echo -e "\n#####################"
+source ./utils/test_utils.sh
+
+if [ $# -eq 0 ]; then
+    # Run tests with Docker and Kubernetes by default.
+    set -- --with-docker --with-k8s --with-vault
+fi
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --with-docker)
+        check_docker || echo "Warning: cannot connect to Docker"
+        shift;;
+    --with-k8s)
+        setup_kubernetes
+        shift;;
+    --with-vault)
+        check_vault || echo "Warning: cannot connect to Vault"
+        shift;;
+    *)
+        break;;
+    esac
+done
+
+if [ $# -eq 0 ]; then
+    echo
+    echo "#####################"
     echo "### Running tests ###"
     echo "#####################"
-    pytest -ra -vvv --cov=. --cov-report xml --cov-report term --junit-xml=pytest.xml
+    set -- pytest -ra -vvv --cov=. --cov-report xml --cov-report term --junit-xml=pytest.xml
 fi
+
+echo "+ $@"
+exec "$@"

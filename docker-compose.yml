@@ -72,23 +72,24 @@ services:
       target: development
     privileged: true
     environment:
-    - CONTAINER_REGISTRY=docker-registry:5000
-    - CONTAINER_REGISTRY_REPO=docker-registry:5000/test
-    - DOCKER_HOST=unix:///var/run/docker.sock
-    - K3S_CLUSTER_SECRET=k3stestclustersecret
-    - K3S_URL=https://kubernetes:6443
-    - KUBECONFIG=/config/kubeconfig.yaml
-    - TEST_HELM_REGISTRY=http://helm-registry:8080
-    - TEST_DOCKER_ACTIVE=1
-    - TEST_VAULT_ACTIVE=1
+      - CONTAINER_REGISTRY=docker-registry:5000
+      - CONTAINER_REGISTRY_REPO=docker-registry:5000/test
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOME=/tmp
+      - K3S_CLUSTER_SECRET=k3stestclustersecret
+      - K3S_URL=https://kubernetes:6443
+      - KUBECONFIG=/config/kubeconfig.yaml
+      - TEST_HELM_REGISTRY=http://helm-registry:8080
+      - VAULT_ADDR=http://vault:8200
     volumes:
       - k3s-config:/config
       - .:/app
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock
       - type: bind
         source: ./tests/registry/certs/docker_registry.crt
         target: /etc/docker/certs.d/docker-registry:5000/ca.crt
-    command: ${CLIENT_COMMAND}
+    command: ${CLIENT_COMMAND-}
+    user: ${USERID:-0}:${GROUPID:-0}
 
   vault:
     image: vault:1.7.0
