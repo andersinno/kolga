@@ -26,6 +26,10 @@ from kolga.utils.models import BasicAuthUser
             "aja899€#:()Jtr4ng83",
             [BasicAuthUser(username="aja899€#", password="()Jtr4ng83")],
         ),
+        (
+            "username:firstpart:only",
+            [BasicAuthUser(username="username", password="firstpart")],
+        ),
     ],
 )
 def test_non_empty_basicauth_parser(input: str, expected: List[BasicAuthUser]) -> None:
