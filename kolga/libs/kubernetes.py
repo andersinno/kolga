@@ -39,6 +39,13 @@ from kolga.utils.models import (
 )
 
 
+class _Monitoring(TypedDict, total=False):
+    enabled: bool
+    namespace: str
+    path: str
+    port: int
+
+
 class _Pvc(TypedDict, total=False):
     accessMode: str
     enabled: bool
@@ -65,6 +72,7 @@ class _Application(TypedDict, total=False):
     livenessFile: str
     livenessPath: str
     migrateCommand: str
+    monitoring: _Monitoring
     probeFailureThreshold: int
     probeInitialDelay: int
     probePeriod: int
@@ -595,6 +603,16 @@ class Kubernetes:
                 values["hpa"]["avgCpuUtilization"] = settings.K8S_HPA_MAX_CPU_AVG
             if settings.K8S_HPA_MAX_RAM_AVG:
                 values["hpa"]["avgRamUtilization"] = settings.K8S_HPA_MAX_RAM_AVG
+
+        if settings.K8S_MONITORING_ENABLED:
+            values["application"]["monitoring"] = {
+                "enabled": settings.K8S_MONITORING_ENABLED,
+                "path": settings.K8S_MONITORING_PATH,
+                "port": settings.K8S_MONITORING_PORT
+                if settings.K8S_MONITORING_PORT
+                else project.service_port,
+                "namespace": settings.K8S_MONITORING_NAMESPACE,
+            }
 
         return values
 

@@ -21,6 +21,11 @@ application:
     storageClass: "standard"
     accessMode: "ReadWriteOnce"
     size: "1Gi"
+  monitoring:
+    enabled: false
+    port: 8000
+    path: "/metrics"
+    namespace: "monitoring"
 
 deployment:
   timestamp:
