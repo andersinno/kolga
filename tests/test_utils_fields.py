@@ -2,7 +2,7 @@ from typing import List
 
 import pytest
 
-from kolga.utils.environ_parsers import basicauth_parser
+from kolga.utils.fields import BasicAuthUserList
 from kolga.utils.models import BasicAuthUser
 
 
@@ -33,11 +33,11 @@ from kolga.utils.models import BasicAuthUser
     ],
 )
 def test_non_empty_basicauth_parser(input: str, expected: List[BasicAuthUser]) -> None:
-    users = basicauth_parser(input)
+    users = BasicAuthUserList.validate(input)
     for i, user in enumerate(users):
         assert user.username == expected[i].username
         assert user.password == expected[i].password
 
 
 def test_empty_basicauth_parser(input: str = "test test") -> None:
-    assert basicauth_parser(input) == []
+    assert BasicAuthUserList.validate(input) == []

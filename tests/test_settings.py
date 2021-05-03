@@ -4,17 +4,20 @@ from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 from random import sample
 from string import ascii_lowercase
-from typing import Any, ContextManager, Dict, Optional, Set, Type, cast
+from typing import TYPE_CHECKING, Any, ContextManager, Dict, Optional, Type, cast
 from unittest import mock
 
 import pytest
-from environs import EnvValidationError
+from pydantic import ValidationError
 
 import kolga
 from kolga.hooks.plugins import PluginBase
 from kolga.settings import GitHubActionsMapper, Settings, settings
 from kolga.utils.models import BasicAuthUser
 from tests import MockEnv
+
+if TYPE_CHECKING:
+    from collections.abc import Set
 
 
 def fake_track(invalid_value: str) -> str:
@@ -28,7 +31,9 @@ def fake_track(invalid_value: str) -> str:
     return generate_random_string(n_chars, unsuitables)
 
 
-def generate_random_string(n_chars: int, unsuitables: Optional[Set[str]] = None) -> str:
+def generate_random_string(
+    n_chars: int, unsuitables: Optional["Set[str]"] = None
+) -> str:
     if unsuitables is None:
         unsuitables = set()
 
@@ -75,8 +80,9 @@ def test_set_variables(
     attr_name: str = "GIT_COMMIT_SHA",
     value_length: int = 12,
 ) -> None:
-    default_value = generate_random_string(value_length)
-    used_values = {default_value}
+    field = kolga.settings.Settings.__fields__[attr_name]
+    default_value = field.default
+    used_values: Dict[str, str] = {default_value: "DEFAULT VALUE"}
 
     extra_env: Dict[str, Optional[str]] = {"GITLAB_CI": "1"}
     for key in variables_to_set:
@@ -85,29 +91,22 @@ def test_set_variables(
             extra_env[key[1:]] = None
         else:
             # Set a random value for an environment variable
-            value = generate_random_string(value_length, used_values)
+            value = generate_random_string(value_length, used_values.keys())
             extra_env[key] = value
-            used_values.add(value)
+            used_values[value] = f"env[{key}]"
 
-    # Patch environment
     with mockenv(extra_env) as env:
-        # Patch variable definitions
-        parser, _ = kolga.settings._VARIABLE_DEFINITIONS[attr_name]
-        with mock.patch.dict(
-            "kolga.settings._VARIABLE_DEFINITIONS", {attr_name: [parser, default_value]}
-        ):
-            settings = Settings()
-
-        # Get values
         if expected_key is None:
             expected_value = default_value
         else:
             expected_value = env[expected_key]
-        value = getattr(settings, attr_name)
+        settings = Settings()
+
+    value = getattr(settings, attr_name)
 
     assert (
         value == expected_value
-    ), f"settings.{attr_name} != os.environ[{expected_key}]."
+    ), f"settings.{attr_name} != {used_values[expected_value]}. {used_values.get(value, 'Unknown')} was used instead."
 
 
 @pytest.mark.parametrize(
@@ -193,8 +192,6 @@ def test_gh_event_data_set(mockenv: MockEnv) -> None:
         },
     }
 
-    gh_mapper = GitHubActionsMapper()
-
     with tempfile.NamedTemporaryFile(mode="w") as f:
         json.dump(event_data, f)
         f.seek(0)
@@ -204,7 +201,7 @@ def test_gh_event_data_set(mockenv: MockEnv) -> None:
             "GITHUB_EVENT_PATH": str(Path(f.name).absolute()),
         }
         with mockenv(env):
-            gh_mapper.initialize()
+            gh_mapper = GitHubActionsMapper()
 
     assert gh_mapper.PR_URL == str(event_data["pull_request"]["url"])
     assert gh_mapper.PR_TITLE == str(event_data["pull_request"]["title"])
@@ -246,9 +243,9 @@ def test_string_unescaping(mockenv: MockEnv) -> None:
         ("SERVICE_PORT", "9001", 9001),
         ("SERVICE_PORT", "-1", -1),
         ("SERVICE_PORT", "0", 0),
-        ("SERVICE_PORT", "", EnvValidationError),
-        ("SERVICE_PORT", "not an int", EnvValidationError),
-        ("SERVICE_PORT", "123.4", EnvValidationError),
+        ("SERVICE_PORT", "", ValidationError),
+        ("SERVICE_PORT", "not an int", ValidationError),
+        ("SERVICE_PORT", "123.4", ValidationError),
         # Boolean
         ("KOLGA_DEBUG", None, False),
         ("KOLGA_DEBUG", "0", False),
@@ -259,8 +256,8 @@ def test_string_unescaping(mockenv: MockEnv) -> None:
         ("KOLGA_DEBUG", "Yes", True),
         ("KOLGA_DEBUG", "Y", True),
         ("KOLGA_DEBUG", "True", True),
-        ("KOLGA_DEBUG", "", EnvValidationError),
-        ("KOLGA_DEBUG", "2", EnvValidationError),
+        ("KOLGA_DEBUG", "", ValidationError),
+        ("KOLGA_DEBUG", "2", ValidationError),
         # List[BasicAuthUser]
         ("K8S_INGRESS_BASIC_AUTH", None, []),
         ("K8S_INGRESS_BASIC_AUTH", "", []),

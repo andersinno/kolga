@@ -3,294 +3,240 @@ import os
 import sys
 import tempfile
 import uuid
-from glob import glob
+from itertools import chain
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    ItemsView,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
 
 import pluggy  # type: ignore
+from dotenv import dotenv_values
 from environs import Env
+from pydantic import BaseConfig, BaseSettings, Extra, Field
 
+from kolga.hooks.exceptions import PluginMissingConfiguration
+from kolga.hooks.hookspec import KolgaHookSpec
+from kolga.hooks.plugins import PluginBase
+from kolga.plugins import KOLGA_CORE_PLUGINS
+from kolga.utils.exceptions import ImproperlyConfigured, NoClusterConfigError
+from kolga.utils.fields import (
+    BasicAuthUserList,
+    split_comma_separated_values,
+    unescape_string_values,
+)
+from kolga.utils.general import deep_get, env_var_safe_key, kubernetes_safe_name
 from kolga.utils.logger import logger
-from kolga.utils.models import BasicAuthUser
 
-from .hooks.exceptions import PluginMissingConfiguration
-from .hooks.hookspec import KolgaHookSpec
-from .plugins import KOLGA_CORE_PLUGINS
-from .utils.environ_parsers import basicauth_parser, list_none_parser, str_unescape
-from .utils.exceptions import NoClusterConfigError
-from .utils.general import deep_get, kubernetes_safe_name
+if TYPE_CHECKING:
+    from pydantic.env_settings import SettingsSourceCallable
+    from pydantic.fields import ModelField
 
-service_artifacts_folder = os.environ.get("SERVICE_ARTIFACT_FOLDER", None)
-build_artifacts_folder = os.environ.get("BUILD_ARTIFACT_FOLDER", None)
-env_files = []
-if service_artifacts_folder:
-    env_files.extend(glob(f"./{service_artifacts_folder}/*.env"))
-if build_artifacts_folder:
-    env_files.extend(glob(f"./{build_artifacts_folder}/*.env"))
 
 env = Env()
 
-env.add_parser("basicauth", basicauth_parser)
-env.add_parser("list_none", list_none_parser)
-env.add_parser("str_unescape", str_unescape)
 
-env.read_env()
-for env_file in env_files:
-    env.read_env(env_file)
-
-PROJECT_NAME_VAR = "PROJECT_NAME"
-
-# TODO Investigate further if we can have only one definition
-#      list and keep type definitions.
-_VARIABLE_DEFINITIONS: Dict[str, List[Any]] = {
-    # ================================================
-    # PROJECT
-    # ================================================
-    PROJECT_NAME_VAR: [env.str_unescape, ""],
-    "PROJECT_DIR": [env.str_unescape, ""],
-    "PROJECT_ID": [env.str_unescape, ""],
-    "PROJECT_PATH_SLUG": [env.str_unescape, ""],
-    # ================================================
-    # DOCKER
-    # ================================================
-    "BUILDKIT_CACHE_IMAGE_NAME": [env.str_unescape, "cache"],
-    "BUILDKIT_CACHE_REPO": [env.str_unescape, ""],
-    "BUILDKIT_CACHE_DISABLE": [env.bool, False],
-    "CONTAINER_REGISTRY": [env.str_unescape, "docker.anders.fi"],
-    "CONTAINER_REGISTRY_PASSWORD": [env.str_unescape, ""],
-    "CONTAINER_REGISTRY_REPO": [env.str_unescape, ""],
-    "CONTAINER_REGISTRY_USER": [env.str_unescape, ""],
-    "BUILT_DOCKER_TEST_IMAGE": [env.str_unescape, ""],
-    "DOCKER_BUILD_ARG_PREFIX": [env.str_unescape, "DOCKER_BUILD_ARG_"],
-    "DOCKER_BUILD_CONTEXT": [env.str_unescape, "."],
-    "DOCKER_BUILD_SOURCE": [env.str_unescape, "Dockerfile"],
-    "DOCKER_HOST": [env.str_unescape, ""],
-    "DOCKER_IMAGE_NAME": [env.str_unescape, ""],
-    "DOCKER_IMAGE_TAGS": [env.list_none, None],
-    "DOCKER_TEST_IMAGE_STAGE": [env.str_unescape, "development"],
-    # ================================================
-    # ENVIRONMENT
-    # ================================================
-    "DEFAULT_TRACK": [env.str_unescape, "stable"],
-    "ENVIRONMENT_SLUG": [env.str_unescape, ""],
-    "ENVIRONMENT_URL": [env.str_unescape, ""],
-    "SERVICE_PORT": [env.int, 8000],
-    "TRACK": [env.str, ""],
-    # ================================================
-    # GIT
-    # ================================================
-    "GIT_COMMIT_REF_NAME": [env.str_unescape, ""],
-    "GIT_COMMIT_SHA": [env.str_unescape, ""],
-    "GIT_DEFAULT_TARGET_BRANCH": [env.str_unescape, "master"],
-    "GIT_TARGET_BRANCH": [env.str_unescape, ""],
-    # ================================================
-    # APPLICATION
-    # ================================================
-    "APP_INITIALIZE_COMMAND": [env.str_unescape, ""],
-    "APP_MIGRATE_COMMAND": [env.str_unescape, ""],
-    "BUILD_ARTIFACT_FOLDER": [env.str_unescape, ""],
-    "DATABASE_DB": [env.str_unescape, "appdb"],
-    "DATABASE_PASSWORD": [env.str_unescape, str(uuid.uuid4())],
-    "DATABASE_USER": [env.str_unescape, "user"],
-    "MYSQL_VERSION_TAG": [env.str_unescape, "5.7"],
-    "POSTGRES_IMAGE": [env.str_unescape, "docker.io/bitnami/postgresql:9.6"],
-    "RABBITMQ_VERSION_TAG": [env.str_unescape, "3.8.5"],
-    "SERVICE_ARTIFACT_FOLDER": [env.str_unescape, ""],
-    # ================================================
-    # KUBERNETES
-    # ================================================
-    "K8S_ADDITIONAL_HOSTNAMES": [env.list_none, []],
-    "K8S_CLUSTER_ISSUER": [env.str_unescape, ""],
-    "K8S_HPA_ENABLED": [env.bool, False],
-    "K8S_HPA_MAX_REPLICAS": [env.int, 3],
-    "K8S_HPA_MIN_REPLICAS": [env.int, 1],
-    "K8S_HPA_MAX_CPU_AVG": [env.int, 75],
-    "K8S_HPA_MAX_RAM_AVG": [env.int, 0],
-    "K8S_INGRESS_ANNOTATIONS": [env.list_none, []],
-    "K8S_INGRESS_BASE_DOMAIN": [env.str_unescape, ""],
-    "K8S_INGRESS_BASIC_AUTH": [env.basicauth, []],
-    "K8S_INGRESS_DISABLED": [env.bool, False],
-    "K8S_CERTMANAGER_USE_OLD_API": [env.bool, False],
-    "K8S_INGRESS_MAX_BODY_SIZE": [env.str_unescape, "100m"],
-    "K8S_INGRESS_PREVENT_ROBOTS": [env.bool, False],
-    "K8S_INGRESS_SECRET_NAME": [env.str_unescape, ""],
-    "K8S_INGRESS_WHITELIST_IPS": [env.str_unescape, ""],
-    "K8S_LIVENESS_PATH": [env.str_unescape, "/healthz"],
-    "K8S_NAMESPACE": [env.str_unescape, ""],
-    "K8S_PROBE_FAILURE_THRESHOLD": [env.int, 3],
-    "K8S_PROBE_INITIAL_DELAY": [env.int, 60],
-    "K8S_PROBE_PERIOD": [env.int, 10],
-    "K8S_FILE_SECRET_MOUNTPATH": [env.str_unescape, "/tmp/secrets"],  # nosec
-    "K8S_FILE_SECRET_PREFIX": [env.str_unescape, "K8S_FILE_SECRET_"],
-    "K8S_READINESS_PATH": [env.str_unescape, "/readiness"],
-    "K8S_REQUEST_CPU": [env.str_unescape, "50m"],
-    "K8S_REQUEST_RAM": [env.str_unescape, "128Mi"],
-    "K8S_LIMIT_CPU": [env.str_unescape, ""],
-    "K8S_LIMIT_RAM": [env.str_unescape, ""],
-    "K8S_SECRET_PREFIX": [env.str_unescape, "K8S_SECRET_"],
-    "K8S_LIVENESS_FILE": [env.str_unescape, ""],
-    "K8S_PERSISTENT_STORAGE": [env.bool, False],
-    "K8S_PERSISTENT_STORAGE_ACCESS_MODE": [env.str_unescape, "ReadWriteOnce"],
-    "K8S_PERSISTENT_STORAGE_PATH": [env.str_unescape, ""],
-    "K8S_PERSISTENT_STORAGE_SIZE": [env.str_unescape, "1Gi"],
-    "K8S_PERSISTENT_STORAGE_STORAGE_TYPE": [env.str_unescape, "standard"],
-    "K8S_READINESS_FILE": [env.str_unescape, ""],
-    "K8S_REPLICACOUNT": [env.int, 1],
-    "K8S_TEMP_STORAGE_PATH": [env.str_unescape, ""],
-    "KUBECONFIG": [env.str_unescape, ""],
-    "DEPENDS_ON_PROJECTS": [env.str_unescape, ""],
-    # ================================================
-    # PIPELINE
-    # ================================================
-    "KOLGA_JOBS_ONLY": [env.bool, False],
-    "KOLGA_DEBUG": [env.bool, False],
-    # ================================================
-    # VAULT
-    # ================================================
-    "VAULT_ADDR": [env.str_unescape, ""],
-    "VAULT_JWT_AUTH_PATH": [env.str_unescape, "jwt"],
-    "VAULT_KV_SECRET_MOUNT_POINT": [env.str_unescape, "secrets"],
-    "VAULT_KV_VERSION": [env.int, 2],
-    "VAULT_JWT": [env.str_unescape, ""],
-    "VAULT_JWT_PRIVATE_KEY": [env.str_unescape, ""],
-    "VAULT_TLS_ENABLED": [env.bool, True],
-    "VAULT_TF_SECRETS": [env.bool, False],
-    # ================================================
-    # JOB
-    # ================================================
-    "JOB_ACTOR": [env.str_unescape, ""],
-    # ================================================
-    # MERGE/PULL-REQUEST
-    # ================================================
-    "PR_ASSIGNEES": [env.str_unescape, ""],
-    "PR_ID": [env.str_unescape, ""],
-    "PR_TITLE": [env.str_unescape, ""],
-    "PR_URL": [env.str_unescape, ""],
-}
+def settings_sources(
+    init_settings: "SettingsSourceCallable",
+    env_settings: "SettingsSourceCallable",
+    file_secret_settings: "SettingsSourceCallable",
+) -> Tuple["SettingsSourceCallable", ...]:
+    return init_settings, env_settings, source_env_files, source_ci_mapper
 
 
-class Settings:
-    PROJECT_NAME: str
-    PROJECT_DIR: str
-    PROJECT_ID: str
-    PROJECT_PATH_SLUG: str
-    BUILDKIT_CACHE_IMAGE_NAME: str
-    BUILDKIT_CACHE_REPO: str
-    BUILDKIT_CACHE_DISABLE: bool
-    CONTAINER_REGISTRY: str
-    CONTAINER_REGISTRY_PASSWORD: str
-    CONTAINER_REGISTRY_REPO: str
-    CONTAINER_REGISTRY_USER: str
-    BUILT_DOCKER_TEST_IMAGE: str
-    DOCKER_BUILD_ARG_PREFIX: str
-    DOCKER_BUILD_CONTEXT: str
-    DOCKER_BUILD_SOURCE: str
-    DOCKER_HOST: str
-    DOCKER_IMAGE_NAME: str
-    DOCKER_IMAGE_TAGS: Optional[List[str]]
-    DOCKER_TEST_IMAGE_STAGE: str
-    DEFAULT_TRACK: str
-    ENVIRONMENT_SLUG: str
-    ENVIRONMENT_URL: str
-    SERVICE_PORT: str
-    TRACK: str
-    GIT_COMMIT_REF_NAME: str
-    GIT_COMMIT_SHA: str
-    GIT_DEFAULT_TARGET_BRANCH: str
-    GIT_TARGET_BRANCH: str
-    APP_INITIALIZE_COMMAND: str
-    APP_MIGRATE_COMMAND: str
-    BUILD_ARTIFACT_FOLDER: str
-    DATABASE_DB: str
-    DATABASE_PASSWORD: str
-    DATABASE_USER: str
-    MYSQL_VERSION_TAG: str
-    POSTGRES_IMAGE: str
-    RABBITMQ_VERSION_TAG: str
-    SERVICE_ARTIFACT_FOLDER: str
-    K8S_ADDITIONAL_HOSTNAMES: List[str]
-    K8S_CLUSTER_ISSUER: str
-    K8S_HPA_ENABLED: bool
-    K8S_HPA_MAX_REPLICAS: int
-    K8S_HPA_MIN_REPLICAS: int
-    K8S_HPA_MAX_CPU_AVG: int
-    K8S_HPA_MAX_RAM_AVG: int
-    K8S_INGRESS_ANNOTATIONS: List[str]
-    K8S_INGRESS_BASE_DOMAIN: str
-    K8S_INGRESS_BASIC_AUTH: List[BasicAuthUser]
-    K8S_INGRESS_DISABLED: bool
-    K8S_CERTMANAGER_USE_OLD_API: bool
-    K8S_INGRESS_MAX_BODY_SIZE: str
-    K8S_INGRESS_PREVENT_ROBOTS: bool
-    K8S_INGRESS_SECRET_NAME: str
-    K8S_INGRESS_WHITELIST_IPS: str
-    K8S_LIVENESS_PATH: str
-    K8S_NAMESPACE: str
-    K8S_PERSISTENT_STORAGE: bool
-    K8S_PERSISTENT_STORAGE_ACCESS_MODE: str
-    K8S_PERSISTENT_STORAGE_PATH: str
-    K8S_PERSISTENT_STORAGE_SIZE: str
-    K8S_PERSISTENT_STORAGE_STORAGE_TYPE: str
-    K8S_PROBE_FAILURE_THRESHOLD: int
-    K8S_PROBE_INITIAL_DELAY: int
-    K8S_PROBE_PERIOD: int
-    K8S_FILE_SECRET_MOUNTPATH: str
-    K8S_FILE_SECRET_PREFIX: str
-    K8S_READINESS_PATH: str
-    K8S_REQUEST_CPU: str
-    K8S_REQUEST_RAM: str
-    K8S_LIMIT_CPU: str
-    K8S_LIMIT_RAM: str
-    K8S_SECRET_PREFIX: str
-    K8S_LIVENESS_FILE: str
-    K8S_READINESS_FILE: str
-    K8S_REPLICACOUNT: int
-    K8S_TEMP_STORAGE_PATH: str
-    KUBECONFIG: str
-    DEPENDS_ON_PROJECTS: str
-    KOLGA_JOBS_ONLY: bool
-    KOLGA_DEBUG: bool
-    VAULT_ADDR: str
-    VAULT_JWT_AUTH_PATH: str
-    VAULT_KV_SECRET_MOUNT_POINT: str
-    VAULT_KV_VERSION: int
-    VAULT_TLS_ENABLED: bool
-    VAULT_TF_SECRETS: bool
-    VAULT_JWT: str
-    VAULT_JWT_PRIVATE_KEY: str
-    JOB_ACTOR: str
-    PR_ASSIGNEES: str
-    PR_ID: str
-    PR_TITLE: str
-    PR_URL: str
+def source_ci_mapper(settings: BaseSettings) -> Dict[str, Any]:
+    Mapper = BaseCI.get_active_mapper_cls()
+    if not Mapper:
+        return {}
+    return Mapper().map_variables(settings.__fields__)
 
-    def __init__(self) -> None:
-        missing_vars = _VARIABLE_DEFINITIONS.keys() - self.__annotations__.keys()
-        if missing_vars:
-            raise AssertionError(
-                f"Not all env variables are set class attributes ({missing_vars})"
-            )
 
-        self.devops_root_path = Path(sys.argv[0]).resolve().parent
+def source_env_files(settings: BaseSettings) -> Dict[str, str]:
+    def env_files() -> Generator[Path, None, None]:
+        if build_artifacts := env.path("BUILD_ARTIFACT_FOLDER", None):
+            yield from build_artifacts.glob("*.env")
 
-        self.active_ci: Optional[Any] = None
-        self.supported_cis: List[Any] = [
-            GitLabMapper(),
-            AzurePipelinesMapper(),
-            GitHubActionsMapper(),
-        ]
-        self._set_ci_environment()
+        if service_artifacts := env.path("SERVICE_ARTIFACT_FOLDER", None):
+            yield from service_artifacts.glob("*.env")
+
+    def load_env_files() -> Generator[Dict[str, str], None, None]:
+        for env_file in env_files():
+            d = dotenv_values(env_file, interpolate=False)
+            yield {k: v for k, v in d.items() if v is not None}
+
+    # Merge dicts
+    dict_items = cast(Callable[[Dict[str, str]], ItemsView[str, str]], dict.items)
+    return dict(chain.from_iterable(map(dict_items, load_env_files())))
+
+
+class ProjectNameSetting(BaseSettings):
+    """
+    Settings class used to get the project name.
+
+    This is done as a separate setting since the value needs to be known before
+    the ``Settings`` class can be initialized. The same sources (environment
+    variables, build & services artifacts, and CI mappers) are used as for the
+    ``Settings`` class.
+    """
+
+    PROJECT_NAME: Optional[str]
+
+    class Config(BaseConfig):
+        case_sensitive = True
+        customise_sources = settings_sources
+        env_file_encoding = "utf-8"
+        extra = Extra.ignore
+
+
+class SettingsValues(BaseSettings):
+    APP_INITIALIZE_COMMAND: str = ""
+    APP_MIGRATE_COMMAND: str = ""
+    BUILD_ARTIFACT_FOLDER: str = ""
+    BUILDKIT_CACHE_DISABLE: bool = False
+    BUILDKIT_CACHE_IMAGE_NAME: str = "cache"
+    BUILDKIT_CACHE_REPO: str = ""
+    BUILT_DOCKER_TEST_IMAGE: str = ""
+    CONTAINER_REGISTRY: str = ""
+    CONTAINER_REGISTRY_PASSWORD: str = ""
+    CONTAINER_REGISTRY_REPO: str = ""
+    CONTAINER_REGISTRY_USER: str = ""
+    DATABASE_DB: str = "appdb"
+    DATABASE_PASSWORD: str = Field(default_factory=lambda: f"{uuid.uuid4()}")
+    DATABASE_USER: str = "user"
+    DEFAULT_TRACK: str = "stable"
+    DEPENDS_ON_PROJECTS: str = ""
+    DOCKER_BUILD_ARG_PREFIX: str = "DOCKER_BUILD_ARG_"
+    DOCKER_BUILD_CONTEXT: str = "."
+    DOCKER_BUILD_SOURCE: str = "Dockerfile"
+    DOCKER_HOST: str = ""
+    DOCKER_IMAGE_NAME: str = ""
+    DOCKER_IMAGE_TAGS: Optional[List[str]] = None
+    DOCKER_TEST_IMAGE_STAGE: str = "development"
+    ENVIRONMENT_SLUG: str = ""
+    ENVIRONMENT_URL: str = ""
+    GIT_COMMIT_REF_NAME: str = ""
+    GIT_COMMIT_SHA: str = ""
+    GIT_DEFAULT_TARGET_BRANCH: str = "master"
+    GIT_TARGET_BRANCH: str = ""
+    JOB_ACTOR: str = ""
+    K8S_ADDITIONAL_HOSTNAMES: List[str] = []
+    K8S_CERTMANAGER_USE_OLD_API: bool = False
+    K8S_CLUSTER_ISSUER: str = ""
+    K8S_FILE_SECRET_MOUNTPATH: str = "/tmp/secrets"  # nosec
+    K8S_FILE_SECRET_PREFIX: str = "K8S_FILE_SECRET_"
+    K8S_HPA_ENABLED: bool = False
+    K8S_HPA_MAX_CPU_AVG: int = 75
+    K8S_HPA_MAX_RAM_AVG: int = 0
+    K8S_HPA_MAX_REPLICAS: int = 3
+    K8S_HPA_MIN_REPLICAS: int = 1
+    K8S_INGRESS_ANNOTATIONS: List[str] = []
+    K8S_INGRESS_BASE_DOMAIN: str = ""
+    K8S_INGRESS_BASIC_AUTH: BasicAuthUserList = Field([])
+    K8S_INGRESS_DISABLED: bool = False
+    K8S_INGRESS_MAX_BODY_SIZE: str = "100m"
+    K8S_INGRESS_PREVENT_ROBOTS: bool = False
+    K8S_INGRESS_SECRET_NAME: str = ""
+    K8S_INGRESS_WHITELIST_IPS: str = ""
+    K8S_LIMIT_CPU: str = ""
+    K8S_LIMIT_RAM: str = ""
+    K8S_LIVENESS_FILE: str = ""
+    K8S_LIVENESS_PATH: str = "/healthz"
+    K8S_NAMESPACE: str = ""
+    K8S_PERSISTENT_STORAGE_ACCESS_MODE: str = "ReadWriteOnce"
+    K8S_PERSISTENT_STORAGE: bool = False
+    K8S_PERSISTENT_STORAGE_PATH: str = ""
+    K8S_PERSISTENT_STORAGE_SIZE: str = "1Gi"
+    K8S_PERSISTENT_STORAGE_STORAGE_TYPE: str = "standard"
+    K8S_PROBE_FAILURE_THRESHOLD: int = 3
+    K8S_PROBE_INITIAL_DELAY: int = 60
+    K8S_PROBE_PERIOD: int = 10
+    K8S_READINESS_FILE: str = ""
+    K8S_READINESS_PATH: str = "/readiness"
+    K8S_REPLICACOUNT: int = 1
+    K8S_REQUEST_CPU: str = "50m"
+    K8S_REQUEST_RAM: str = "128Mi"
+    K8S_SECRET_PREFIX: str = "K8S_SECRET_"
+    K8S_TEMP_STORAGE_PATH: str = ""
+    KOLGA_DEBUG: bool = False
+    KOLGA_JOBS_ONLY: bool = False
+    KUBECONFIG: str = ""
+    MYSQL_VERSION_TAG: str = "5.7"
+    POSTGRES_IMAGE: str = "docker.io/bitnami/postgresql:9.6"
+    PR_ASSIGNEES: str = ""
+    PR_ID: str = ""
+    PR_TITLE: str = ""
+    PR_URL: str = ""
+    PROJECT_DIR: str = ""
+    PROJECT_ID: str = ""
+    PROJECT_NAME: str = ""
+    PROJECT_PATH_SLUG: str = ""
+    RABBITMQ_VERSION_TAG: str = "3.8.5"
+    SERVICE_ARTIFACT_FOLDER: str = ""
+    SERVICE_PORT: int = 8000
+    TRACK: str = ""
+    VAULT_ADDR: str = ""
+    VAULT_JWT_AUTH_PATH: str = "jwt"
+    VAULT_JWT_PRIVATE_KEY: str = ""
+    VAULT_JWT: str = ""
+    VAULT_KV_SECRET_MOUNT_POINT: str = "secrets"
+    VAULT_KV_VERSION: int = 2
+    VAULT_TF_SECRETS: bool = False
+    VAULT_TLS_ENABLED: bool = True
+
+
+class Settings(SettingsValues):
+    _active_ci: Optional["BaseCI"]
+    _devops_root_path: Path
+    _plugin_manager: pluggy.PluginManager
+
+    @property
+    def active_ci(self) -> Optional["BaseCI"]:
+        if not hasattr(self, "_active_ci"):
+            Mapper = BaseCI.get_active_mapper_cls()
+            if Mapper:
+                self._active_ci = Mapper()
+            else:
+                self._active_ci = None
+        return self._active_ci
+
+    @property
+    def devops_root_path(self) -> Path:
+        if not hasattr(self, "_devops_root_path"):
+            self._devops_root_path = Path(sys.argv[0]).resolve().parent
+        return self._devops_root_path
+
+    @property
+    def plugin_manager(self) -> pluggy.PluginManager:
+        if not hasattr(self, "_plugin_manager"):
+            self._plugin_manager = self._setup_pluggy()
+        return self._plugin_manager
+
+    # TODO: For some reason mypy complains about __init__ being already defined
+    #       on the line where this class starts. Ignoring it for now.
+    def __init__(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+        # TODO: Could this be done in ``Config.prepare_field()``?
+        project_name_prefix = env_var_safe_key(self.get_project_name())
+        for field in self.__fields__.values():
+            key = field.name
+            field.field_info.extra["env_names"] = (key, f"{project_name_prefix}_{key}")
 
         if self.active_ci:
-            unescape_envs = self.active_ci.UNESCAPE_ENVIRONMENT_VARIABLES
-            self._map_ci_variables(unescape_envs)
-        else:
-            unescape_envs = False
+            config = cast("Settings.Config", self.__config__)
+            config.unescape_strings = self.active_ci.UNESCAPE_ENVIRONMENT_VARIABLES
 
-        setattr(self, PROJECT_NAME_VAR, self._get_project_name())
-        self._set_attributes(unescape_envs)
+        super().__init__(*args, **kwargs)
 
-        self.plugin_manager = self._setup_pluggy()
+        self._plugin_manager = self._setup_pluggy()
 
     def _setup_pluggy(self) -> pluggy.PluginManager:
         pm: pluggy.PluginManager = pluggy.PluginManager("kolga")
@@ -313,14 +259,14 @@ class Settings:
                 logger.info(f"{plugin.verbose_name}: {message}")
             # TODO: Implement verbose logging where the plugin loading error would be shown
 
-    def _load_plugin(self, plugin: Any) -> Tuple[bool, str]:
+    def _load_plugin(self, plugin: Type[PluginBase]) -> Tuple[bool, str]:
         try:
             self.plugin_manager.register(plugin(env), name=plugin.name)
         except PluginMissingConfiguration as e:
             return False, f"⚠️  {e}"
         return True, "✅"
 
-    def _unload_plugin(self, plugin: Any) -> Any:
+    def _unload_plugin(self, plugin: Union[PluginBase, Type[PluginBase]]) -> Any:
         # We need to first fetch the instance of the plugin in order to unregister it.
         # If we do not do this, Pluggy will not properly unregister as it will try
         # to do it on the class and not the instance, which will not hard-fail, but
@@ -330,88 +276,12 @@ class Settings:
 
         return self.plugin_manager.unregister(_to_be_unregistered_plugin)
 
-    def _set_attributes(self, unescape_values: bool = False) -> None:
-        """
-        Read and set settings from environment variables
-
-        Strategy:
-        1. If a value is set in the environment, use it
-        2. If a value is set in a project prefixed environment variable use it
-        3. If the attribute is already set, use the pre-existing value
-        4. Should all else fail, use the default value
-        """
-        from .utils.general import env_var_safe_key
-
-        safe_name = env_var_safe_key(self.PROJECT_NAME)
-        for variable, (parser, default_value) in _VARIABLE_DEFINITIONS.items():
-            value = parser(variable, None, unescape=unescape_values)
-            if value is None:
-                project_prefixed_variable_name = f"{safe_name}_{variable}"
-                value = parser(project_prefixed_variable_name, None)
-
-            if value is None:
-                if hasattr(self, variable):
-                    # Don't override an already-set value with default
-                    continue
-                else:
-                    value = default_value
-
-            setattr(self, variable, value)
-
-    def _set_ci_environment(self) -> None:
-        for ci in self.supported_cis:
-            if ci.is_active:
-                self.active_ci = ci
-                ci.initialize()
-                break
-
-    def _get_project_name(self) -> str:
-        parser, default_value = _VARIABLE_DEFINITIONS[PROJECT_NAME_VAR]
-        project_name: str = parser(PROJECT_NAME_VAR, default_value)
-
-        if not project_name and self.active_ci:
-            name_from = self.active_ci.MAPPING.get(PROJECT_NAME_VAR)
-            if name_from:
-                # TODO: Use parser and add support for generated properties
-                project_name = os.environ.get(name_from, "")
-
+    def get_project_name(self) -> str:
+        project_name = ProjectNameSetting().PROJECT_NAME
         if not project_name:
             raise AssertionError("No project name could be found!")
+
         return project_name
-
-    def _map_ci_variables(self, unescape_values: bool = False) -> None:
-        """
-        Map CI variables to settings
-
-        If the source name starts with '=', get the value from mapper's
-        attribute. Otwerwise read the value from environment.
-        """
-        mapper = self.active_ci
-        if not mapper:
-            return None
-
-        ci_value = None
-        for name_to, name_from in mapper.MAPPING.items():
-            if name_to not in _VARIABLE_DEFINITIONS:
-                logger.warning(
-                    message=f"CI variable mapping failed, no setting called {name_to}"
-                )
-                continue
-
-            if name_from.startswith("="):
-                name_from = name_from[1:]
-                try:
-                    ci_value = getattr(mapper, name_from)
-                except AttributeError:
-                    logger.error(
-                        message=f"CI variable mapping failed, no mapper attribute called {name_from}"
-                    )
-            else:
-                parser, _ = _VARIABLE_DEFINITIONS[name_to]
-                ci_value = parser(name_from, None)
-
-            if ci_value is not None:
-                setattr(self, name_to, ci_value)
 
     def create_kubeconfig(self, track: str) -> Tuple[str, str]:
         """
@@ -489,12 +359,94 @@ class Settings:
 
         raise NoClusterConfigError()
 
+    class Config(BaseConfig):
+        case_sensitive = True
+        customise_sources = settings_sources
+        extra = Extra.ignore
+        json_loads = lambda x: x  # Disable JSON parsing.  # noqa: E731
+        unescape_strings = False
+        underscore_attrs_are_private = True
+
+        @classmethod
+        def prepare_field(cls, field: "ModelField") -> None:
+            validators = field.pre_validators or ()
+
+            # Unescape strings
+            if field.type_ is str:
+                validators = field.pre_validators = [
+                    unescape_string_values,
+                    *validators,
+                ]
+
+            # Split comma separated lists
+            if field.is_complex() and field.outer_type_ is List[str]:
+                field.pre_validators = [split_comma_separated_values, *validators]
+
 
 class BaseCI:
+    MAPPERS: List[Type["BaseCI"]] = []
+    MAPPING: Dict[str, str] = {}
     UNESCAPE_ENVIRONMENT_VARIABLES = False
 
-    def initialize(self) -> None:
-        pass
+    @property
+    def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
+        return []
+
+    def map_variables(self, fields: Dict[str, "ModelField"]) -> Dict[str, Any]:
+        """
+        Map CI variables to settings
+
+        If the source name starts with '=', get the value from mapper's
+        attribute. Otwerwise read the value from environment.
+        """
+        values = {}
+
+        for name_to, name_from in self.MAPPING.items():
+            if name_to not in fields:
+                logger.warning(
+                    message=f"CI variable mapping failed, no setting called {name_to}"
+                )
+                continue
+
+            if name_from.startswith("="):
+                name_from = name_from[1:]
+                try:
+                    value = getattr(self, name_from)
+                except AttributeError:
+                    logger.warning(
+                        message=f"CI variable mapping failed, no mapper attribute called {name_from}"
+                    )
+                    continue
+            elif name_from in os.environ:
+                raw_value = os.environ.get(name_from)
+                value, error = fields[name_to].validate(raw_value, {}, loc=name_from)
+                if error:
+                    raise ImproperlyConfigured(
+                        f"Invalid valid value: {name_from}={raw_value}"
+                    )
+            else:
+                value = None
+
+            if value is not None:
+                values[name_to] = value
+
+        return values
+
+    @classmethod
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        cls.MAPPERS.append(cls)
+
+    @classmethod
+    def get_active_mapper_cls(cls) -> Optional[Type["BaseCI"]]:
+        for Mapper in cls.MAPPERS:
+            if Mapper.is_active():
+                return Mapper
+        return None
+
+    @classmethod
+    def is_active(cls) -> bool:
+        return False
 
 
 class AzurePipelinesMapper(BaseCI):
@@ -510,12 +462,12 @@ class AzurePipelinesMapper(BaseCI):
         return "Azure Pipelines"
 
     @property
-    def is_active(self) -> bool:
-        return bool(env.str("AZURE_HTTP_USER_AGENT", ""))
-
-    @property
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
         return ["/builds/"]
+
+    @classmethod
+    def is_active(cls) -> bool:
+        return bool(env.str("AZURE_HTTP_USER_AGENT", ""))
 
 
 class GitLabMapper(BaseCI):
@@ -549,8 +501,8 @@ class GitLabMapper(BaseCI):
     def __str__(self) -> str:
         return "GitLab CI"
 
-    @property
-    def is_active(self) -> bool:
+    @classmethod
+    def is_active(cls) -> bool:
         return env.bool("GITLAB_CI", False)  # type: ignore
 
     @property
@@ -573,15 +525,11 @@ class GitHubActionsMapper(BaseCI):
     UNESCAPE_ENVIRONMENT_VARIABLES = True
     _EVENT_DATA: Optional[Dict[str, Any]]
 
-    def __str__(self) -> str:
-        return "GitHub Actions"
-
-    def initialize(self) -> None:
+    def __init__(self) -> None:
         self._set_event_data_variables()
 
-    @property
-    def is_active(self) -> bool:
-        return env.bool("GITHUB_ACTIONS", False)  # type: ignore
+    def __str__(self) -> str:
+        return "GitHub Actions"
 
     @property
     def PR_ID(self) -> Optional[str]:
@@ -627,6 +575,10 @@ class GitHubActionsMapper(BaseCI):
                 self._EVENT_DATA = json.load(event_data_file)
         except (FileNotFoundError, IOError, OSError, ValueError):
             self._EVENT_DATA = None
+
+    @classmethod
+    def is_active(cls) -> bool:
+        return env.bool("GITHUB_ACTIONS", False)  # type: ignore
 
 
 settings = Settings()
