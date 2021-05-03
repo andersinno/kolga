@@ -156,6 +156,10 @@ class SettingsValues(BaseSettings):
     K8S_LIMIT_RAM: str = ""
     K8S_LIVENESS_FILE: str = ""
     K8S_LIVENESS_PATH: str = "/healthz"
+    K8S_MONITORING_ENABLED: bool = False
+    K8S_MONITORING_NAMESPACE: str = "monitoring"
+    K8S_MONITORING_PATH: str = "/metrics"
+    K8S_MONITORING_PORT: Union[int, None] = None
     K8S_NAMESPACE: str = ""
     K8S_PERSISTENT_STORAGE_ACCESS_MODE: str = "ReadWriteOnce"
     K8S_PERSISTENT_STORAGE: bool = False
