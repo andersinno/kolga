@@ -12,6 +12,15 @@ spec:
         matchLabels:
           ingress: default
     - podSelector: {}
+  {{- if .Values.application.monitoring.enabled }}
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: "{{ .Values.application.monitoring.namespace }}"
+    - podSelector: {}
+    ports:
+    - port: {{ .Values.application.monitoring.port }}
+  {{- end }}
   podSelector:
     matchLabels:
       {{- include "selectorLabels" . | nindent 6 }}

@@ -39,6 +39,13 @@ from kolga.utils.models import (
 )
 
 
+class _Monitoring(TypedDict, total=False):
+    enabled: bool
+    namespace: str
+    path: str
+    port: int
+
+
 class _Pvc(TypedDict, total=False):
     accessMode: str
     enabled: bool
@@ -65,6 +72,7 @@ class _Application(TypedDict, total=False):
     livenessFile: str
     livenessPath: str
     migrateCommand: str
+    monitoring: _Monitoring
     probeFailureThreshold: int
     probeInitialDelay: int
     probePeriod: int
@@ -495,6 +503,14 @@ class Kubernetes:
             "application": {
                 "initializeCommand": project.initialize_command,
                 "migrateCommand": project.migrate_command,
+                "monitoring": {
+                    "enabled": settings.K8S_MONITORING_ENABLED,
+                    "path": settings.K8S_MONITORING_PATH,
+                    "port": settings.K8S_MONITORING_PORT
+                    if settings.K8S_MONITORING_PORT
+                    else project.service_port,
+                    "namespace": settings.K8S_MONITORING_NAMESPACE,
+                },
                 "probeFailureThreshold": project.probe_failure_threshold,
                 "probeInitialDelay": project.probe_initial_delay,
                 "probePeriod": project.probe_period,

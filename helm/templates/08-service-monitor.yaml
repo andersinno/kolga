@@ -1,0 +1,18 @@
+{{- if .Values.application.monitoring.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "appname" . }}-svcmonitor
+  labels:
+    {{- include "commonLabels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "appname" . }}
+  endpoints:
+    - targetPort: {{ .Values.application.monitoring.port }}
+      path: "{{ .Values.application.monitoring.path }}"
+  namespaceSelector:
+    matchNames:
+      - "{{ .Values.namespace }}"
+{{- end -}}
