@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "appname" . }}-servicemonitor
+  name: {{ template "appname" . }}-svcmonitor
   labels:
     {{- include "commonLabels" . | nindent 4 }}
 spec:
