@@ -1,9 +1,14 @@
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import mock
 
 import pytest
 
 from kolga.libs.project import Project
+from kolga.settings import Settings, settings
+from kolga.utils.general import env_var_safe_key
 
+from . import MockEnv
 from .testcase import override_settings
 
 
@@ -95,3 +100,22 @@ def test_project_prefixed_variable() -> None:
     project = Project(track="staging")
     assert project.secret_data["TESTVAR_2"] == "testing_test"
     assert project.dependency_projects[0].secret_data["TESTVAR_1"] == "odin_test"
+
+
+def test_project_prefixed_artifact(mockenv: MockEnv) -> None:
+    safe_name = env_var_safe_key(settings.PROJECT_NAME)
+    project_scoped_secret_prefix = f"{safe_name}_{settings.K8S_SECRET_PREFIX}"
+    test_key, test_value = "DATABASE_NAME", "test-project-database"
+
+    with TemporaryDirectory() as service_artifact_folder:
+        with open(Path(service_artifact_folder) / "postgres.env", "w") as f:
+            f.write(f"{project_scoped_secret_prefix}{test_key}={test_value}\n")
+
+        with mockenv({"SERVICE_ARTIFACT_FOLDER": service_artifact_folder}):
+            # ``Settings.__init__()`` has the side-effect of populating the environment
+            # with the values from artifact dotenv files. Those values are then read from
+            # ``os.environ`` by ``Project.__init__()`` while creating the ``secret_data``.
+            _ = Settings()
+            project = Project(track="staging")
+
+    assert project.secret_data[test_key] == test_value

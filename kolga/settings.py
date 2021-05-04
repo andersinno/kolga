@@ -51,7 +51,7 @@ def settings_sources(
     env_settings: "SettingsSourceCallable",
     file_secret_settings: "SettingsSourceCallable",
 ) -> Tuple["SettingsSourceCallable", ...]:
-    return init_settings, env_settings, source_env_files, source_ci_mapper
+    return init_settings, env_settings, source_ci_mapper
 
 
 def source_ci_mapper(settings: BaseSettings) -> Dict[str, Any]:
@@ -65,7 +65,7 @@ def source_ci_mapper(settings: BaseSettings) -> Dict[str, Any]:
     )
 
 
-def source_env_files(settings: BaseSettings) -> Dict[str, str]:
+def read_artifact_envfiles() -> Dict[str, str]:
     def env_files() -> Generator[Path, None, None]:
         if build_artifacts := env.path("BUILD_ARTIFACT_FOLDER", None):
             yield from build_artifacts.glob("*.env")
@@ -229,6 +229,10 @@ class Settings(SettingsValues):
     # TODO: For some reason mypy complains about __init__ being already defined
     #       on the line where this class starts. Ignoring it for now.
     def __init__(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+        # Populate the environment with values from the build and service
+        # artifact dotenv files.
+        os.environ.update(read_artifact_envfiles())
+
         # TODO: Could this be done in ``Config.prepare_field()``?
         project_name_prefix = env_var_safe_key(self.get_project_name())
         for field in self.__fields__.values():
