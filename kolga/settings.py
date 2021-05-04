@@ -58,7 +58,11 @@ def source_ci_mapper(settings: BaseSettings) -> Dict[str, Any]:
     Mapper = BaseCI.get_active_mapper_cls()
     if not Mapper:
         return {}
-    return Mapper().map_variables(settings.__fields__)
+
+    suppress_warnings = getattr(settings.Config, "suppress_ci_mapper_warnings", False)
+    return Mapper().map_variables(
+        settings.__fields__, suppress_warnings=suppress_warnings
+    )
 
 
 def source_env_files(settings: BaseSettings) -> Dict[str, str]:
@@ -96,6 +100,7 @@ class ProjectNameSetting(BaseSettings):
         customise_sources = settings_sources
         env_file_encoding = "utf-8"
         extra = Extra.ignore
+        suppress_ci_mapper_warnings = True
 
 
 class SettingsValues(BaseSettings):
@@ -392,7 +397,9 @@ class BaseCI:
     def VALID_FILE_SECRET_PATH_PREFIXES(self) -> List[str]:
         return []
 
-    def map_variables(self, fields: Dict[str, "ModelField"]) -> Dict[str, Any]:
+    def map_variables(
+        self, fields: Dict[str, "ModelField"], suppress_warnings: bool = False
+    ) -> Dict[str, Any]:
         """
         Map CI variables to settings
 
@@ -403,9 +410,10 @@ class BaseCI:
 
         for name_to, name_from in self.MAPPING.items():
             if name_to not in fields:
-                logger.warning(
-                    message=f"CI variable mapping failed, no setting called {name_to}"
-                )
+                if not suppress_warnings:
+                    logger.warning(
+                        message=f"CI variable mapping failed, no setting called {name_to}"
+                    )
                 continue
 
             if name_from.startswith("="):
@@ -413,9 +421,10 @@ class BaseCI:
                 try:
                     value = getattr(self, name_from)
                 except AttributeError:
-                    logger.warning(
-                        message=f"CI variable mapping failed, no mapper attribute called {name_from}"
-                    )
+                    if not suppress_warnings:
+                        logger.warning(
+                            message=f"CI variable mapping failed, no mapper attribute called {name_from}"
+                        )
                     continue
             elif name_from in os.environ:
                 raw_value = os.environ.get(name_from)
