@@ -503,6 +503,14 @@ class Kubernetes:
             "application": {
                 "initializeCommand": project.initialize_command,
                 "migrateCommand": project.migrate_command,
+                "monitoring": {
+                    "enabled": settings.K8S_MONITORING_ENABLED,
+                    "path": settings.K8S_MONITORING_PATH,
+                    "port": settings.K8S_MONITORING_PORT
+                    if settings.K8S_MONITORING_PORT
+                    else project.service_port,
+                    "namespace": settings.K8S_MONITORING_NAMESPACE,
+                },
                 "probeFailureThreshold": project.probe_failure_threshold,
                 "probeInitialDelay": project.probe_initial_delay,
                 "probePeriod": project.probe_period,
@@ -603,16 +611,6 @@ class Kubernetes:
                 values["hpa"]["avgCpuUtilization"] = settings.K8S_HPA_MAX_CPU_AVG
             if settings.K8S_HPA_MAX_RAM_AVG:
                 values["hpa"]["avgRamUtilization"] = settings.K8S_HPA_MAX_RAM_AVG
-
-        if settings.K8S_MONITORING_ENABLED:
-            values["application"]["monitoring"] = {
-                "enabled": settings.K8S_MONITORING_ENABLED,
-                "path": settings.K8S_MONITORING_PATH,
-                "port": settings.K8S_MONITORING_PORT
-                if settings.K8S_MONITORING_PORT
-                else project.service_port,
-                "namespace": settings.K8S_MONITORING_NAMESPACE,
-            }
 
         return values
 
