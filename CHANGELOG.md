@@ -2,6 +2,7 @@
 
 ## [v3]
 ### Added
+- new configuration variable VAULT_PROJECT_SECRET_NAME, change VAULT_KV_SECRET_MOUNT_POINT's default value to "project_secrets" (2021-05-07)
 - add support for enabling prometheus operator to discover application level metrics (2021-05-04)
 - add feature that allows Vault module to create file type secrets from Vault secrets that has prefix K8S_FILE_SECRET_ (2021-04-13)
 - allow reading of Vault secrets from two paths and merge to one (2021-04-13)
