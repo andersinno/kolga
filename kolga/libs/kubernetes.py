@@ -67,7 +67,6 @@ class _Application(TypedDict, total=False):
     database_url: str
     fileSecretName: str
     fileSecretPath: str
-    hpa: _Hpa
     initializeCommand: str
     livenessFile: str
     livenessPath: str
