@@ -26,6 +26,17 @@ spec:
         command: ["/bin/sh"]
         args: ["-c", "{{ .Values.application.migrateCommand }}"]
         imagePullPolicy: {{ .Values.app_image.pullPolicy }}
+        # This is a temporary work around until we get a better solution
+        # for solving HPA matching on both the deployment and the jobs.
+        # A proper solution here would be that the Deployment would not
+        # match the Job at all using extra labels on the Deployment (breaking change).
+        # This workaround works as HPA requires there to be resource requests.
+        # The major downside here is that this can have unforeseen side-effects
+        # to the actual scaling.
+        resources:
+          requests:
+            cpu: "1m"
+            memory: "1Mi"
         {{- if .Values.application.secretName }}
         envFrom:
         - secretRef:
