@@ -14,7 +14,7 @@ spec:
   minReplicas: {{ .Values.hpa.minReplicas }}
   maxReplicas: {{ .Values.hpa.maxReplicas }}
   metrics:
-  {{- if .Values.hpa.avgCpuUtilization -}}
+  {{- if .Values.hpa.avgCpuUtilization }}
   - type: Resource
     resource:
       name: cpu
@@ -22,7 +22,7 @@ spec:
         type: Utilization
         averageUtilization: {{ .Values.hpa.avgCpuUtilization }}
   {{- end -}}
-  {{- if .Values.hpa.avgRamUtilization -}}
+  {{- if .Values.hpa.avgRamUtilization }}
   - type: Resource
     resource:
       name: memory

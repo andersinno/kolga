@@ -16,4 +16,6 @@ helm template \
      --set application.pvc.enabled=true \
      --set deployment.timestamp="$(date "+%Y-%m-%d_%H-%M-%S.800081Z")" \
      --set hpa.enabled=true \
+     --set hpa.avgCpuUtilization=80 \
+     --set hpa.avgRamUtilization=80 \
      ./helm >/dev/null
