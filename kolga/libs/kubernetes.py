@@ -604,9 +604,11 @@ class Kubernetes:
             values["application"]["readinessFile"] = settings.K8S_READINESS_FILE
 
         if settings.K8S_HPA_ENABLED:
-            values["hpa"]["enabled"] = settings.K8S_HPA_ENABLED
-            values["hpa"]["minReplicas"] = settings.K8S_HPA_MIN_REPLICAS
-            values["hpa"]["maxReplicas"] = settings.K8S_HPA_MAX_REPLICAS
+            values["hpa"] = {
+                "enabled": settings.K8S_HPA_ENABLED,
+                "minReplicas": settings.K8S_HPA_MIN_REPLICAS,
+                "maxReplicas": settings.K8S_HPA_MAX_REPLICAS,
+            }
             if settings.K8S_HPA_MAX_CPU_AVG:
                 values["hpa"]["avgCpuUtilization"] = settings.K8S_HPA_MAX_CPU_AVG
             if settings.K8S_HPA_MAX_RAM_AVG:
