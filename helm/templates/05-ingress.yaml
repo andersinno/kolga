@@ -1,5 +1,12 @@
 {{- if and (not .Values.ingress.disabled) (not .Values.jobsOnly) -}}
+{{- $stableApi := .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress"}}
+{{- if $stableApi -}}
+apiVersion: networking.k8s.io/v1
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
 apiVersion: extensions/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   name: {{ template "appname" . }}-ingress
@@ -48,8 +55,18 @@ spec:
       http:
         paths:
           - path: {{ $.Values.ingress.path }}
+            {{- if $stableApi }}
+            pathType: Prefix
+            {{- end }}
             backend:
+              {{- if $stableApi }}
+              service:
+                name: {{ template "appname" $ }}-service
+                port:
+                  number: 80
+              {{- else }}
               serviceName: {{ template "appname" $ }}-service
               servicePort: 80
+              {{- end }}
     {{- end }}
 {{- end }}
