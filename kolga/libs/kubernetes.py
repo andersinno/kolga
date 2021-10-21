@@ -75,6 +75,8 @@ class _Application(TypedDict, total=False):
     probeFailureThreshold: int
     probeInitialDelay: int
     probePeriod: int
+    livenessProbeTimeout: int
+    readinessProbeTimeout: int
     pvc: _Pvc
     readinessFile: str
     readinessPath: str
@@ -513,6 +515,8 @@ class Kubernetes:
                 "probeFailureThreshold": project.probe_failure_threshold,
                 "probeInitialDelay": project.probe_initial_delay,
                 "probePeriod": project.probe_period,
+                "livenessProbeTimeout": project.liveness_probe_timeout,
+                "readinessProbeTimeout": project.readiness_probe_timeout,
                 "livenessPath": project.liveness_path,
                 "readinessPath": project.readiness_path,
                 "secretName": project.secret_name,

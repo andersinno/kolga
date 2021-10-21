@@ -83,6 +83,7 @@ spec:
             initialDelaySeconds: {{ .Values.application.probeInitialDelay }}
             failureThreshold: {{ .Values.application.probeFailureThreshold }}
             periodSeconds: {{ .Values.application.probePeriod }}
+            timeoutSeconds: {{ .Values.application.livenessProbeTimeout }}
             httpGet:
               path: "{{ .Values.application.livenessPath }}"
               port: {{ .Values.service.targetPort }}
@@ -98,6 +99,7 @@ spec:
             initialDelaySeconds: {{ .Values.application.probeInitialDelay }}
             failureThreshold: {{ .Values.application.probeFailureThreshold }}
             periodSeconds: {{ .Values.application.probePeriod }}
+            timeoutSeconds: {{ .Values.application.readinessProbeTimeout }}
             httpGet:
               path: "{{ .Values.application.readinessPath }}"
               port: {{ .Values.service.targetPort }}

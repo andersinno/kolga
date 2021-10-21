@@ -2,6 +2,7 @@
 
 ## [v3]
 ### Added
+- new configuration variables K8S_LIVENESS_PROBE_TIMEOUT & K8S_READINESS_PROBE_TIMEOUT added.
 - new configuration variable VAULT_PROJECT_SECRET_NAME, change VAULT_KV_SECRET_MOUNT_POINT's default value to "project_secrets" (2021-05-07)
 - add support for enabling prometheus operator to discover application level metrics (2021-05-04)
 - support ingress api versions extensions/v1beta1, networking.k8s.io/v1beta1 and networking.k8s.io/v1 (2021-05-03)

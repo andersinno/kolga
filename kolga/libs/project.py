@@ -28,6 +28,8 @@ PROJECT_ARG_SETTINGS_MAPPING = {
     "K8S_PROBE_FAILURE_THRESHOLD": "probe_failure_threshold",
     "K8S_PROBE_INITIAL_DELAY": "probe_initial_delay",
     "K8S_PROBE_PERIOD": "probe_period",
+    "K8S_LIVENESS_PROBE_TIMEOUT": "liveness_probe_timeout",
+    "K8S_READINESS_PROBE_TIMEOUT": "readiness_probe_timeout",
     "K8S_READINESS_PATH": "readiness_path",
     "K8S_REPLICACOUNT": "replica_count",
     "K8S_REQUEST_CPU": "request_cpu",
@@ -51,6 +53,8 @@ class Project:
     probe_failure_threshold: int
     probe_initial_delay: int
     probe_period: int
+    liveness_probe_timeout: int
+    readiness_probe_timeout: int
     readiness_path: str
     replica_count: int
     request_cpu: str

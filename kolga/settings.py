@@ -169,6 +169,8 @@ class SettingsValues(BaseSettings):
     K8S_PROBE_FAILURE_THRESHOLD: int = 3
     K8S_PROBE_INITIAL_DELAY: int = 60
     K8S_PROBE_PERIOD: int = 10
+    K8S_LIVENESS_PROBE_TIMEOUT: int = 1
+    K8S_READINESS_PROBE_TIMEOUT: int = 1
     K8S_READINESS_FILE: str = ""
     K8S_READINESS_PATH: str = "/readiness"
     K8S_REPLICACOUNT: int = 1

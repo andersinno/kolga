@@ -62,6 +62,8 @@ supplies a predefined variables with the SHA.
 | K8S\_PROBE\_FAILURE\_THRESHOLD| How many times a probe can fail                     | 3                            |            |
 | K8S\_PROBE\_INITIAL\_DELAY    | Seconds before health/ready checks starts           | 60                           |            |
 | K8S\_PROBE\_PERIOD            | How long between probe checks                       | 10                           |            |
+| K8S\_LIVENESS\_PROBE\_TIMEOUT | How long liveness probe will wait for response      | 1                            |            |
+| K8S\_READINESS\_PROBE\_TIMEOUT| How long readiness probe will wait for response     | 1                            |            |
 | K8S\_REPLICACOUNT             | Number of replicated Pods                           | 1                            |            |
 | K8S\_REQUEST\_CPU             | Request at least this much CPU (ex. 1000m)          | 50m                          |            |
 | K8S\_REQUEST\_RAM             | Request at least this much RAM (ex. 512Mi)          | 128Mi                        |            |
