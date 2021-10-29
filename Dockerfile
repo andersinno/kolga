@@ -111,8 +111,8 @@ RUN apk add --no-cache --virtual .build-deps \
     && python3 -m ensurepip \
     && pip install --no-cache-dir --no-input -r /tmp/requirements.txt \
     && pip install --no-cache-dir --no-input docker-compose \
-    && rm -r /root/.cache \
-    && rm -r /root/.cargo \
+    && rm -rf /root/.cache \
+    && rm -rf /root/.cargo \
     && apk del .build-deps
 
 COPY docker-entrypoint.sh /usr/local/bin/
