@@ -58,8 +58,8 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS buildx
 # ===================================
-ARG BUILDX_VERSION=0.5.1
-ARG BUILDX_CHECKSUM=5f1dda3ae598e82c3186c2766506921e6f9f51c93b5ba43f7b42b659db4aa48d
+ARG BUILDX_VERSION=0.6.3
+ARG BUILDX_CHECKSUM=8dbc69a27afbc668e5d9fcda0e6d8334c1716e0ea6bd4d22ba3a32a53c3c834b
 ARG TARGET=/buildx/docker-buildx
 
 ADD https://github.com/docker/buildx/releases/download/v${BUILDX_VERSION}/buildx-v${BUILDX_VERSION}.linux-amd64 "$TARGET"
