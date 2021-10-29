@@ -50,6 +50,9 @@ build:
 test-image:
   extends: .docker-image-scan
   allow_failure: true
+  variables:
+    # Scan production image instead of develoment image
+    DEVELOPMENT_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}-production
 
 sonarqube:
   extends: .sonarqube
