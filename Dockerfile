@@ -17,8 +17,8 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS helm
 # ===================================
-ARG HELM_VERSION=3.5.3
-ARG HELM_CHECKSUM=2170a1a644a9e0b863f00c17b761ce33d4323da64fc74562a3a6df2abbf6cd70
+ARG HELM_VERSION=3.7.1
+ARG HELM_CHECKSUM=6cd6cad4b97e10c33c978ff3ac97bb42b68f79766f1d2284cfd62ec04cd177f4
 ARG TARGET=/helm.tar.gz
 
 ADD https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz "$TARGET"
