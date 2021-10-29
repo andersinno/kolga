@@ -30,14 +30,14 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS poetry
 # ===================================
-ARG POETRY_VERSION=1.1.5
+ARG POETRY_VERSION=1.1.11
 ARG POETRY_CHECKSUM=e973b3badb95a916bfe250c22eeb7253130fd87312afa326eb02b8bdcea8f4a7
 ARG TARGET=/tmp/get-poetry.py
 
-ADD https://raw.githubusercontent.com/sdispater/poetry/${POETRY_VERSION}/get-poetry.py "$TARGET"
+ADD https://raw.githubusercontent.com/python-poetry/poetry/${POETRY_VERSION}/get-poetry.py "$TARGET"
 RUN set -eux; \
     echo "$POETRY_CHECKSUM *$TARGET" | sha256sum -c -; \
-    python /tmp/get-poetry.py; \
+    python /tmp/get-poetry.py --version "${POETRY_VERSION}"; \
     # Remove all other python version than the one used by the base image \
     # Note: `find` does not support negative lookahead, nor does `grep` \
     # Space savings: ~70MB \
