@@ -5,13 +5,13 @@ FROM python:3.9.7-alpine3.13 AS build-base
 # ===================================
 FROM build-base AS kubectl
 # ===================================
-ARG KUBECTL_VERSION=1.17.17
-ARG KUBECTL_CHECKSUM=f4eb3da33d74b792f0833332fb509f1443c6f89c32acf8d79cadf6108da34d0f
+ARG KUBECTL_VERSION=1.19.16
+ARG KUBECTL_CHECKSUM=9524a026af932ac9ca1895563060f7fb3b89f1387016e69a1a73cf7ce0f9baa54775b00c886557a97bae9b6dbc1b49c045da5dcea9ca2c1452c18c5c45fefd55
 ARG TARGET=/kubernetes-client.tar.gz
 
 ADD https://dl.k8s.io/v${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz "$TARGET"
 RUN set -eux; \
-    echo "$KUBECTL_CHECKSUM *$TARGET" | sha256sum -c -; \
+    echo "$KUBECTL_CHECKSUM *$TARGET" | sha512sum -c -; \
     tar -xvf "$TARGET" -C /
 
 # ===================================
