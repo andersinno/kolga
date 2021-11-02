@@ -1,6 +1,6 @@
 from typing import Tuple, Type
 
-from kolga.hooks.plugins import PluginBase
+from kolga.plugins.base import PluginBase
 from kolga.plugins.sentry.sentry import KolgaSentryPlugin
 from kolga.plugins.slack.slack import KolgaSlackPlugin
 

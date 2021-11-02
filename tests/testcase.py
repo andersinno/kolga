@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Any, Dict, Optional
 
-from kolga.plugins.exception import TestCouldNotLoadPlugin
+from kolga.plugins.exceptions import TestCouldNotLoadPlugin
 from kolga.settings import settings
 
 

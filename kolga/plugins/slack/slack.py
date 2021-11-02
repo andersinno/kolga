@@ -5,7 +5,7 @@ from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 
 from kolga.hooks import hookimpl
-from kolga.hooks.plugins import PluginBase
+from kolga.plugins.base import PluginBase
 from kolga.utils.logger import logger
 
 from .messages import new_environment_message
