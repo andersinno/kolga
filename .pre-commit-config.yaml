@@ -24,6 +24,8 @@ repos:
     -   id: mypy
         additional_dependencies:
         - cryptography
+        - opentelemetry-api
+        - opentelemetry-sdk
         - pydantic
         - PyJWT
         - pytest
