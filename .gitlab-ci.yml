@@ -46,6 +46,9 @@ build:
     - master
     - /^r-[\d]+$/
     - v3
+  variables:
+    # Don't add any additional tags
+    DOCKER_IMAGE_TAGS: ""
 
 test-image:
   extends: .docker-image-scan
