@@ -1,24 +1,24 @@
 # ===================================
-FROM python:3.8.9-alpine3.13 AS build-base
+FROM python:3.9.7-alpine3.13 AS build-base
 # ===================================
 
 # ===================================
 FROM build-base AS kubectl
 # ===================================
-ARG KUBECTL_VERSION=1.17.17
-ARG KUBECTL_CHECKSUM=f4eb3da33d74b792f0833332fb509f1443c6f89c32acf8d79cadf6108da34d0f
+ARG KUBECTL_VERSION=1.19.16
+ARG KUBECTL_CHECKSUM=9524a026af932ac9ca1895563060f7fb3b89f1387016e69a1a73cf7ce0f9baa54775b00c886557a97bae9b6dbc1b49c045da5dcea9ca2c1452c18c5c45fefd55
 ARG TARGET=/kubernetes-client.tar.gz
 
 ADD https://dl.k8s.io/v${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz "$TARGET"
 RUN set -eux; \
-    echo "$KUBECTL_CHECKSUM *$TARGET" | sha256sum -c -; \
+    echo "$KUBECTL_CHECKSUM *$TARGET" | sha512sum -c -; \
     tar -xvf "$TARGET" -C /
 
 # ===================================
 FROM build-base AS helm
 # ===================================
-ARG HELM_VERSION=3.5.3
-ARG HELM_CHECKSUM=2170a1a644a9e0b863f00c17b761ce33d4323da64fc74562a3a6df2abbf6cd70
+ARG HELM_VERSION=3.7.1
+ARG HELM_CHECKSUM=6cd6cad4b97e10c33c978ff3ac97bb42b68f79766f1d2284cfd62ec04cd177f4
 ARG TARGET=/helm.tar.gz
 
 ADD https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz "$TARGET"
@@ -30,14 +30,14 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS poetry
 # ===================================
-ARG POETRY_VERSION=1.1.5
+ARG POETRY_VERSION=1.1.11
 ARG POETRY_CHECKSUM=e973b3badb95a916bfe250c22eeb7253130fd87312afa326eb02b8bdcea8f4a7
 ARG TARGET=/tmp/get-poetry.py
 
-ADD https://raw.githubusercontent.com/sdispater/poetry/${POETRY_VERSION}/get-poetry.py "$TARGET"
+ADD https://raw.githubusercontent.com/python-poetry/poetry/${POETRY_VERSION}/get-poetry.py "$TARGET"
 RUN set -eux; \
     echo "$POETRY_CHECKSUM *$TARGET" | sha256sum -c -; \
-    python /tmp/get-poetry.py; \
+    python /tmp/get-poetry.py --version "${POETRY_VERSION}"; \
     # Remove all other python version than the one used by the base image \
     # Note: `find` does not support negative lookahead, nor does `grep` \
     # Space savings: ~70MB \
@@ -58,8 +58,8 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS buildx
 # ===================================
-ARG BUILDX_VERSION=0.5.1
-ARG BUILDX_CHECKSUM=5f1dda3ae598e82c3186c2766506921e6f9f51c93b5ba43f7b42b659db4aa48d
+ARG BUILDX_VERSION=0.6.3
+ARG BUILDX_CHECKSUM=8dbc69a27afbc668e5d9fcda0e6d8334c1716e0ea6bd4d22ba3a32a53c3c834b
 ARG TARGET=/buildx/docker-buildx
 
 ADD https://github.com/docker/buildx/releases/download/v${BUILDX_VERSION}/buildx-v${BUILDX_VERSION}.linux-amd64 "$TARGET"
@@ -111,8 +111,8 @@ RUN apk add --no-cache --virtual .build-deps \
     && python3 -m ensurepip \
     && pip install --no-cache-dir --no-input -r /tmp/requirements.txt \
     && pip install --no-cache-dir --no-input docker-compose \
-    && rm -r /root/.cache \
-    && rm -r /root/.cargo \
+    && rm -rf /root/.cache \
+    && rm -rf /root/.cargo \
     && apk del .build-deps
 
 COPY docker-entrypoint.sh /usr/local/bin/
