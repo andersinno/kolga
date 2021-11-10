@@ -1,3 +1,4 @@
+from kolga.settings import settings
 from kolga.utils.general import run_os_command
 from kolga.utils.logger import logger
 
@@ -32,7 +33,8 @@ class Git:
 
         logger.info(icon=f"{self.ICON} 🌱", title="Updating submodules: ", end="")
 
-        result = run_os_command(os_command)
-        if result.return_code:
-            logger.std(result, raise_exception=True)
-        logger.success()
+        with settings.plugin_manager.lifecycle.git_submodule_update():
+            result = run_os_command(os_command)
+            if result.return_code:
+                logger.std(result, raise_exception=True)
+            logger.success()

@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, cast
+from contextlib import AbstractContextManager, contextmanager
+from typing import TYPE_CHECKING, Any, Callable, Generator, Optional, TypeVar, cast
 
 import pluggy
 
@@ -6,6 +7,8 @@ F = TypeVar("F", bound=Callable[..., Any])
 hookspec = cast(Callable[[F], F], pluggy.HookspecMarker("kolga"))
 
 if TYPE_CHECKING:
+    from pluggy import PluginManager
+
     from kolga.libs.project import Project
     from kolga.libs.service import Service
     from kolga.utils.models import DockerImage
@@ -209,3 +212,45 @@ class KolgaHookSpec:
 
             The return value is not acted upon by Kólga.
         """
+
+
+def _make_manager(
+    at_enter: Callable[..., Any],
+    at_exit: Callable[..., Any],
+) -> Callable[..., AbstractContextManager[Any]]:
+    @contextmanager
+    def inner(*args: Any, **kwargs: Any) -> Generator[None, None, None]:
+        at_enter(*args, **kwargs)
+        try:
+            yield
+        except Exception as exc:
+            at_exit(*args, **{**kwargs, "exception": exc})
+            raise
+        else:
+            at_exit(*args, **{"exception": None, **kwargs})
+
+    return inner
+
+
+class LifeCycleManager:
+    def __init__(self, pm: "PluginManager[KolgaHookSpec]") -> None:
+        self.container_build = _make_manager(
+            pm.hook.container_build_begin,
+            pm.hook.container_build_complete,
+        )
+        self.container_build_stage = _make_manager(
+            pm.hook.container_build_stage_begin,
+            pm.hook.container_build_stage_complete,
+        )
+        self.git_submodule_update = _make_manager(
+            pm.hook.git_submodule_update_begin,
+            pm.hook.git_submodule_update_complete,
+        )
+        self.project_deployment = _make_manager(
+            pm.hook.project_deployment_begin,
+            pm.hook.project_deployment_complete,
+        )
+        self.service_deployment = _make_manager(
+            pm.hook.service_deployment_begin,
+            pm.hook.service_deployment_complete,
+        )

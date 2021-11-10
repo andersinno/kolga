@@ -3,9 +3,13 @@ from collections import OrderedDict
 from typing import Any, List, Optional, Tuple, Type, cast
 from unittest import mock
 
+import pytest
 from environs import Env
 
 from kolga.hooks import hookimpl
+from kolga.libs.docker import Docker
+from kolga.libs.git import Git
+from kolga.libs.kubernetes import Kubernetes
 from kolga.libs.project import Project
 from kolga.plugins.base import PluginBase
 from kolga.settings import settings
@@ -167,3 +171,72 @@ def test_lifecycle_hook_calls() -> None:
         "service_deployment_begin",
         "service_deployment_complete",
     ]
+
+
+@mock.patch("kolga.libs.docker.run_os_command", **{"return_value.return_code": 0})  # type: ignore
+def test_lifecycle_hooks_build(_: mock.MagicMock) -> None:
+    d = Docker()
+
+    Plugin, hook_calls = call_tracking_plugin_factory()
+    with load_plugin(Plugin):
+        d.build_stages()
+
+    assert [*hook_calls.keys()] == [
+        "container_build_begin",
+        "container_build_stage_begin",
+        "container_build_stage_complete",
+        "container_build_complete",
+    ]
+
+
+@mock.patch("kolga.libs.git.run_os_command", **{"return_value.return_code": 0})  # type: ignore
+def test_lifecycle_hooks_git_submodule_update(_: mock.MagicMock) -> None:
+    g = Git()
+
+    Plugin, hook_calls = call_tracking_plugin_factory()
+    with load_plugin(Plugin):
+        g.update_submodules()
+
+    assert [*hook_calls.keys()] == [
+        "git_submodule_update_begin",
+        "git_submodule_update_complete",
+    ]
+
+
+@mock.patch("kolga.libs.kubernetes.Kubernetes.create_client")
+def test_lifecycle_hooks_deployment(_: mock.MagicMock) -> None:
+    ns = track = "testing"
+    project = Project(track=track, url="example.com")
+    service = mock.MagicMock()
+
+    k = Kubernetes(track=track)
+    k.helm = mock.MagicMock(**{"upgrade_chart.return_value.return_code": 0})
+    mock.patch("kolga.libs.kubernetes.KubeLoggerThread")
+
+    Plugin, hook_calls = call_tracking_plugin_factory()
+    with load_plugin(Plugin):
+        k.deploy_service(namespace=ns, service=service, track=track)
+        k.create_application_deployment(namespace=ns, project=project, track=track)
+
+    assert [*hook_calls.keys()] == [
+        "service_deployment_begin",
+        "service_deployment_complete",
+        "project_deployment_begin",
+        "project_deployment_complete",
+    ]
+
+
+def test_lifecycle_failure() -> None:
+    g = Git()
+
+    with mock.patch(
+        "kolga.libs.git.run_os_command",
+        mock.MagicMock(side_effect=RuntimeError()),
+    ):
+        Plugin, hook_calls = call_tracking_plugin_factory()
+        with load_plugin(Plugin):
+            with pytest.raises(RuntimeError):
+                g.update_submodules()
+
+    assert hook_calls["git_submodule_update_begin"] is True
+    assert hook_calls["git_submodule_update_complete"] is False

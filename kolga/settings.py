@@ -22,13 +22,12 @@ from typing import (
 
 from dotenv import dotenv_values
 from environs import Env
-from pluggy import PluginManager
 from pydantic import BaseConfig, BaseSettings, Extra, Field
 
-from kolga.hooks.hookspec import KolgaHookSpec
 from kolga.plugins import KOLGA_CORE_PLUGINS
 from kolga.plugins.base import PluginBase
 from kolga.plugins.exceptions import PluginMissingConfiguration
+from kolga.plugins.pluginmanager import KolgaPluginManager
 from kolga.utils.exceptions import ImproperlyConfigured, NoClusterConfigError
 from kolga.utils.fields import (
     BasicAuthUserList,
@@ -41,10 +40,6 @@ from kolga.utils.logger import logger
 if TYPE_CHECKING:
     from pydantic.env_settings import SettingsSourceCallable
     from pydantic.fields import ModelField
-
-    KolgaPluginManager = PluginManager[KolgaHookSpec]
-else:
-    KolgaPluginManager = PluginManager
 
 
 env = Env()
@@ -260,9 +255,7 @@ class Settings(SettingsValues):
         self._plugin_manager = self._setup_pluggy()
 
     def _setup_pluggy(self) -> KolgaPluginManager:
-        pm: KolgaPluginManager = PluginManager("kolga")
-        pm.add_hookspecs(KolgaHookSpec)
-
+        pm = KolgaPluginManager()
         return pm
 
     def load_plugins(self) -> None:
