@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, cast
 
-import pluggy  # type: ignore
+import pluggy
 
 F = TypeVar("F", bound=Callable[..., Any])
 hookspec = cast(Callable[[F], F], pluggy.HookspecMarker("kolga"))

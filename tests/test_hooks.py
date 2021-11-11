@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, List, Optional, cast
 
 from environs import Env
 
@@ -27,10 +27,11 @@ class _TestPlugin(PluginBase):
 
 @load_plugin(_TestPlugin)
 def test_create_deployment() -> None:
-    results = settings.plugin_manager.hook.project_deployment_complete(
+    results: Any = settings.plugin_manager.hook.project_deployment_complete(
         project=Project(track="testing", url="test.example.com"),
         track="testing",
         namespace="testing",
     )
+    results = cast(List[Optional[bool]], results)
 
     assert len(results) and results[0] is True

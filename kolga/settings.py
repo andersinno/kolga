@@ -20,9 +20,9 @@ from typing import (
     cast,
 )
 
-import pluggy  # type: ignore
 from dotenv import dotenv_values
 from environs import Env
+from pluggy import PluginManager
 from pydantic import BaseConfig, BaseSettings, Extra, Field
 
 from kolga.hooks.hookspec import KolgaHookSpec
@@ -41,6 +41,10 @@ from kolga.utils.logger import logger
 if TYPE_CHECKING:
     from pydantic.env_settings import SettingsSourceCallable
     from pydantic.fields import ModelField
+
+    KolgaPluginManager = PluginManager[KolgaHookSpec]
+else:
+    KolgaPluginManager = PluginManager
 
 
 env = Env()
@@ -210,7 +214,7 @@ class SettingsValues(BaseSettings):
 class Settings(SettingsValues):
     _active_ci: Optional["BaseCI"]
     _devops_root_path: Path
-    _plugin_manager: pluggy.PluginManager
+    _plugin_manager: KolgaPluginManager
 
     @property
     def active_ci(self) -> Optional["BaseCI"]:
@@ -229,7 +233,7 @@ class Settings(SettingsValues):
         return self._devops_root_path
 
     @property
-    def plugin_manager(self) -> pluggy.PluginManager:
+    def plugin_manager(self) -> KolgaPluginManager:
         if not hasattr(self, "_plugin_manager"):
             self._plugin_manager = self._setup_pluggy()
         return self._plugin_manager
@@ -255,8 +259,8 @@ class Settings(SettingsValues):
 
         self._plugin_manager = self._setup_pluggy()
 
-    def _setup_pluggy(self) -> pluggy.PluginManager:
-        pm: pluggy.PluginManager = pluggy.PluginManager("kolga")
+    def _setup_pluggy(self) -> KolgaPluginManager:
+        pm: KolgaPluginManager = PluginManager("kolga")
         pm.add_hookspecs(KolgaHookSpec)
 
         return pm
