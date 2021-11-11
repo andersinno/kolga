@@ -11,7 +11,7 @@ import pytest
 from pydantic import ValidationError
 
 import kolga
-from kolga.hooks.plugins import PluginBase
+from kolga.plugins.base import PluginBase
 from kolga.settings import GitHubActionsMapper, Settings, settings
 from kolga.utils.models import BasicAuthUser
 from tests import MockEnv

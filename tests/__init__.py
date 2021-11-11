@@ -6,9 +6,9 @@ import pytest
 from environs import Env
 from pytest import MonkeyPatch
 
-from kolga.hooks.plugins import PluginBase
 from kolga.libs.helm import Helm
 from kolga.libs.kubernetes import Kubernetes
+from kolga.plugins.base import PluginBase
 
 if TYPE_CHECKING:
     from contextlib import _GeneratorContextManager

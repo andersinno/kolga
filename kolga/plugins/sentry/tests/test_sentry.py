@@ -6,9 +6,9 @@ import sentry_sdk
 from sentry_sdk import capture_message
 from sentry_sdk.utils import BadDsn
 
+from kolga.plugins.exceptions import TestCouldNotLoadPlugin
 from tests.testcase import load_plugin
 
-from ...exception import TestCouldNotLoadPlugin
 from ..sentry import KolgaSentryPlugin
 
 

@@ -25,10 +25,10 @@ from dotenv import dotenv_values
 from environs import Env
 from pydantic import BaseConfig, BaseSettings, Extra, Field
 
-from kolga.hooks.exceptions import PluginMissingConfiguration
 from kolga.hooks.hookspec import KolgaHookSpec
-from kolga.hooks.plugins import PluginBase
 from kolga.plugins import KOLGA_CORE_PLUGINS
+from kolga.plugins.base import PluginBase
+from kolga.plugins.exceptions import PluginMissingConfiguration
 from kolga.utils.exceptions import ImproperlyConfigured, NoClusterConfigError
 from kolga.utils.fields import (
     BasicAuthUserList,

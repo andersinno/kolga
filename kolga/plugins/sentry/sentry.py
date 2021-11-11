@@ -1,7 +1,7 @@
 import sentry_sdk
 from environs import Env
 
-from kolga.hooks.plugins import PluginBase
+from kolga.plugins.base import PluginBase
 
 
 class KolgaSentryPlugin(PluginBase):

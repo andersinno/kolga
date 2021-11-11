@@ -3,8 +3,8 @@ from typing import Optional
 from environs import Env
 
 from kolga.hooks import hookimpl
-from kolga.hooks.plugins import PluginBase
 from kolga.libs.project import Project
+from kolga.plugins.base import PluginBase
 from kolga.settings import settings
 from tests.testcase import load_plugin
 
