@@ -9,6 +9,7 @@
 !pyproject.toml
 !setup.cfg
 !Makefile
+!docs/
 
 **/__pycache__/
 **/*.py[cod]
