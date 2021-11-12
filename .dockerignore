@@ -1,7 +1,9 @@
 *
 
+!docs/
 !helm/
 !kolga/
+!tests/
 !utils/
 !devops
 !docker-entrypoint.sh
@@ -9,7 +11,6 @@
 !pyproject.toml
 !setup.cfg
 !Makefile
-!docs/
 
 **/__pycache__/
 **/*.py[cod]
