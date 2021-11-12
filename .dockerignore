@@ -8,6 +8,7 @@
 !poetry.lock
 !pyproject.toml
 !setup.cfg
+!Makefile
 
 **/__pycache__/
 **/*.py[cod]
