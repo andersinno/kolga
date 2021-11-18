@@ -105,6 +105,7 @@ class _Ingress(TypedDict, total=False):
     clusterIssuer: str
     disabled: bool
     maxBodySize: str
+    path: str
     preventRobots: bool
     secretName: str
     whitelistIP: str
@@ -584,6 +585,9 @@ class Kubernetes:
 
         if settings.K8S_CERTMANAGER_USE_OLD_API:
             values["ingress"]["certManagerAnnotationPrefix"] = "certmanager.k8s.io"
+
+        if settings.K8S_INGRESS_PATH:
+            values["ingress"]["path"] = settings.K8S_INGRESS_PATH
 
         if settings.K8S_INGRESS_PREVENT_ROBOTS:
             values["ingress"]["preventRobots"] = True

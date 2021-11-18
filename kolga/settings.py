@@ -149,6 +149,7 @@ class SettingsValues(BaseSettings):
     K8S_INGRESS_BASIC_AUTH: BasicAuthUserList = Field([])
     K8S_INGRESS_DISABLED: bool = False
     K8S_INGRESS_MAX_BODY_SIZE: str = "100m"
+    K8S_INGRESS_PATH: str = ""
     K8S_INGRESS_PREVENT_ROBOTS: bool = False
     K8S_INGRESS_SECRET_NAME: str = ""
     K8S_INGRESS_WHITELIST_IPS: str = ""
