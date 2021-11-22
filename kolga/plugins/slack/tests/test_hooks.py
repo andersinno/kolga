@@ -23,9 +23,10 @@ from ..slack import KolgaSlackPlugin
 )
 def test_project_deployment_complete(mock_post_message: Any) -> None:
     results: Any = settings.plugin_manager.hook.project_deployment_complete(
+        exception=None,
+        namespace="review",
         project=Project(track="review", url="test.example.com"),
         track="review",
-        namespace="review",
     )
     results = cast(List[Optional[bool]], results)
     assert len(results) == 1 and results[0] is True

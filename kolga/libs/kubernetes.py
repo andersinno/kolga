@@ -678,7 +678,7 @@ class Kubernetes:
             raise DeploymentFailed()
 
         settings.plugin_manager.hook.project_deployment_complete(
-            project=project, track=track, namespace=namespace
+            exception=None, namespace=namespace, project=project, track=track
         )
 
         if not settings.K8S_INGRESS_DISABLED:
