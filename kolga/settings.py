@@ -133,6 +133,9 @@ class SettingsValues(BaseSettings):
     GIT_DEFAULT_TARGET_BRANCH: str = "master"
     GIT_TARGET_BRANCH: str = ""
     JOB_ACTOR: str = ""
+    JOB_ID: str = ""
+    JOB_NAME: str = ""
+    JOB_PIPELINE_ID: str = ""
     K8S_ADDITIONAL_HOSTNAMES: List[str] = []
     K8S_CERTMANAGER_USE_OLD_API: bool = False
     K8S_CLUSTER_ISSUER: str = ""
@@ -472,6 +475,9 @@ class AzurePipelinesMapper(BaseCI):
         "DOCKER_IMAGE_NAME": "BUILD_DEFINITIONNAME",
         "GIT_COMMIT_REF_NAME": "BUILD_SOURCEBRANCHNAME",  # TODO: Do this programmatically instead
         "GIT_COMMIT_SHA": "BUILD_SOURCEVERSION",
+        "JOB_ID": "SYSTEM_JOBID",
+        "JOB_NAME": "SYSTEM_JOBNAME",
+        "JOB_PIPELINE_ID": "SYSTEM_DEFINITIONID",
         "PROJECT_ID": "BUILD_REPOSITORY_ID",
         "PROJECT_NAME": "SYSTEM_TEAMPROJECT",
     }
@@ -501,6 +507,9 @@ class GitLabMapper(BaseCI):
         "GIT_DEFAULT_TARGET_BRANCH": "CI_DEFAULT_BRANCH",
         "GIT_TARGET_BRANCH": "CI_MERGE_REQUEST_TARGET_BRANCH_NAME",
         "JOB_ACTOR": "GITLAB_USER_NAME",
+        "JOB_ID": "CI_JOB_ID",
+        "JOB_NAME": "CI_JOB_NAME",
+        "JOB_PIPELINE_ID": "CI_PIPELINE_ID",
         "K8S_CLUSTER_ISSUER": "KUBE_CLUSTER_ISSUER",
         "K8S_INGRESS_BASE_DOMAIN": "KUBE_INGRESS_BASE_DOMAIN",
         "K8S_INGRESS_PREVENT_ROBOTS": "KUBE_INGRESS_PREVENT_ROBOTS",
@@ -534,6 +543,9 @@ class GitHubActionsMapper(BaseCI):
         "GIT_COMMIT_SHA": "GITHUB_SHA",
         "GIT_TARGET_BRANCH": "GITHUB_BASE_REF",
         "JOB_ACTOR": "GITHUB_ACTOR",
+        "JOB_ID": "GITHUB_ACTION",
+        "JOB_NAME": "GITHUB_WORKFLOW",
+        "JOB_PIPELINE_ID": "GITHUB_RUN_ID",
         "PR_ID": "=PR_ID",
         "PR_TITLE": "=PR_TITLE",
         "PR_URL": "=PR_URL",
