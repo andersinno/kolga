@@ -222,19 +222,21 @@ class Docker:
         built_images = []
         stages = self.get_stages()
 
-        for stage in stages:
-            if not stage.build:
-                continue
-            if stage.development:
-                logger.info(
-                    icon="ℹ️",
-                    title=f"Found test/development stage '{stage.name}', building that as well",
-                )
-            built_images.append(
-                self.build_stage(
+        with settings.plugin_manager.lifecycle.container_build():
+            for stage in stages:
+                if not stage.build:
+                    continue
+
+                if stage.development:
+                    logger.info(
+                        icon="ℹ️",
+                        title=f"Found test/development stage '{stage.name}', building that as well",
+                    )
+
+                image = self.build_stage(
                     stage.name, final_image=stage.final, push_images=push_images
                 )
-            )
+                built_images.append(image)
 
         return built_images
 
@@ -277,15 +279,18 @@ class Docker:
 
         build_command.append(f"{self.docker_context.absolute()}")
 
-        result = run_os_command(build_command, shell=False)
-
-        if result.return_code:
-            logger.std(result, raise_exception=True)
-        else:
-            for tag in tags:
-                logger.info(title=f"\t 🏷 Tagged: {self.image_repo}:{tag}")
-
         image = DockerImage(repository=self.image_repo, tags=tags)
+
+        with settings.plugin_manager.lifecycle.container_build_stage(
+            image=image, stage=stage
+        ):
+            result = run_os_command(build_command, shell=False)
+            if result.return_code:
+                logger.std(result, raise_exception=True)
+            else:
+                for tag in tags:
+                    logger.info(title=f"\t 🏷 Tagged: {self.image_repo}:{tag}")
+
         return image
 
     def delete_image(self, image: DockerImage) -> None:

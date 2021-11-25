@@ -485,15 +485,18 @@ class Kubernetes:
     def deploy_service(self, service: "Service", namespace: str, track: str) -> None:
         deploy_name = get_deploy_name(track=track, postfix=service.name)
 
-        self.helm.upgrade_chart(
-            chart=service.chart,
-            chart_path=service.chart_path,
-            name=deploy_name,
-            namespace=namespace,
-            values=service.values,
-            values_files=service.values_files,
-            version=service.chart_version,
-        )
+        with settings.plugin_manager.lifecycle.service_deployment(
+            namespace=namespace, service=service, track=track
+        ):
+            self.helm.upgrade_chart(
+                chart=service.chart,
+                chart_path=service.chart_path,
+                name=deploy_name,
+                namespace=namespace,
+                values=service.values,
+                values_files=service.values_files,
+                version=service.chart_version,
+            )
 
     def get_application_deployment_values(
         self,
@@ -646,40 +649,39 @@ class Kubernetes:
             namespace=namespace,
         )
 
-        log_collector.start()
-        result = self.helm.upgrade_chart(
-            chart_path=helm_path,
-            name=project.deploy_name,
-            namespace=namespace,
-            values=values,
-            raise_exception=False,
-        )
-        log_collector.stop()
-
-        if result.return_code:
-            logger.info(
-                icon=f"{self.ICON} 🏷️",
-                title="Deployment values (without environment vars):",
+        with settings.plugin_manager.lifecycle.project_deployment(
+            namespace=namespace, project=project, track=track
+        ):
+            log_collector.start()
+            result = self.helm.upgrade_chart(
+                chart_path=helm_path,
+                name=project.deploy_name,
+                namespace=namespace,
+                values=values,
+                raise_exception=False,
             )
-            for line in yaml.dump(values).split("\n"):
-                logger.info(message=f"\t{line}")
+            log_collector.stop()
 
-            status = self.status(namespace=namespace, labels=application_labels)
-            logger.info(message=str(status))
+            if result.return_code:
+                logger.info(
+                    icon=f"{self.ICON} 🏷️",
+                    title="Deployment values (without environment vars):",
+                )
+                for line in yaml.dump(values).split("\n"):
+                    logger.info(message=f"\t{line}")
 
-            logger.info(
-                icon=f"{self.ICON}  📋️️ ",
-                title="Getting logs for resource: ",
-            )
-            with log_collector.log_path.open() as f:
-                for line in f:
-                    logger.info(line, end="")
+                status = self.status(namespace=namespace, labels=application_labels)
+                logger.info(message=str(status))
 
-            raise DeploymentFailed()
+                logger.info(
+                    icon=f"{self.ICON}  📋️️ ",
+                    title="Getting logs for resource: ",
+                )
+                with log_collector.log_path.open() as f:
+                    for line in f:
+                        logger.info(line, end="")
 
-        settings.plugin_manager.hook.project_deployment_complete(
-            project=project, track=track, namespace=namespace
-        )
+                raise DeploymentFailed()
 
         if not settings.K8S_INGRESS_DISABLED:
             logger.info(

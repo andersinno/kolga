@@ -31,9 +31,13 @@ class KolgaSlackPlugin(PluginBase):
 
     @hookimpl
     def project_deployment_complete(
-        self, project: "Project", track: str, namespace: str
+        self,
+        exception: Optional[Exception],
+        namespace: str,
+        project: "Project",
+        track: str,
     ) -> Optional[bool]:
-        if not self.configured:
+        if not self.configured or exception is not None:
             return None
 
         deployment_message = new_environment_message(track, project)
