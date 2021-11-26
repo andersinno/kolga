@@ -20,6 +20,34 @@ class KolgaHookSpec:
     """
 
     @hookspec
+    def application_shutdown(self, exception: Optional[Exception]) -> Optional[bool]:
+        """
+        Fired when the application is exiting.
+
+        Args:
+            exception: An ``Exception`` object if one is raised during the lifecycle.
+
+
+        Returns:
+            Optionally returns a boolean value denoting if the plugin
+            finished successfully.
+
+            The return value is not acted upon by Kólga.
+        """
+
+    @hookspec
+    def application_startup(self) -> Optional[bool]:
+        """
+        Fired when the application is starting.
+
+        Returns:
+            Optionally returns a boolean value denoting if the plugin
+            finished successfully.
+
+            The return value is not acted upon by Kólga.
+        """
+
+    @hookspec
     def container_build_begin(self) -> Optional[bool]:
         """
         Fired when building of containers is starting.
@@ -234,6 +262,10 @@ def _make_manager(
 
 class LifeCycleManager:
     def __init__(self, pm: "PluginManager[KolgaHookSpec]") -> None:
+        self.application = _make_manager(
+            pm.hook.application_startup,
+            pm.hook.application_shutdown,
+        )
         self.container_build = _make_manager(
             pm.hook.container_build_begin,
             pm.hook.container_build_complete,
