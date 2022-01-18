@@ -8,7 +8,10 @@ import colorful as cf
 import yaml
 from kubernetes import client as k8s_client
 from kubernetes import config as k8s_config
+from kubernetes.client.models.events_v1_event import EventsV1Event
+from kubernetes.client.models.events_v1_event_list import EventsV1EventList
 from kubernetes.client.rest import ApiException
+from tabulate import tabulate
 
 from kolga.libs.helm import Helm
 from kolga.libs.project import Project
@@ -131,6 +134,14 @@ class ApplicationDeploymentValues(HelmValues, total=False):
     service: _Service
 
 
+old_init = k8s_client.Configuration.__init__
+
+
+def new_init(self: k8s_client.Configuration, *k: Any, **kw: Any) -> None:
+    old_init(self, *k, **kw)
+    self.client_side_validation = False
+
+
 class Kubernetes:
     """
     A wrapper class around various Kubernetes tools and functions
@@ -144,6 +155,10 @@ class Kubernetes:
     ICON = "☸️"
 
     def __init__(self, track: str = settings.DEFAULT_TRACK) -> None:
+        # Need to monkey patch configuration to disable client side validation that fails Event fetching
+        # https://github.com/kubernetes-client/python/issues/1616
+        k8s_client.Configuration.__init__ = new_init
+
         self.client = self.create_client(track=track)
         self.helm = Helm()
 
@@ -632,6 +647,7 @@ class Kubernetes:
         project: Project,
         track: str,
     ) -> None:
+        pod_events: str = ""
         helm_path = self.get_helm_path()
         values = self.get_application_deployment_values(
             namespace=namespace,
@@ -660,6 +676,42 @@ class Kubernetes:
                 values=values,
                 raise_exception=False,
             )
+            try:
+                v1 = k8s_client.EventsV1Api(self.client)
+                response: EventsV1EventList = v1.list_namespaced_event(
+                    namespace,
+                    label_selector=",".join(
+                        f"{k}={v}"
+                        for k, v in (
+                            application_labels if application_labels else {}
+                        ).items()
+                    ),
+                )
+                events: List[List[str]] = []
+                event: EventsV1Event
+                for event in response.items:
+                    events.append(
+                        [
+                            event.deprecated_first_timestamp.strftime("%H:%M:%S"),
+                            f"{event.regarding.kind}/{event.regarding.name}",
+                            event.reason,
+                            event.note,
+                        ]
+                    )
+                pod_events = tabulate(
+                    events,
+                    headers=["Timestamp", "Object", "Reason", "Message"],
+                    tablefmt="orgtbl",
+                )
+
+            except ApiException as e:
+                logger.debug(
+                    "Exception when calling EventsV1beta1Api->list_namespaced_event: %s\n"
+                    % e
+                )
+            except Exception as e:
+                logger.debug("Getting events failed, ignoring: %s\n" % e)
+
             log_collector.stop()
 
             if result.return_code:
@@ -672,6 +724,13 @@ class Kubernetes:
 
                 status = self.status(namespace=namespace, labels=application_labels)
                 logger.info(message=str(status))
+
+                logger.info(
+                    icon=f"{self.ICON}  📋️️ ",
+                    title="Getting events for resource: ",
+                )
+
+                logger.info(pod_events)
 
                 logger.info(
                     icon=f"{self.ICON}  📋️️ ",

@@ -10,7 +10,7 @@ authors = ["Anders Innovations <admin@anders.fi>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-kubernetes = "^19.15"
+kubernetes = "^21.7"
 colorful = "^0.5.4"
 environs = "^9.3"
 hvac = "^0.11.0"
@@ -25,6 +25,7 @@ opentelemetry-sdk = {version = "^1.9.0", optional = true}
 opentelemetry-exporter-jaeger = {version = "^1.9.0", optional = true}
 opentelemetry-exporter-otlp = {version = "^1.9.0", optional = true}
 opentelemetry-exporter-zipkin = {version = "^1.9.0", optional = true}
+tabulate = "^0.8.9"
 
 [tool.poetry.extras]
 opentelemetry = ["opentelemetry-api", "opentelemetry-sdk", "opentelemetry-exporter-jaeger", "opentelemetry-exporter-otlp", "opentelemetry-exporter-zipkin"]
@@ -46,6 +47,7 @@ flake8-print = "^4.0"
 bandit = "^1.7.0"
 myst-parser = "^0.15.2"
 types-PyYAML = "^6.0.0"
+types-tabulate = "^0.8.5"
 
 [build-system]
 requires = ["poetry>=0.12"]
