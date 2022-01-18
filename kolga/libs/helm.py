@@ -123,7 +123,7 @@ class Helm:
         timeout = (
             (settings.K8S_PROBE_INITIAL_DELAY * replica_timeout_multiplier)
             + (settings.K8S_PROBE_FAILURE_THRESHOLD * settings.K8S_PROBE_PERIOD)
-            + 120  # Buffer time
+            + settings.HELM_BUFFER_TIME  # Buffer time
         )
 
         # Construct initial helm upgrade command
