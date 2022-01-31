@@ -49,6 +49,12 @@ jobs:
         tests: ["style-tests", "typing-tests", "package-tests", "docs", "test"]
     steps:
       - uses: actions/checkout@v2
+
+      - name: ensure lowercase image
+        run: |
+          echo BUILT_DOCKER_TEST_IMAGE=$(echo ${{ env.BUILT_DOCKER_TEST_IMAGE }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+          echo CONTAINER_REGISTRY_REPO=$(echo ${{ env.CONTAINER_REGISTRY_REPO }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+
       - name: ${{ matrix.tests }}
         run:  |
           if [[ "${{ matrix.tests }}" == "test" ]]
