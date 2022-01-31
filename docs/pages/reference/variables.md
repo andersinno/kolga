@@ -45,6 +45,7 @@ supplies a predefined variables with the SHA.
 | GIT\_COMMIT\_SHA              | Current commits SHA                                 |                              | GitLab     |
 | GIT\_DEFAULT\_TARGET\_BRANCH  | Default branch that is targeted for merges          | master                       | GitLab     |
 | GIT\_TARGET\_BRANCH           | Target branch for the specific merge/pull-request   |                              | GitLab     |
+| HELM\_BUFFER\_TIME            | Buffer time in Helm deployment (e.g. image pull)    | 120                          |            |
 | K8S\_ADDITIONAL\_HOSTNAMES    | Additional hostnames for the application            |                              |            |
 | K8S\_CLUSTER\_ISSUER          | The name of the clusterIssuer to be used by ingress |                              |            |
 | K8S\_HPA\_ENABLED             | Enable autoscaling of the Kubernetes deployment     | false                        |            |
