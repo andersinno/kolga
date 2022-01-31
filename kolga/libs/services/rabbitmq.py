@@ -32,7 +32,7 @@ class RabbitmqService(Service):
     def __init__(
         self,
         chart: str = "bitnami/rabbitmq",
-        chart_version: str = "7.4.3",
+        chart_version: str = "8.26.3",
         username: str = settings.DATABASE_USER,
         password: str = settings.DATABASE_PASSWORD,
         vhost: str = "default",
