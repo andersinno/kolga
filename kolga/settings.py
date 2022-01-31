@@ -132,6 +132,7 @@ class SettingsValues(BaseSettings):
     GIT_COMMIT_SHA: str = ""
     GIT_DEFAULT_TARGET_BRANCH: str = "master"
     GIT_TARGET_BRANCH: str = ""
+    HELM_BUFFER_TIME: int = 120
     JOB_ACTOR: str = ""
     K8S_ADDITIONAL_HOSTNAMES: List[str] = []
     K8S_CERTMANAGER_USE_OLD_API: bool = False

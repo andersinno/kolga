@@ -2,6 +2,7 @@
 
 ## [v3]
 ### Added
+- add HELM_BUFFER_TIME for control of Helm deploymet's "buffer time"
 - add K8S_INGRESS_PATH for defining ingress path (2021-11-15)
 - new configuration variables K8S_LIVENESS_PROBE_TIMEOUT & K8S_READINESS_PROBE_TIMEOUT added.
 - new configuration variable VAULT_PROJECT_SECRET_NAME, change VAULT_KV_SECRET_MOUNT_POINT's default value to "project_secrets" (2021-05-07)
