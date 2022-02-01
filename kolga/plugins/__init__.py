@@ -1,6 +1,6 @@
 from importlib import import_module
 from pathlib import Path
-from typing import Generator, Optional, Tuple, Type
+from typing import Callable, Generator, Iterator, Optional, Type, TypeVar
 
 from kolga.plugins.base import PluginBase
 from kolga.utils.logger import logger
@@ -22,4 +22,22 @@ def _import_plugins(
             logger.warning(f"Unable to load plugin: {module_name}")
 
 
-KOLGA_CORE_PLUGINS: Tuple[Type[PluginBase], ...] = tuple(_import_plugins())
+_T = TypeVar("_T")
+
+
+_T_Populate = Callable[[], Generator[_T, None, None]]
+
+
+class _LazyList(list[_T]):
+    def __init__(self, populate: _T_Populate[_T]) -> None:
+        self._populate: Optional[_T_Populate[_T]] = populate
+
+    def __iter__(self) -> Iterator[_T]:
+        if self._populate is not None:
+            self.extend(self._populate())
+            self._populate = None
+
+        return super().__iter__()
+
+
+KOLGA_CORE_PLUGINS = _LazyList(_import_plugins)

@@ -53,7 +53,11 @@ FROM poetry AS requirements-txt
 COPY poetry.lock pyproject.toml /
 RUN set -eux; \
     ln -s $HOME/.poetry/bin/poetry /usr/bin/poetry; \
-    poetry export --no-ansi --no-interaction -o /requirements.txt
+    poetry export \
+        --no-ansi \
+        --no-interaction \
+        --extras opentelemetry \
+        --output /requirements.txt
 
 # ===================================
 FROM build-base AS buildx

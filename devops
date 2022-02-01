@@ -74,7 +74,8 @@ class Devops:
         command = args.pop("command")
 
         # use dispatch pattern to invoke method with same name
-        getattr(self, command)(**args)
+        with settings.plugin_manager.lifecycle.application():
+            getattr(self, command)(**args)
 
     def create_images(self, git_submodule_depth: int, git_submodule_jobs: int) -> None:
         from kolga.libs.docker import Docker

@@ -20,6 +20,14 @@ sentry-sdk = "^1.0.0"
 PyJWT = "^2.0.1"
 cryptography = "^35.0.0"
 pydantic = {version = "^1.8.2", extras = ["dotenv"]}
+opentelemetry-api = {version = "^1.9.0", optional = true}
+opentelemetry-sdk = {version = "^1.9.0", optional = true}
+opentelemetry-exporter-jaeger = {version = "^1.9.0", optional = true}
+opentelemetry-exporter-otlp = {version = "^1.9.0", optional = true}
+opentelemetry-exporter-zipkin = {version = "^1.9.0", optional = true}
+
+[tool.poetry.extras]
+opentelemetry = ["opentelemetry-api", "opentelemetry-sdk", "opentelemetry-exporter-jaeger", "opentelemetry-exporter-otlp", "opentelemetry-exporter-zipkin"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
