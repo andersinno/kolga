@@ -2,6 +2,7 @@
 
 ## [v3]
 ### Added
+- Print out pod events to deployment log
 - add HELM_BUFFER_TIME for control of Helm deploymet's "buffer time"
 - add K8S_INGRESS_PATH for defining ingress path (2021-11-15)
 - new configuration variables K8S_LIVENESS_PROBE_TIMEOUT & K8S_READINESS_PROBE_TIMEOUT added.
