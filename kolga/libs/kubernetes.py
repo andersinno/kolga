@@ -678,9 +678,7 @@ class Kubernetes:
             )
             try:
                 v1 = k8s_client.EventsV1Api(self.client)
-                response: EventsV1EventList = v1.list_namespaced_event(
-                    namespace
-                )
+                response: EventsV1EventList = v1.list_namespaced_event(namespace)
                 events: List[List[str]] = []
                 event: EventsV1Event
                 for event in response.items:
