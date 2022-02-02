@@ -679,13 +679,7 @@ class Kubernetes:
             try:
                 v1 = k8s_client.EventsV1Api(self.client)
                 response: EventsV1EventList = v1.list_namespaced_event(
-                    namespace,
-                    label_selector=",".join(
-                        f"{k}={v}"
-                        for k, v in (
-                            application_labels if application_labels else {}
-                        ).items()
-                    ),
+                    namespace
                 )
                 events: List[List[str]] = []
                 event: EventsV1Event
