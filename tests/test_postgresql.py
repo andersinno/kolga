@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 
 import pytest
 
@@ -7,7 +8,6 @@ from kolga.libs.kubernetes import Kubernetes
 from kolga.libs.services.postresql import PostgresqlService
 
 DEFAULT_TRACK = os.environ.get("DEFAULT_TRACK", "stable")
-K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "testing")
 
 # ======================================================================
 # KUBERNETES CLUSTER _AND_ HELM SERVER REQUIRED FROM THIS POINT FORWARD
@@ -15,6 +15,7 @@ K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "testing")
 
 
 @pytest.mark.k8s
+@mock.patch.dict(os.environ, {"K8S_NAMESPACE": "psqlns"})
 def test_create_postgresql_database(
     kubernetes: Kubernetes, test_namespace: str, helm: Helm
 ) -> None:
@@ -24,7 +25,7 @@ def test_create_postgresql_database(
     track = DEFAULT_TRACK
 
     postgresql_service = PostgresqlService(
-        track=track, chart="testing/postgresql", chart_version="9.3.3"
+        track=track, chart="testing/postgresql", chart_version="10.16.1"
     )
 
     kubernetes.deploy_service(

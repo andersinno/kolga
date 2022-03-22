@@ -44,7 +44,7 @@ class PostgresqlService(Service):
     def __init__(
         self,
         chart: str = "bitnami/postgresql",
-        chart_version: str = "7.7.2",
+        chart_version: str = "10.16.1",
         username: str = settings.DATABASE_USER,
         password: str = settings.DATABASE_PASSWORD,
         database: str = settings.DATABASE_DB,

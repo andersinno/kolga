@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   kubernetes-master:
-    image: rancher/k3s:v1.18.8-k3s1
+    image: rancher/k3s:v${K3S_VERSION:-1.20.12}-k3s1
     command: server
     environment:
     - K3S_TOKEN=k3stestclustersecret
@@ -21,7 +21,7 @@ services:
     container_name: kubernetes
 
   kubernetes-node:
-    image: rancher/k3s:v1.18.8-k3s1
+    image: rancher/k3s:v${K3S_VERSION:-1.20.12}-k3s1
     tmpfs:
       - /run
       - /var/run

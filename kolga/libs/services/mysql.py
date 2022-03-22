@@ -33,8 +33,8 @@ class _Values(HelmValues):
 class MysqlService(Service):
     def __init__(
         self,
-        chart: str = "stable/mysql",
-        chart_version: str = "1.6.0",
+        chart: str = "bitnami/mysql",
+        chart_version: str = "8.8.22",
         username: str = settings.DATABASE_USER,
         password: str = settings.DATABASE_PASSWORD,
         database: str = settings.DATABASE_DB,

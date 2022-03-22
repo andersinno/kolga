@@ -135,6 +135,13 @@ test-sast:
 
 test:
   extends: .test
+  parallel:
+    matrix:
+      - PROVIDER: gke
+        K3S_VERSION:
+          - 1.20.12
+          - 1.21.6
+          - 1.22.3
   artifacts:
     paths:
       - pytest.xml
