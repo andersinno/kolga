@@ -17,17 +17,20 @@ from kolga.utils.models import HelmValues
 from kolga.utils.url import URL  # type: ignore
 
 
-class _TestFramework(TypedDict):
-    enabled: bool
+class _Auth(TypedDict):
+    database: str
+    password: str
+    rootPassword: str
+    username: str
+
+
+class _Image(TypedDict):
+    tag: str
 
 
 class _Values(HelmValues):
-    imageTag: str
-    mysqlUser: str
-    mysqlPassword: str
-    mysqlRootPassword: str
-    mysqlDatabase: str
-    testFramework: _TestFramework
+    auth: _Auth
+    image: _Image
 
 
 class MysqlService(Service):
@@ -54,12 +57,13 @@ class MysqlService(Service):
         self.mysql_version = mysql_version
         self.__databases: Dict[Service, Database] = {}
         self.values: _Values = {
-            "imageTag": self.mysql_version,
-            "mysqlUser": self.username,
-            "mysqlPassword": self.password,
-            "mysqlRootPassword": self.password,
-            "mysqlDatabase": self.database,
-            "testFramework": {"enabled": False},
+            "auth": {
+                "database": self.database,
+                "password": self.password,
+                "rootPassword": self.password,
+                "username": self.username,
+            },
+            "image": {"tag": self.mysql_version},
         }
 
     def setup_prerequisites(self) -> None:
