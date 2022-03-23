@@ -112,6 +112,7 @@ test-packages:
   extends: .code-tests
   script:
     - make package-tests
+  allow_failure: true
 
 test-docs:
   extends: .code-tests
