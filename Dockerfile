@@ -1,5 +1,5 @@
 # ===================================
-FROM python:3.9.10-alpine3.15 AS build-base
+FROM python:3.9.11-alpine3.15 AS build-base
 # ===================================
 
 # ===================================
@@ -17,8 +17,8 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS helm
 # ===================================
-ARG HELM_VERSION=3.7.1
-ARG HELM_CHECKSUM=6cd6cad4b97e10c33c978ff3ac97bb42b68f79766f1d2284cfd62ec04cd177f4
+ARG HELM_VERSION=3.8.1
+ARG HELM_CHECKSUM=d643f48fe28eeb47ff68a1a7a26fc5142f348d02c8bc38d699674016716f61cd
 ARG TARGET=/helm.tar.gz
 
 ADD https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz "$TARGET"
@@ -30,7 +30,7 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS poetry
 # ===================================
-ARG POETRY_VERSION=1.1.11
+ARG POETRY_VERSION=1.1.13
 ARG POETRY_CHECKSUM=e973b3badb95a916bfe250c22eeb7253130fd87312afa326eb02b8bdcea8f4a7
 ARG TARGET=/tmp/get-poetry.py
 
@@ -62,8 +62,8 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS buildx
 # ===================================
-ARG BUILDX_VERSION=0.7.1
-ARG BUILDX_CHECKSUM=22fcb78c66905bf6ddf198118aaa9838b0349a25347606264be17e4276d6d5fc
+ARG BUILDX_VERSION=0.8.1
+ARG BUILDX_CHECKSUM=1d2ecde1dd3562332d18aabd9daebcf0df1be5f8ecfe6aeb03f1350ee6ade3cc
 ARG TARGET=/buildx/docker-buildx
 
 ADD https://github.com/docker/buildx/releases/download/v${BUILDX_VERSION}/buildx-v${BUILDX_VERSION}.linux-amd64 "$TARGET"
