@@ -136,6 +136,7 @@ test-sast:
 
 test:
   extends: .test
+  image: ${BOOTSTRAP_IMAGE}
   parallel:
     matrix:
       - PROVIDER: gke

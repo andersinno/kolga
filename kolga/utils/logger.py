@@ -1,3 +1,4 @@
+import sys
 from typing import Optional
 
 import colorful as cf
@@ -20,7 +21,7 @@ class Logger:
         icon: Optional[str] = "🐛",
     ) -> None:
         """
-        Log formatted warnings to stdout
+        Log formatted warnings to stderr
 
         Args:
             message: Debug message
@@ -30,22 +31,22 @@ class Logger:
 
         if settings.KOLGA_DEBUG:
             _message = self._create_message(message, icon)
-            print(f"{cf.purple}{_message}{cf.reset}")  # noqa: T001
+            print(f"{cf.purple}{_message}{cf.reset}", file=sys.stderr)  # noqa: T001
 
     def debug_std(
         self,
-        std: SubprocessResult,
+        result: SubprocessResult,
     ) -> None:
-        return_code_color = cf.green if std.return_code == 0 else cf.red
+        return_code_color = cf.green if result.return_code == 0 else cf.red
         self.debug(
-            message=f"{std.command}: {return_code_color}{std.return_code}{cf.reset}"
+            message=f"{result.command}: {return_code_color}{result.return_code}{cf.reset}"
         )
 
-        if std.out:
-            self.debug(message=f"{std.out}")
+        if result.out:
+            self.debug(message=f"{result.out}")
 
-        if std.err:
-            self.debug(message=f"{std.err}")
+        if result.err:
+            self.debug(message=f"{result.err}")
 
     def error(
         self,
@@ -55,7 +56,7 @@ class Logger:
         raise_exception: bool = True,
     ) -> None:
         """
-        Log formatted errors to stdout and optionally raise them
+        Log formatted errors to stderr and optionally raise them
 
         Args:
             message: Verbose/Custom error message of the exception
@@ -69,25 +70,25 @@ class Logger:
         if error and not raise_exception:
             _message += f"{error}"
 
-        print(f"{cf.red}{_message}{cf.reset}")  # noqa: T001
+        print(f"{cf.red}{_message}{cf.reset}", file=sys.stderr)  # noqa: T001
         if raise_exception:
             error = error or Exception(message_string)
             raise error
 
     def warning(self, message: str, icon: Optional[str] = None) -> None:
         """
-        Log formatted warnings to stdout
+        Log formatted warnings to stderr
 
         Args:
             message: Verbose/Custom error message of the exception
             icon: Icon to place as before the output
         """
         _message = self._create_message(message, icon)
-        print(f"{cf.yellow}{_message}{cf.reset}")  # noqa: T001
+        print(f"{cf.yellow}{_message}{cf.reset}", file=sys.stderr)  # noqa: T001
 
     def success(self, message: str = "", icon: Optional[str] = None) -> None:
         """
-        Log formatted successful events to stdout
+        Log formatted successful events to stderr
 
         Args:
             message: Verbose/Custom error message of the exception
@@ -95,7 +96,7 @@ class Logger:
         """
         message_string = message if message else "Done"
         _message = self._create_message(message_string, icon)
-        print(f"{cf.green}{_message}{cf.reset}")  # noqa: T001
+        print(f"{cf.green}{_message}{cf.reset}", file=sys.stderr)  # noqa: T001
 
     def info(
         self,
@@ -105,7 +106,7 @@ class Logger:
         end: str = "\n",
     ) -> None:
         """
-        Log formatted info events to stdout
+        Log formatted info events to stderr
 
         Args:
             title: Title of the message, printed in bold
@@ -117,7 +118,7 @@ class Logger:
             f"{cf.bold}{title}{cf.reset}{message}" if title else f"{message}"
         )
         _message = self._create_message(message_string, icon)
-        print(f"{_message}", end=end, flush=True)  # noqa: T001
+        print(f"{_message}", end=end, file=sys.stderr, flush=True)  # noqa: T001
 
     def std(
         self,
@@ -126,7 +127,7 @@ class Logger:
         log_error: bool = True,
     ) -> None:
         """
-        Log results of :class:`SubprocessResult` warnings to stdout
+        Log results of :class:`SubprocessResult` warnings to stderr
 
         Args:
             std: Result from a subprocess call
@@ -140,7 +141,7 @@ class Logger:
         if raise_exception:
             raise Exception(output_string)
         else:
-            print(output_string)  # noqa: T001
+            print(output_string, file=sys.stderr)  # noqa: T001
 
 
 logger = Logger()
