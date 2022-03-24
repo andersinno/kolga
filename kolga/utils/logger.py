@@ -21,7 +21,7 @@ class Logger:
         icon: Optional[str] = "🐛",
     ) -> None:
         """
-        Log formatted warnings to stdout
+        Log formatted warnings to stderr
 
         Args:
             message: Debug message
@@ -56,7 +56,7 @@ class Logger:
         raise_exception: bool = True,
     ) -> None:
         """
-        Log formatted errors to stdout and optionally raise them
+        Log formatted errors to stderr and optionally raise them
 
         Args:
             message: Verbose/Custom error message of the exception
@@ -77,7 +77,7 @@ class Logger:
 
     def warning(self, message: str, icon: Optional[str] = None) -> None:
         """
-        Log formatted warnings to stdout
+        Log formatted warnings to stderr
 
         Args:
             message: Verbose/Custom error message of the exception
@@ -88,7 +88,7 @@ class Logger:
 
     def success(self, message: str = "", icon: Optional[str] = None) -> None:
         """
-        Log formatted successful events to stdout
+        Log formatted successful events to stderr
 
         Args:
             message: Verbose/Custom error message of the exception
@@ -106,7 +106,7 @@ class Logger:
         end: str = "\n",
     ) -> None:
         """
-        Log formatted info events to stdout
+        Log formatted info events to stderr
 
         Args:
             title: Title of the message, printed in bold
@@ -127,7 +127,7 @@ class Logger:
         log_error: bool = True,
     ) -> None:
         """
-        Log results of :class:`SubprocessResult` warnings to stdout
+        Log results of :class:`SubprocessResult` warnings to stderr
 
         Args:
             std: Result from a subprocess call
