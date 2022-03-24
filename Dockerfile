@@ -30,7 +30,7 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS poetry
 # ===================================
-ARG POETRY_VERSION=1.1.11
+ARG POETRY_VERSION=1.1.13
 ARG POETRY_CHECKSUM=e973b3badb95a916bfe250c22eeb7253130fd87312afa326eb02b8bdcea8f4a7
 ARG TARGET=/tmp/get-poetry.py
 
