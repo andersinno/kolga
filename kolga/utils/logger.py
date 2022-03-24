@@ -35,18 +35,18 @@ class Logger:
 
     def debug_std(
         self,
-        std: SubprocessResult,
+        result: SubprocessResult,
     ) -> None:
-        return_code_color = cf.green if std.return_code == 0 else cf.red
+        return_code_color = cf.green if result.return_code == 0 else cf.red
         self.debug(
-            message=f"{std.command}: {return_code_color}{std.return_code}{cf.reset}"
+            message=f"{result.command}: {return_code_color}{result.return_code}{cf.reset}"
         )
 
-        if std.out:
-            self.debug(message=f"{std.out}")
+        if result.out:
+            self.debug(message=f"{result.out}")
 
-        if std.err:
-            self.debug(message=f"{std.err}")
+        if result.err:
+            self.debug(message=f"{result.err}")
 
     def error(
         self,

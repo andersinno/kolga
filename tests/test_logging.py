@@ -22,9 +22,9 @@ def test_debug_logging(debug: int, has_output: bool, capsys: Any) -> None:
         logger.debug(message=message)
         captured = capsys.readouterr()
         if has_output:
-            assert message in captured.out
+            assert message in captured.err
         else:
-            assert message not in captured.out
+            assert message not in captured.err
 
 
 @pytest.mark.parametrize(
@@ -48,13 +48,13 @@ def test_debug_std_logging(debug: int, has_output: bool, capsys: Any) -> None:
     )
 
     with mock.patch.object(settings, "KOLGA_DEBUG", debug):
-        logger.debug_std(std=result)
+        logger.debug_std(result=result)
         captured = capsys.readouterr()
         if has_output:
-            assert out_message in captured.out
-            assert err_message in captured.out
-            assert captured.out[2:9] == f"{command}: {return_code}"
+            assert out_message in captured.err
+            assert err_message in captured.err
+            assert captured.err[2:9] == f"{command}: {return_code}"
         else:
-            assert out_message not in captured.out
-            assert err_message not in captured.out
-            assert captured.out[2:9] != f"{command}: {return_code}"
+            assert out_message not in captured.err
+            assert err_message not in captured.err
+            assert captured.err[2:9] != f"{command}: {return_code}"
