@@ -62,13 +62,10 @@ variables:
   image: aquasec/trivy
   script:
     - trivy image --clear-cache
-    - trivy --cache-dir .trivycache/ --no-progress  image --exit-code 1 --severity HIGH ${DEVELOPMENT_IMAGE}
+    - trivy image --no-progress --exit-code 1 --severity HIGH ${DEVELOPMENT_IMAGE}
   variables:
     TRIVY_USERNAME: ${CI_REGISTRY_USER}
     TRIVY_PASSWORD: ${CI_REGISTRY_PASSWORD}
-  cache:
-    paths:
-      - .trivycache/
   only:
     - merge_requests
     - master
