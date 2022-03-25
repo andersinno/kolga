@@ -81,7 +81,7 @@ class MysqlService(Service):
         databases = {}
         database_values_file = tempfile.NamedTemporaryFile(delete=False)
         values_file = Path(database_values_file.name)
-        database_values_file.write(b"initializationFiles: \n")
+        database_values_file.write(b"initdbScripts: \n")
         for dependent in self._prerequisite_of:
             database_url = self.get_base_database_url()
             database_url.username = str(uuid4()).replace("-", "")
