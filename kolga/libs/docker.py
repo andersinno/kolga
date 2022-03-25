@@ -272,6 +272,12 @@ class Docker:
                 logger.info(title=f"\t ℹ️ Cache from: {cache_tag}")
                 build_command.append(f"--cache-from=type=registry,ref={cache_tag}")
 
+        if settings.DOCKER_BUILD_PLATFORMS:
+            platforms = ",".join(
+                platform.strip() for platform in settings.DOCKER_BUILD_PLATFORMS
+            )
+            build_command.append(f"--platform={platforms}")
+
         tags = self.get_image_tags(stage, final_image=final_image)
 
         for tag in tags:

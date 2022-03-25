@@ -121,6 +121,7 @@ class SettingsValues(BaseSettings):
     DEPENDS_ON_PROJECTS: str = ""
     DOCKER_BUILD_ARG_PREFIX: str = "DOCKER_BUILD_ARG_"
     DOCKER_BUILD_CONTEXT: str = "."
+    DOCKER_BUILD_PLATFORMS: Optional[List[str]] = None
     DOCKER_BUILD_SOURCE: str = "Dockerfile"
     DOCKER_HOST: str = ""
     DOCKER_IMAGE_NAME: str = ""

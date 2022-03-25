@@ -34,6 +34,7 @@ supplies a predefined variables with the SHA.
 | DEFAULT\_TRACK                | Track name used if not explicitly set               | stable                       |            |
 | DOCKER\_BUILD\_ARG\_PREFIX    | Docker build-arg environment variable prefix        | DOCKER\_BUILD\_ARG\_         |            |
 | DOCKER\_BUILD\_CONTEXT        | Build context folder                                | .                            |            |
+| DOCKER\_BUILD\_PLATFORMS      | The platforms to build for                          | <Platform default>           |            |
 | DOCKER\_BUILD\_SOURCE         | Dockerfile to build from                            | Dockerfile                   |            |
 | DOCKER\_HOST                  | Docker runtime                                      |                              |            |
 | DOCKER\_IMAGE\_NAME           | Name of docker image \(without tag\)                | $PROJECT\_NAME               |            |
