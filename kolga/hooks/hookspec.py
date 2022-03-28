@@ -241,6 +241,30 @@ class KolgaHookSpec:
             The return value is not acted upon by Kólga.
         """
 
+    @hookspec
+    def buildx_setup_buildkit_begin(self) -> Optional[bool]:
+        """
+        Fired before creating a Docker buildx builder
+
+        Returns:
+            Optionally returns a boolean value denoting if the plugin
+            finished successfully.
+
+            The return value is not acted upon by Kólga.
+        """
+
+    @hookspec
+    def buildx_setup_buildkit_complete(self) -> Optional[bool]:
+        """
+        Fired after creating a Docker buildx builder
+
+        Returns:
+            Optionally returns a boolean value denoting if the plugin
+            finished successfully.
+
+            The return value is not acted upon by Kólga.
+        """
+
 
 def _make_manager(
     at_enter: Callable[..., Any],
@@ -285,4 +309,8 @@ class LifeCycleManager:
         self.service_deployment = _make_manager(
             pm.hook.service_deployment_begin,
             pm.hook.service_deployment_complete,
+        )
+        self.buildx_setup_buildkit = _make_manager(
+            pm.hook.buildx_setup_buildkit_begin,
+            pm.hook.buildx_setup_buildkit_complete,
         )

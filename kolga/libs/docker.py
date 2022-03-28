@@ -54,23 +54,24 @@ class Docker:
         return self.stage_image_tag(stage)
 
     def setup_buildkit(self, name: str = "kolgabk") -> None:
-        setup_command = [
-            "docker",
-            "buildx",
-            "create",
-            "--name",
-            name,
-            "--use",
-        ]
+        with settings.plugin_manager.lifecycle.buildx_setup_buildkit():
+            setup_command = [
+                "docker",
+                "buildx",
+                "create",
+                "--name",
+                name,
+                "--use",
+            ]
 
-        result = run_os_command(setup_command)
-        if result.return_code:
-            logger.std(result, raise_exception=True)
-        else:
-            logger.success(
-                icon=f"{self.ICON} 🔑",
-                message=f"New buildx builder instance is set up (Instance name: {name})",
-            )
+            result = run_os_command(setup_command)
+            if result.return_code:
+                logger.std(result, raise_exception=True)
+            else:
+                logger.success(
+                    icon=f"{self.ICON} 🔑",
+                    message=f"New buildx builder instance is set up (Instance name: {name})",
+                )
 
     def login(
         self,
