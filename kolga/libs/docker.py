@@ -69,7 +69,7 @@ class Docker:
                 logger.std(result, raise_exception=True)
             else:
                 logger.success(
-                    icon=f"{self.ICON} 🔑",
+                    icon=f"{self.ICON} 🔨",
                     message=f"New buildx builder instance is set up (Instance name: {name})",
                 )
 
