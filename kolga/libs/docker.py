@@ -248,7 +248,10 @@ class Docker:
         push_images: bool = True,
         disable_cache: bool = settings.BUILDKIT_CACHE_DISABLE,
     ) -> DockerImage:
-        logger.info(icon=f"{self.ICON} 🔨", title=f"Building stage '{stage}': ")
+        title = f"Building stage '{stage}': "
+        if settings.DOCKER_BUILD_PLATFORMS:
+            title += f" {settings.DOCKER_BUILD_PLATFORMS}"
+        logger.info(icon=f"{self.ICON} 🔨", title=title)
 
         build_command = [
             "docker",
