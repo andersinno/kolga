@@ -275,7 +275,7 @@ class Settings(SettingsValues):
                 )
                 loading_plugins = True
             if plugin_loaded:
-                logger.info(f"{plugin.verbose_name}: {message}")
+                logger.info(f"\t{plugin.verbose_name}: {message}")
             # TODO: Implement verbose logging where the plugin loading error would be shown
 
     def _load_plugin(self, plugin: Type[PluginBase]) -> Tuple[bool, str]:
