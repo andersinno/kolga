@@ -24,6 +24,9 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
     # Set maximum allowed upload file size
     nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.ingress.maxBodySize }}
+    # Use RegEx for paths
+    # https://kubernetes.github.io/ingress-nginx/user-guide/ingress-path-matching/#regular-expression-support
+    nginx.ingress.kubernetes.io/use-regex: "true"
     {{- if .Values.ingress.preventRobots }}
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /robots.txt {
