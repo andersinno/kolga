@@ -2,6 +2,7 @@
 
 ## [v3]
 ### Added
+- Add DOCKER_BUILD_PLATFORMS for allowing to build multi arch images (2022-03-29)
 - Use regex for Ingress paths
 - Print out pod events to deployment log
 - add HELM_BUFFER_TIME for control of Helm deploymet's "buffer time"
