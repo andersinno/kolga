@@ -54,23 +54,24 @@ class Docker:
         return self.stage_image_tag(stage)
 
     def setup_buildkit(self, name: str = "kolgabk") -> None:
-        setup_command = [
-            "docker",
-            "buildx",
-            "create",
-            "--name",
-            name,
-            "--use",
-        ]
+        with settings.plugin_manager.lifecycle.buildx_setup_buildkit():
+            setup_command = [
+                "docker",
+                "buildx",
+                "create",
+                "--name",
+                name,
+                "--use",
+            ]
 
-        result = run_os_command(setup_command)
-        if result.return_code:
-            logger.std(result, raise_exception=True)
-        else:
-            logger.success(
-                icon=f"{self.ICON} 🔑",
-                message=f"New buildx builder instance is set up (Instance name: {name})",
-            )
+            result = run_os_command(setup_command)
+            if result.return_code:
+                logger.std(result, raise_exception=True)
+            else:
+                logger.success(
+                    icon=f"{self.ICON} 🔨",
+                    message=f"New buildx builder instance is set up (Instance name: {name})",
+                )
 
     def login(
         self,
@@ -247,7 +248,10 @@ class Docker:
         push_images: bool = True,
         disable_cache: bool = settings.BUILDKIT_CACHE_DISABLE,
     ) -> DockerImage:
-        logger.info(icon=f"{self.ICON} 🔨", title=f"Building stage '{stage}': ")
+        title = f"Building stage '{stage}': "
+        if settings.DOCKER_BUILD_PLATFORMS:
+            title += f" {settings.DOCKER_BUILD_PLATFORMS}"
+        logger.info(icon=f"{self.ICON} 🔨", title=title)
 
         build_command = [
             "docker",
