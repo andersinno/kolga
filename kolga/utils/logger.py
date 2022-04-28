@@ -1,5 +1,8 @@
 import sys
-from typing import Optional
+import time
+from contextlib import contextmanager
+from functools import partial
+from typing import Callable, Generator, Optional
 
 import colorful as cf
 
@@ -14,6 +17,41 @@ class Logger:
     def _create_message(self, message: str, icon: Optional[str] = None) -> str:
         icon_string = f"{icon} " if icon else ""
         return f"{icon_string}{message}"
+
+    def __create_section_data(self, section_name: str, collapsed: bool) -> str:
+        collapsed_string = "true" if collapsed else "false"
+        now = int(time.time())
+        section_info = f"{section_name}[collapsed={collapsed_string}]\r\033[0K"
+        return f"{now}:{section_info}"
+
+    def start_section(
+        self, section_title: str, section_name: str, collapsed: bool = False
+    ) -> Callable[[], None]:
+        section_data = self.__create_section_data(section_name, collapsed)
+        section_message = f"section_start:{section_data}{section_title}"
+
+        print(section_message, file=sys.stderr)  # noqa: T001
+
+        return partial(self.end_section, section_name=section_name, collapsed=collapsed)
+
+    def end_section(self, section_name: str, collapsed: bool = False) -> None:
+        section_data = self.__create_section_data(section_name, collapsed)
+        section_message = f"section_end:{section_data}"
+
+        print(section_message, file=sys.stderr)  # noqa: T001
+
+    @contextmanager
+    def do_section(
+        self, section_title: str, section_name: str, collapsed: bool = False
+    ) -> Generator[None, None, None]:
+        end_section = self.start_section(section_title, section_name, collapsed)
+        try:
+            yield
+        except Exception as e:
+            end_section()
+            raise e
+        finally:
+            end_section()
 
     def debug(
         self,
