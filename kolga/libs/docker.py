@@ -301,6 +301,12 @@ class Docker:
                 for tag in tags:
                     logger.info(title=f"\t 🏷 Tagged: {self.image_repo}:{tag}")
 
+            with logger.do_section(
+                section_title="\t📄 Build log",
+                section_name=f"docker_build_{stage}",
+                collapsed=True,
+            ):
+                logger.std(result)
         return image
 
     def delete_image(self, image: DockerImage) -> None:
