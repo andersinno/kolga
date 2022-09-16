@@ -3,6 +3,9 @@
   "extends": [
     "config:base"
   ],
+  "enabledManagers": [
+    "poetry"
+  ],
   "lockFileMaintenance": {
     "enabled": true
   },
