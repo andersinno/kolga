@@ -27,12 +27,16 @@ class _Limits(TypedDict, total=False):
     requests: _RequestLimits
 
 
+class _Auth(TypedDict, total=False):
+    username: str
+    password: str
+    database: str
+
+
 class _Values(HelmValues):
     fullnameOverride: str
     image: _Image
-    postgresqlUsername: str
-    postgresqlPassword: str
-    postgresqlDatabase: str
+    auth: _Auth
     resources: _Limits
 
 
@@ -68,9 +72,11 @@ class PostgresqlService(Service):
         self.values: _Values = {
             "image": {"repository": image.repository},
             "fullnameOverride": get_deploy_name(track=self.track, postfix=self.name),
-            "postgresqlUsername": self.username,
-            "postgresqlPassword": self.password,
-            "postgresqlDatabase": self.database,
+            "auth": {
+                "username": self.username,
+                "password": self.password,
+                "database": self.database,
+            },
             "resources": {
                 "requests": {"memory": self.memory_request, "cpu": self.cpu_request},
             },
