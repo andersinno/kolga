@@ -171,6 +171,7 @@ class SettingsValues(BaseSettings):
     K8S_PERSISTENT_STORAGE_PATH: str = ""
     K8S_PERSISTENT_STORAGE_SIZE: str = "1Gi"
     K8S_PERSISTENT_STORAGE_STORAGE_TYPE: str = "standard"
+    K8S_POD_SECURITY: str = ""
     K8S_PROBE_FAILURE_THRESHOLD: int = 3
     K8S_PROBE_INITIAL_DELAY: int = 60
     K8S_PROBE_PERIOD: int = 10

@@ -287,6 +287,17 @@ class Kubernetes:
         # TODO: Un-hardcode this label
         labels = {"app": "kubed"}
 
+        if settings.K8S_POD_SECURITY:
+            if settings.K8S_POD_SECURITY not in (
+                "privileged",
+                "baseline",
+                "restricted",
+            ):
+                logger.warning(
+                    f"Unknown pod security standard: {settings.K8S_POD_SECURITY}"
+                )
+            labels["pod-security.kubernetes.io/enforce"] = settings.K8S_POD_SECURITY
+
         if settings.PROJECT_ID:
             labels["kolga.io/project_id"] = settings.PROJECT_ID
 
