@@ -6,6 +6,8 @@ set -u
 # Change working directory to project root
 cd "$(dirname "$0")/.."
 
+set -x
+
 flake8
-isort . -c
-black . --check
+isort . --check
+black . --check --diff
