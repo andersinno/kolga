@@ -30,6 +30,10 @@ variables:
   SERVICE_ARTIFACT_FOLDER: "service_artifacts"
   BUILD_ARTIFACT_FOLDER: "build_artifacts"
 
+  # Default PodSecurity label
+  K8S_POD_SECURITY: baseline
+
+  # Kolga branch used in the pipeline
   KOLGA_BRANCH: "v3"
 
 .build:
