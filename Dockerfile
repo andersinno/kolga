@@ -28,31 +28,11 @@ RUN set -eux; \
     tar -xvf "$TARGET" -C /helm
 
 # ===================================
-FROM build-base AS poetry
+FROM build-base AS requirements-txt
 # ===================================
-ARG POETRY_VERSION=1.1.13
-ARG POETRY_CHECKSUM=e973b3badb95a916bfe250c22eeb7253130fd87312afa326eb02b8bdcea8f4a7
-ARG TARGET=/tmp/get-poetry.py
-
-ADD https://raw.githubusercontent.com/python-poetry/poetry/${POETRY_VERSION}/get-poetry.py "$TARGET"
-RUN set -eux; \
-    echo "$POETRY_CHECKSUM *$TARGET" | sha256sum -c -; \
-    python /tmp/get-poetry.py --version "${POETRY_VERSION}"; \
-    # Remove all other python version than the one used by the base image \
-    # Note: `find` does not support negative lookahead, nor does `grep` \
-    # Space savings: ~70MB \
-    find $HOME/.poetry/lib/poetry/_vendor \
-        -type d \
-        -not -regex "^.*py${PYTHON_VERSION%.*}.*$" \
-        -not -path $HOME/.poetry/lib/poetry/_vendor \
-        -exec rm -rf {} +;
-
-# ===================================
-FROM poetry AS requirements-txt
-# ===================================
+RUN pip install poetry poetry-plugin-export
 COPY poetry.lock pyproject.toml /
 RUN set -eux; \
-    ln -s $HOME/.poetry/bin/poetry /usr/bin/poetry; \
     poetry export \
         --no-ansi \
         --no-interaction \
@@ -127,13 +107,11 @@ LABEL "com.azure.dev.pipelines.agent.handler.node.path"="/usr/bin/node"
 # Create a writable directory for shared configurations
 RUN mkdir -m777 /config
 
-COPY --from=poetry /root/.poetry /root/.poetry
-RUN ln -s /root/.poetry/bin/poetry /usr/bin/poetry
-
 COPY poetry.lock pyproject.toml /app/
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
         python3-dev \
+    && pip install poetry \
     && poetry config virtualenvs.create false \
     && poetry install \
     && rm -r /root/.cache \
