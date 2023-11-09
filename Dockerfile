@@ -83,6 +83,7 @@ RUN apk add --no-cache --virtual .build-deps \
         bash \
         ca-certificates \
         docker-cli \
+        docker-cli-compose \
         git \
         libffi \
         make \
@@ -94,7 +95,6 @@ RUN apk add --no-cache --virtual .build-deps \
     && ln -s pip3 /usr/bin/pip \
     && python3 -m ensurepip \
     && pip install --no-cache-dir --no-input -r /tmp/requirements.txt \
-    && pip install --no-cache-dir --no-input docker-compose \
     && rm -rf /root/.cache \
     && rm -rf /root/.cargo \
     && apk del .build-deps
