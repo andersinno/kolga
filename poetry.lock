@@ -820,23 +820,23 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kubernetes"
-version = "21.7.0"
+version = "27.2.0"
 description = "Kubernetes python client"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "kubernetes-21.7.0-py2.py3-none-any.whl", hash = "sha256:044c20253f8577491a87af8f9edea1f929ed6d62ce306376a6cb8aed24e572c5"},
-    {file = "kubernetes-21.7.0.tar.gz", hash = "sha256:c9849afc2eafdce60efa210049ee7a94e7ef6cf3a7afa14a69b3bf0447825977"},
+    {file = "kubernetes-27.2.0-py2.py3-none-any.whl", hash = "sha256:0f9376329c85cf07615ed6886bf9bf21eb1cbfc05e14ec7b0f74ed8153cd2815"},
+    {file = "kubernetes-27.2.0.tar.gz", hash = "sha256:d479931c6f37561dbfdf28fc5f46384b1cb8b28f9db344ed4a232ce91990825a"},
 ]
 
 [package.dependencies]
 certifi = ">=14.05.14"
 google-auth = ">=1.0.1"
+oauthlib = ">=3.2.2"
 python-dateutil = ">=2.5.3"
 pyyaml = ">=5.4.1"
 requests = "*"
 requests-oauthlib = "*"
-setuptools = ">=21.0.0"
 six = ">=1.9.0"
 urllib3 = ">=1.24.2"
 websocket-client = ">=0.32.0,<0.40.0 || >0.40.0,<0.41.dev0 || >=0.43.dev0"
@@ -2418,4 +2418,4 @@ opentelemetry = ["opentelemetry-api", "opentelemetry-exporter-jaeger", "opentele
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "7e645f3f0fdb3edc34a200dad28accd7c6e11dbdac789f1c6f203475528e6ff5"
+content-hash = "2cd1093cbda1ad4eabc6afa1908e2e9c24b104e81c12ecbfbaf93ec6c4d3095b"

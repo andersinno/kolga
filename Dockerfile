@@ -5,8 +5,8 @@ FROM python:3.11-alpine AS build-base
 # ===================================
 FROM build-base AS kubectl
 # ===================================
-ARG KUBECTL_VERSION=1.19.16
-ARG KUBECTL_CHECKSUM=9524a026af932ac9ca1895563060f7fb3b89f1387016e69a1a73cf7ce0f9baa54775b00c886557a97bae9b6dbc1b49c045da5dcea9ca2c1452c18c5c45fefd55
+ARG KUBECTL_VERSION=1.27.7
+ARG KUBECTL_CHECKSUM=87b7ac839cac8d96efa1c6170cf32ed2bbe14e7194971df4b4736699152e294a0aa0018f3d8ae1dcf9905c3c784a7a15c297382450c0431a0daf98f300d3ef16
 ARG TARGET=/kubernetes-client.tar.gz
 
 ADD https://dl.k8s.io/v${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz "$TARGET"

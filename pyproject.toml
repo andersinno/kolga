@@ -10,7 +10,7 @@ authors = ["Anders Innovations <admin@anders.fi>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-kubernetes = "^21.7"
+kubernetes = "^27"
 colorful = "^0.5.4"
 environs = "^9.3"
 hvac = "^0.11.0"
