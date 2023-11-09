@@ -42,13 +42,13 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS buildx
 # ===================================
-ARG BUILDX_VERSION=0.8.1
-ARG BUILDX_CHECKSUM=1d2ecde1dd3562332d18aabd9daebcf0df1be5f8ecfe6aeb03f1350ee6ade3cc
+ARG BUILDX_VERSION=0.11.2
+ARG BUILDX_CHECKSUM=60569a65eb08e28eadcd9e9ff82a1f4166ed2867af48c1ec1b7b82d3ca15ec29d9972186cd7b84178dadc050f66e59f138d5e391f47dd17ac474e5aee789fc47
 ARG TARGET=/buildx/docker-buildx
 
 ADD https://github.com/docker/buildx/releases/download/v${BUILDX_VERSION}/buildx-v${BUILDX_VERSION}.linux-amd64 "$TARGET"
 RUN set -eux; \
-    echo "$BUILDX_CHECKSUM *$TARGET" | sha256sum -c -; \
+    echo "$BUILDX_CHECKSUM *$TARGET" | sha512sum -c -; \
     chmod a+x "$TARGET"
 
 # ===================================
