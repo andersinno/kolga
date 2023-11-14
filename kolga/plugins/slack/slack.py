@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 
 
 class KolgaSlackPlugin(PluginBase):
-
     name = "slack"
     verbose_name = "Kolga Slack Plugin"
     version = 0.1

@@ -34,7 +34,7 @@ opentelemetry = ["opentelemetry-api", "opentelemetry-sdk", "opentelemetry-export
 pytest = "^6.2"
 pytest-cov = "^3.0"
 pytest-dotenv = "^0.5.1"
-black = "=21.9b0"
+black = "=23.11.0"
 flake8 = "^4.0.1"
 isort = "^5.9"
 mypy = "^0.910"

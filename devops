@@ -9,7 +9,6 @@ from kolga.utils.general import get_track
 
 class Devops:
     def __init__(self) -> None:
-
         settings.load_plugins()
 
         self.parser = argparse.ArgumentParser(description="Anders Devops")
