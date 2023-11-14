@@ -32,12 +32,16 @@ FROM build-base AS requirements-txt
 # ===================================
 RUN pip install poetry poetry-plugin-export
 COPY poetry.lock pyproject.toml /
-RUN set -eux; \
-    poetry export \
+RUN poetry export \
         --no-ansi \
         --no-interaction \
         --extras opentelemetry \
         --output /requirements.txt
+RUN poetry export \
+        --no-ansi \
+        --no-interaction \
+        --only dev \
+        --output /requirements-dev.txt
 
 # ===================================
 FROM build-base AS buildx
@@ -69,16 +73,7 @@ ENV DOCKER_CLI_EXPERIMENTAL=enabled
 
 WORKDIR /app
 
-COPY --from=requirements-txt /requirements.txt /tmp/requirements.txt
-
-RUN apk add --no-cache --virtual .build-deps \
-        build-base \
-        cargo \
-        libffi-dev \
-        openssl-dev \
-        python3-dev \
-        rust \
-    && apk add --no-cache \
+RUN apk add --no-cache \
         apache2-utils \
         bash \
         ca-certificates \
@@ -93,11 +88,11 @@ RUN apk add --no-cache --virtual .build-deps \
         shadow \
     && ln -sf python3 /usr/bin/python \
     && ln -s pip3 /usr/bin/pip \
-    && python3 -m ensurepip \
-    && pip install --no-cache-dir --no-input -r /tmp/requirements.txt \
-    && rm -rf /root/.cache \
-    && rm -rf /root/.cargo \
-    && apk del .build-deps
+    && python3 -m ensurepip
+
+COPY --from=requirements-txt /requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir --no-input -r /tmp/requirements.txt \
+    && rm -rf /root/.cache /root/.cargo
 
 # ===================================
 FROM app-base AS development
@@ -107,15 +102,9 @@ LABEL "com.azure.dev.pipelines.agent.handler.node.path"="/usr/bin/node"
 # Create a writable directory for shared configurations
 RUN mkdir -m777 /config
 
-COPY poetry.lock pyproject.toml /app/
-RUN apk add --no-cache --virtual .build-deps \
-        build-base \
-        python3-dev \
-    && pip install poetry \
-    && poetry config virtualenvs.create false \
-    && poetry install \
-    && rm -r /root/.cache \
-    && apk del .build-deps
+COPY --from=requirements-txt /requirements-dev.txt /tmp/requirements-dev.txt
+RUN pip install --no-cache-dir --no-input -r /tmp/requirements-dev.txt \
+    && rm -rf /root/.cache /root/.cargo
 
 COPY . /app
 
