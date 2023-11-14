@@ -30,7 +30,7 @@ class Logger:
         section_data = self.__create_section_data(section_name, collapsed)
         section_message = f"section_start:{section_data}{section_title}"
 
-        print(section_message, file=sys.stderr)  # noqa: T001
+        print(section_message, file=sys.stderr)  # noqa: T201
 
         return partial(self.end_section, section_name=section_name, collapsed=collapsed)
 
@@ -38,7 +38,7 @@ class Logger:
         section_data = self.__create_section_data(section_name, collapsed)
         section_message = f"section_end:{section_data}"
 
-        print(section_message, file=sys.stderr)  # noqa: T001
+        print(section_message, file=sys.stderr)  # noqa: T201
 
     @contextmanager
     def do_section(
@@ -69,7 +69,7 @@ class Logger:
 
         if settings.KOLGA_DEBUG:
             _message = self._create_message(message, icon)
-            print(f"{cf.purple}{_message}{cf.reset}", file=sys.stderr)  # noqa: T001
+            print(f"{cf.purple}{_message}{cf.reset}", file=sys.stderr)  # noqa: T201
 
     def debug_std(
         self,
@@ -108,7 +108,7 @@ class Logger:
         if error and not raise_exception:
             _message += f"{error}"
 
-        print(f"{cf.red}{_message}{cf.reset}", file=sys.stderr)  # noqa: T001
+        print(f"{cf.red}{_message}{cf.reset}", file=sys.stderr)  # noqa: T201
         if raise_exception:
             error = error or Exception(message_string)
             raise error
@@ -122,7 +122,7 @@ class Logger:
             icon: Icon to place as before the output
         """
         _message = self._create_message(message, icon)
-        print(f"{cf.yellow}{_message}{cf.reset}", file=sys.stderr)  # noqa: T001
+        print(f"{cf.yellow}{_message}{cf.reset}", file=sys.stderr)  # noqa: T201
 
     def success(self, message: str = "", icon: Optional[str] = None) -> None:
         """
@@ -134,7 +134,7 @@ class Logger:
         """
         message_string = message if message else "Done"
         _message = self._create_message(message_string, icon)
-        print(f"{cf.green}{_message}{cf.reset}", file=sys.stderr)  # noqa: T001
+        print(f"{cf.green}{_message}{cf.reset}", file=sys.stderr)  # noqa: T201
 
     def info(
         self,
@@ -156,7 +156,7 @@ class Logger:
             f"{cf.bold}{title}{cf.reset}{message}" if title else f"{message}"
         )
         _message = self._create_message(message_string, icon)
-        print(f"{_message}", end=end, file=sys.stderr, flush=True)  # noqa: T001
+        print(f"{_message}", end=end, file=sys.stderr, flush=True)  # noqa: T201
 
     def std(
         self,
@@ -179,7 +179,7 @@ class Logger:
         if raise_exception:
             raise Exception(output_string)
         else:
-            print(output_string, file=sys.stderr)  # noqa: T001
+            print(output_string, file=sys.stderr)  # noqa: T201
 
 
 logger = Logger()
