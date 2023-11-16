@@ -12,13 +12,11 @@ from ..base import PluginBase
 from ..exceptions import PluginMissingConfiguration
 
 try:
-    from opentelemetry import context, trace  # type: ignore[attr-defined]
-    from opentelemetry.sdk.resources import Resource  # type: ignore[attr-defined]
-    from opentelemetry.sdk.trace import TracerProvider  # type: ignore[attr-defined]
-    from opentelemetry.sdk.trace.export import (  # type: ignore[attr-defined]
-        BatchSpanProcessor,
-    )
-    from opentelemetry.trace import status  # type: ignore[import]
+    from opentelemetry import context, trace
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.trace import status
 except ImportError:
     HAS_OPENTELEMETRY = False
 else:
@@ -95,10 +93,11 @@ class KolgaOpenTelemetryPlugin(PluginBase):
         trace.set_tracer_provider(tracer_provider)
         tracer = trace.get_tracer(__name__)
 
-        self.context_detach_tokens: List[str] = []
+        self.context_detach_tokens: List[object] = []
         self.lifecycle_key = context.create_key("kolga_lifecycle")
         self.known_exceptions: Set[int] = set()
         self.tracer = tracer
+        self.tracer_provider = tracer_provider
 
         # FIXME: We would like to get sub-traces from buildkit but at the time of writing it
         #        segfaults when OTEL is detected: https://github.com/docker/buildx/pull/925.
@@ -123,9 +122,7 @@ class KolgaOpenTelemetryPlugin(PluginBase):
         ret = self._span_end("kolga_run", status=status)
 
         # Force flush just in case.
-        tracer_provider = trace.get_tracer_provider()
-        if tracer_provider:
-            tracer_provider.force_flush()
+        self.tracer_provider.force_flush()
 
         return ret
 
@@ -307,7 +304,7 @@ class KolgaOpenTelemetryPlugin(PluginBase):
     def _span_end(
         self,
         span_name: str,
-        status: Optional["status.StatusCode"] = None,
+        status: Optional["status.Status"] = None,
     ) -> bool:
         # Check that the current context matches the lifecycle
         if context.get_value(self.lifecycle_key) != span_name:
@@ -324,7 +321,7 @@ class KolgaOpenTelemetryPlugin(PluginBase):
         span.end()
 
         # Pop context stack
-        context_detach_token: Optional[str] = None
+        context_detach_token: Optional[object] = None
         try:
             context_detach_token = self.context_detach_tokens[-1]
         except IndexError:

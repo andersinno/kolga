@@ -9,7 +9,6 @@ from kolga.utils.general import get_track
 
 class Devops:
     def __init__(self) -> None:
-
         settings.load_plugins()
 
         self.parser = argparse.ArgumentParser(description="Anders Devops")
@@ -221,7 +220,7 @@ class Devops:
         from kolga.libs.docker import Docker
 
         d = Docker()
-        print(d.test_image_tag())  # noqa: T001
+        print(d.test_image_tag())  # noqa: T201
 
     def logo(self) -> None:
         logo = """
@@ -236,7 +235,7 @@ class Devops:
                        |___/       
     DevOps Tooling by Anders Innovations Oy
         """  # noqa: W291
-        print(logo)  # noqa: T001
+        print(logo)  # noqa: T201
 
 
 if __name__ == "__main__":

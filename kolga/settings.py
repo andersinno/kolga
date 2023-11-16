@@ -150,7 +150,7 @@ class SettingsValues(BaseSettings):
     K8S_HPA_MIN_REPLICAS: int = 1
     K8S_INGRESS_ANNOTATIONS: List[str] = []
     K8S_INGRESS_BASE_DOMAIN: str = ""
-    K8S_INGRESS_BASIC_AUTH: BasicAuthUserList = Field([])
+    K8S_INGRESS_BASIC_AUTH: BasicAuthUserList = Field(BasicAuthUserList())
     K8S_INGRESS_DISABLED: bool = False
     K8S_INGRESS_MAX_BODY_SIZE: str = "100m"
     K8S_INGRESS_PATH: str = ""
@@ -239,9 +239,7 @@ class Settings(SettingsValues):
             self._plugin_manager = self._setup_pluggy()
         return self._plugin_manager
 
-    # TODO: For some reason mypy complains about __init__ being already defined
-    #       on the line where this class starts. Ignoring it for now.
-    def __init__(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Populate the environment with values from the build and service
         # artifact dotenv files.
         os.environ.update(read_artifact_envfiles())

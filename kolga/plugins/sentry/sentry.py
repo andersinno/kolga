@@ -5,7 +5,6 @@ from kolga.plugins.base import PluginBase
 
 
 class KolgaSentryPlugin(PluginBase):
-
     name = "sentry"
     verbose_name = "Kolga Sentry Plugin"
     version = 0.1

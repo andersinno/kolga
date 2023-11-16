@@ -1,12 +1,12 @@
 # ===================================
-FROM python:3.9.11-alpine3.15 AS build-base
+FROM python:3.11-alpine AS build-base
 # ===================================
 
 # ===================================
 FROM build-base AS kubectl
 # ===================================
-ARG KUBECTL_VERSION=1.19.16
-ARG KUBECTL_CHECKSUM=9524a026af932ac9ca1895563060f7fb3b89f1387016e69a1a73cf7ce0f9baa54775b00c886557a97bae9b6dbc1b49c045da5dcea9ca2c1452c18c5c45fefd55
+ARG KUBECTL_VERSION=1.27.7
+ARG KUBECTL_CHECKSUM=87b7ac839cac8d96efa1c6170cf32ed2bbe14e7194971df4b4736699152e294a0aa0018f3d8ae1dcf9905c3c784a7a15c297382450c0431a0daf98f300d3ef16
 ARG TARGET=/kubernetes-client.tar.gz
 
 ADD https://dl.k8s.io/v${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz "$TARGET"
@@ -17,8 +17,8 @@ RUN set -eux; \
 # ===================================
 FROM build-base AS helm
 # ===================================
-ARG HELM_VERSION=3.8.1
-ARG HELM_CHECKSUM=d643f48fe28eeb47ff68a1a7a26fc5142f348d02c8bc38d699674016716f61cd
+ARG HELM_VERSION=3.13.2
+ARG HELM_CHECKSUM=55a8e6dce87a1e52c61e0ce7a89bf85b38725ba3e8deb51d4a08ade8a2c70b2d
 ARG TARGET=/helm.tar.gz
 
 ADD https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz "$TARGET"
@@ -28,47 +28,31 @@ RUN set -eux; \
     tar -xvf "$TARGET" -C /helm
 
 # ===================================
-FROM build-base AS poetry
+FROM build-base AS requirements-txt
 # ===================================
-ARG POETRY_VERSION=1.1.13
-ARG POETRY_CHECKSUM=e973b3badb95a916bfe250c22eeb7253130fd87312afa326eb02b8bdcea8f4a7
-ARG TARGET=/tmp/get-poetry.py
-
-ADD https://raw.githubusercontent.com/python-poetry/poetry/${POETRY_VERSION}/get-poetry.py "$TARGET"
-RUN set -eux; \
-    echo "$POETRY_CHECKSUM *$TARGET" | sha256sum -c -; \
-    python /tmp/get-poetry.py --version "${POETRY_VERSION}"; \
-    # Remove all other python version than the one used by the base image \
-    # Note: `find` does not support negative lookahead, nor does `grep` \
-    # Space savings: ~70MB \
-    find $HOME/.poetry/lib/poetry/_vendor \
-        -type d \
-        -not -regex "^.*py${PYTHON_VERSION%.*}.*$" \
-        -not -path $HOME/.poetry/lib/poetry/_vendor \
-        -exec rm -rf {} +;
-
-# ===================================
-FROM poetry AS requirements-txt
-# ===================================
+RUN pip install poetry poetry-plugin-export
 COPY poetry.lock pyproject.toml /
-RUN set -eux; \
-    ln -s $HOME/.poetry/bin/poetry /usr/bin/poetry; \
-    poetry export \
+RUN poetry export \
         --no-ansi \
         --no-interaction \
         --extras opentelemetry \
         --output /requirements.txt
+RUN poetry export \
+        --no-ansi \
+        --no-interaction \
+        --only dev \
+        --output /requirements-dev.txt
 
 # ===================================
 FROM build-base AS buildx
 # ===================================
-ARG BUILDX_VERSION=0.8.1
-ARG BUILDX_CHECKSUM=1d2ecde1dd3562332d18aabd9daebcf0df1be5f8ecfe6aeb03f1350ee6ade3cc
+ARG BUILDX_VERSION=0.11.2
+ARG BUILDX_CHECKSUM=60569a65eb08e28eadcd9e9ff82a1f4166ed2867af48c1ec1b7b82d3ca15ec29d9972186cd7b84178dadc050f66e59f138d5e391f47dd17ac474e5aee789fc47
 ARG TARGET=/buildx/docker-buildx
 
 ADD https://github.com/docker/buildx/releases/download/v${BUILDX_VERSION}/buildx-v${BUILDX_VERSION}.linux-amd64 "$TARGET"
 RUN set -eux; \
-    echo "$BUILDX_CHECKSUM *$TARGET" | sha256sum -c -; \
+    echo "$BUILDX_CHECKSUM *$TARGET" | sha512sum -c -; \
     chmod a+x "$TARGET"
 
 # ===================================
@@ -89,20 +73,12 @@ ENV DOCKER_CLI_EXPERIMENTAL=enabled
 
 WORKDIR /app
 
-COPY --from=requirements-txt /requirements.txt /tmp/requirements.txt
-
-RUN apk add --no-cache --virtual .build-deps \
-        build-base \
-        cargo \
-        libffi-dev \
-        openssl-dev \
-        python3-dev \
-        rust \
-    && apk add --no-cache \
+RUN apk add --no-cache \
         apache2-utils \
         bash \
         ca-certificates \
         docker-cli \
+        docker-cli-compose \
         git \
         libffi \
         make \
@@ -112,12 +88,11 @@ RUN apk add --no-cache --virtual .build-deps \
         shadow \
     && ln -sf python3 /usr/bin/python \
     && ln -s pip3 /usr/bin/pip \
-    && python3 -m ensurepip \
-    && pip install --no-cache-dir --no-input -r /tmp/requirements.txt \
-    && pip install --no-cache-dir --no-input docker-compose \
-    && rm -rf /root/.cache \
-    && rm -rf /root/.cargo \
-    && apk del .build-deps
+    && python3 -m ensurepip
+
+COPY --from=requirements-txt /requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir --no-input -r /tmp/requirements.txt \
+    && rm -rf /root/.cache /root/.cargo
 
 # ===================================
 FROM app-base AS development
@@ -127,17 +102,9 @@ LABEL "com.azure.dev.pipelines.agent.handler.node.path"="/usr/bin/node"
 # Create a writable directory for shared configurations
 RUN mkdir -m777 /config
 
-COPY --from=poetry /root/.poetry /root/.poetry
-RUN ln -s /root/.poetry/bin/poetry /usr/bin/poetry
-
-COPY poetry.lock pyproject.toml /app/
-RUN apk add --no-cache --virtual .build-deps \
-        build-base \
-        python3-dev \
-    && poetry config virtualenvs.create false \
-    && poetry install \
-    && rm -r /root/.cache \
-    && apk del .build-deps
+COPY --from=requirements-txt /requirements-dev.txt /tmp/requirements-dev.txt
+RUN pip install --no-cache-dir --no-input -r /tmp/requirements-dev.txt \
+    && rm -rf /root/.cache /root/.cargo
 
 COPY . /app
 
