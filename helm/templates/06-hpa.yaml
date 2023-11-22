@@ -1,5 +1,5 @@
 {{- if .Values.hpa.enabled -}}
-{{- if (.Capabilities.APIVersions.Has "autoscaling.apiserver.k8s.io/v2") }}
+{{- if (.Capabilities.APIVersions.Has "autoscaling/v2") }}
 apiVersion: autoscaling/v2
 {{- else }}
 apiVersion: autoscaling/v2beta2
