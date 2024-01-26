@@ -257,6 +257,7 @@ class Docker:
             "docker",
             "buildx",
             "build",
+            "--provenance=false",
             f"--file={self.dockerfile.absolute()}",
             f"--target={stage}",
             "--progress=plain",
