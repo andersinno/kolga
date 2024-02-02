@@ -38,7 +38,7 @@ variables:
 
 .build:
   services:
-    - docker:20.10.24-dind
+    - docker:24.0.5-dind
   stage: build
   script:
     - devops create_images
