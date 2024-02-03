@@ -103,7 +103,7 @@ variables:
 
 .test:
   services:
-    - docker:stable-dind
+    - docker:24.0.5-dind
   stage: test
   script:
     - set_env_from_devops docker_test_image BUILT_DOCKER_TEST_IMAGE

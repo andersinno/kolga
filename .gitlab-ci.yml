@@ -37,6 +37,9 @@ build-bootstrap:
     DOCKER_IMAGE_TAGS: ""
     # Don't build development image
     DOCKER_TEST_IMAGE_STAGE: ""
+  script:
+    - sleep 30
+    - devops create_images
 
 build:
   image: ${BOOTSTRAP_IMAGE}
