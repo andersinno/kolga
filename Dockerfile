@@ -73,6 +73,11 @@ ENV DOCKER_CLI_EXPERIMENTAL=enabled
 
 WORKDIR /app
 
+# Add a wrapper for docker that waits for docker daemon. See:
+# https://gitlab.com/gitlab-org/gitlab-runner/-/issues/27300
+COPY ./utils/docker-wrapper.sh /usr/local/bin/docker
+RUN chmod a+x /usr/local/bin/docker
+
 RUN apk add --no-cache \
         apache2-utils \
         bash \
