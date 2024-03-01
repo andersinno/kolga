@@ -271,7 +271,9 @@ class Docker:
         if not disable_cache:
             cache_to = self.create_cache_tag(postfix=stage)
             logger.info(title=f"\t ℹ️ Cache to: {cache_to}")
-            build_command.append(f"--cache-to=type=registry,ref={cache_to},mode=max,oci-mediatypes=true,image-manifest=true")
+            build_command.append(
+                f"--cache-to=type=registry,ref={cache_to},mode=max,oci-mediatypes=true,image-manifest=true"
+            )
 
             for cache_tag in self.get_cache_tags():
                 logger.info(title=f"\t ℹ️ Cache from: {cache_tag}")
